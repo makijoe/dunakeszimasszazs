@@ -23,7 +23,7 @@ const SHEETS = {
 // ============================================
 function setupSheets() {
   try {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var ss = SpreadsheetApp.openById('1FLtmJqPnwWcHjyetyJXCto4-YYZkw2NEknPHAGgMsnM');
     
     if (!ss) {
       throw new Error('Nincs aktív spreadsheet. Kérlek nyiss meg egy Google Sheet-et!');
@@ -318,7 +318,7 @@ function purchasePackage(data) {
   var depositPaid = data.depositPaid || Math.round(finalPrice * 0.2);
   
   // Record package
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var ss = SpreadsheetApp.openById('1FLtmJqPnwWcHjyetyJXCto4-YYZkw2NEknPHAGgMsnM');
   var packagesSheet = ss.getSheetByName(SHEETS.SESSION_PACKAGES);
   packagesSheet.appendRow([
     packageId,
@@ -388,7 +388,7 @@ function useSession(data) {
 }
 
 function deductSessionFromPackage(packageId) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var ss = SpreadsheetApp.openById('1FLtmJqPnwWcHjyetyJXCto4-YYZkw2NEknPHAGgMsnM');
   var packagesSheet = ss.getSheetByName(SHEETS.SESSION_PACKAGES);
   var data = packagesSheet.getDataRange().getValues();
   
@@ -422,7 +422,7 @@ function deductSessionFromPackage(packageId) {
 // Customer Management
 // ============================================
 function getOrCreateCustomer(name, email, phone) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var ss = SpreadsheetApp.openById('1FLtmJqPnwWcHjyetyJXCto4-YYZkw2NEknPHAGgMsnM');
   var customersSheet = ss.getSheetByName(SHEETS.CUSTOMERS);
   var data = customersSheet.getDataRange().getValues();
   
@@ -474,7 +474,7 @@ function getOrCreateCustomer(name, email, phone) {
 }
 
 function getCustomerById(customerId) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var ss = SpreadsheetApp.openById('1FLtmJqPnwWcHjyetyJXCto4-YYZkw2NEknPHAGgMsnM');
   var customersSheet = ss.getSheetByName(SHEETS.CUSTOMERS);
   var data = customersSheet.getDataRange().getValues();
   
@@ -530,7 +530,7 @@ function getCustomerProfile(data) {
 }
 
 function getAllCustomers() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var ss = SpreadsheetApp.openById('1FLtmJqPnwWcHjyetyJXCto4-YYZkw2NEknPHAGgMsnM');
   var customersSheet = ss.getSheetByName(SHEETS.CUSTOMERS);
   var data = customersSheet.getDataRange().getValues();
   
@@ -550,7 +550,7 @@ function getAllCustomers() {
 }
 
 function getCustomerPackages(customerId) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var ss = SpreadsheetApp.openById('1FLtmJqPnwWcHjyetyJXCto4-YYZkw2NEknPHAGgMsnM');
   var packagesSheet = ss.getSheetByName(SHEETS.SESSION_PACKAGES);
   var data = packagesSheet.getDataRange().getValues();
   
@@ -577,7 +577,7 @@ function getCustomerPackages(customerId) {
 }
 
 function getCustomerBookings(customerId) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var ss = SpreadsheetApp.openById('1FLtmJqPnwWcHjyetyJXCto4-YYZkw2NEknPHAGgMsnM');
   var bookingsSheet = ss.getSheetByName(SHEETS.BOOKINGS);
   var data = bookingsSheet.getDataRange().getValues();
   
@@ -615,7 +615,7 @@ function findActivePackage(customerId, serviceType) {
 }
 
 function getPackageById(packageId) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var ss = SpreadsheetApp.openById('1FLtmJqPnwWcHjyetyJXCto4-YYZkw2NEknPHAGgMsnM');
   var packagesSheet = ss.getSheetByName(SHEETS.SESSION_PACKAGES);
   var data = packagesSheet.getDataRange().getValues();
   
@@ -647,7 +647,7 @@ function updateCustomerSessionTotals(customerId) {
     totalSpent += packages[i].finalPrice;
   }
   
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var ss = SpreadsheetApp.openById('1FLtmJqPnwWcHjyetyJXCto4-YYZkw2NEknPHAGgMsnM');
   var customersSheet = ss.getSheetByName(SHEETS.CUSTOMERS);
   var data = customersSheet.getDataRange().getValues();
   
@@ -666,7 +666,7 @@ function updateCustomerSessionTotals(customerId) {
 // Record Booking
 // ============================================
 function recordBooking(customerId, customerName, service, date, time, packageId, sessionNumber) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var ss = SpreadsheetApp.openById('1FLtmJqPnwWcHjyetyJXCto4-YYZkw2NEknPHAGgMsnM');
   var bookingsSheet = ss.getSheetByName(SHEETS.BOOKINGS);
   
   var bookingId = 'BK' + Date.now() + Math.random().toString(36).substr(2, 5);
@@ -692,7 +692,7 @@ function recordBooking(customerId, customerName, service, date, time, packageId,
 // Financial Tracking
 // ============================================
 function recordTransaction(date, type, customerId, customerName, description, amount, paymentMethod, relatedId) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var ss = SpreadsheetApp.openById('1FLtmJqPnwWcHjyetyJXCto4-YYZkw2NEknPHAGgMsnM');
   var financialSheet = ss.getSheetByName(SHEETS.FINANCIAL);
   
   var transactionId = 'TXN' + Date.now();
@@ -720,7 +720,7 @@ function getPnL(data) {
   var month = data.month || new Date().getMonth() + 1;
   var year = data.year || new Date().getFullYear();
   
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var ss = SpreadsheetApp.openById('1FLtmJqPnwWcHjyetyJXCto4-YYZkw2NEknPHAGgMsnM');
   var financialSheet = ss.getSheetByName(SHEETS.FINANCIAL);
   var data = financialSheet.getDataRange().getValues();
   
@@ -777,7 +777,7 @@ function getPnL(data) {
 }
 
 function getDashboardData() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var ss = SpreadsheetApp.openById('1FLtmJqPnwWcHjyetyJXCto4-YYZkw2NEknPHAGgMsnM');
   
   // Get customer count
   var customersSheet = ss.getSheetByName(SHEETS.CUSTOMERS);
