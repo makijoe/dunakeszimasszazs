@@ -1,0 +1,110 @@
+// Google Apps Script for Booking System
+// 1. Go to https://script.google.com
+// 2. Create new project
+// 3. Paste this code
+// 4. Deploy as Web App (Deploy > New deployment > Web app)
+// 5. Set "Execute as: Me" and "Who has access: Anyone"
+// 6. Copy the Web App URL and paste it in the React code
+
+function doPost(e) {
+  try {
+    // Parse the incoming data
+    var data = JSON.parse(e.postData.contents);
+    
+    // Get the default calendar
+    var calendar = CalendarApp.getDefaultCalendar();
+    
+    // Parse date and time
+    var dateParts = data.date.split('-');
+    var timeParts = data.time.split(':');
+    var startTime = new Date(dateParts[0], dateParts[1] - 1, dateParts[2], timeParts[0], timeParts[1]);
+    var endTime = new Date(startTime.getTime() + 60 * 60 * 1000); // Add 1 hour
+    
+    // Create calendar event
+    var event = calendar.createEvent(
+      'Masszázs - ' + data.name + ' - ' + data.service,
+      startTime,
+      endTime,
+      {
+        description: 'Kezelés: ' + data.service + '\n' +
+                     'Név: ' + data.name + '\n' +
+                     'Telefon: ' + data.phone + '\n' +
+                     'Email: ' + (data.email || 'Nincs megadva') + '\n' +
+                     'Megjegyzés: ' + (data.notes || 'Nincs megadva'),
+        location: 'Angyali Szalon, Dunakeszi'
+      }
+    );
+    
+    // Send email notification to Edina
+    var subject = 'Új időpontfoglalás - ' + data.name + ' - ' + data.service;
+    var body = 'Kedves Edina!\n\n' +
+               'Új időpontfoglalás érkezett:\n\n' +
+               'Név: ' + data.name + '\n' +
+               'Telefon: ' + data.phone + '\n' +
+               'Email: ' + (data.email || 'Nincs megadva') + '\n' +
+               'Kezelés: ' + data.service + '\n' +
+               'Dátum: ' + data.date + '\n' +
+               'Időpont: ' + data.time + '\n' +
+               'Megjegyzés: ' + (data.notes || 'Nincs megadva') + '\n\n' +
+               'A foglalás automatikusan hozzáadva lett a Google Naptáradhoz.\n\n' +
+               'Üdvözlettel,\n' +
+               'Dunakeszi Masszázs Weboldal';
+    
+    MailApp.sendEmail('dunakeszimasszor@gmail.com', subject, body);
+    
+    // Send confirmation email to customer (if email provided)
+    if (data.email && data.email.includes('@')) {
+      var customerSubject = 'Időpontfoglalás visszaigazolás - Dunakeszi Masszázs';
+      var customerBody = 'Kedves ' + data.name + '!\n\n' +
+                         'Köszönjük az időpontfoglalásodat!\n\n' +
+                         'Kezelés: ' + data.service + '\n' +
+                         'Dátum: ' + data.date + '\n' +
+                         'Időpont: ' + data.time + '\n\n' +
+                         'Hamarosan felvesszük veled a kapcsolatot a visszaigazoláshoz.\n\n' +
+                         'Üdvözlettel,\n' +
+                         'Makra Edina\n' +
+                         'Dunakeszi Masszázs - Angyali Szalon\n' +
+                         'Telefon: +36 30 487 7883';
+      
+      MailApp.sendEmail(data.email, customerSubject, customerBody);
+    }
+    
+    // Return success response
+    return ContentService
+      .createTextOutput(JSON.stringify({
+        success: true,
+        message: 'Foglalás sikeresen rögzítve!',
+        eventId: event.getId()
+      }))
+      .setMimeType(ContentService.MimeType.JSON)
+      .setHeaders({
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST',
+        'Access-Control-Allow-Headers': 'Content-Type'
+      });
+      
+  } catch (error) {
+    // Return error response
+    return ContentService
+      .createTextOutput(JSON.stringify({
+        success: false,
+        message: 'Hiba történt: ' + error.message
+      }))
+      .setMimeType(ContentService.MimeType.JSON)
+      .setHeaders({
+        'Access-Control-Allow-Origin': '*'
+      });
+  }
+}
+
+// Handle GET requests (for testing)
+function doGet(e) {
+  return ContentService
+    .createTextOutput(JSON.stringify({
+      message: 'Booking API is running. Use POST to create bookings.'
+    }))
+    .setMimeType(ContentService.MimeType.JSON)
+    .setHeaders({
+      'Access-Control-Allow-Origin': '*'
+    });
+}

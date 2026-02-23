@@ -1,0 +1,433 @@
+// ============================================
+// Google Apps Script for Dunakeszi Masszázs
+// Booking System with Google Calendar Integration
+// Supports Recurring Bookings, Cancellations, and Changes
+// ============================================
+
+function doPost(e) {
+  try {
+    // Check if e and e.postData exist
+    if (!e || !e.postData || !e.postData.contents) {
+      return createResponse(false, 'Hiányzó adatok a kérésben');
+    }
+    
+    // Parse the incoming JSON data
+    var data = JSON.parse(e.postData.contents);
+    
+    // Handle different actions
+    if (data.action === 'cancel') {
+      return handleCancellation(data);
+    } else if (data.action === 'change') {
+      return handleChange(data);
+    }
+    
+    // Default: Create new booking
+    return createBooking(data);
+    
+  } catch (error) {
+    console.error('Error in doPost:', error);
+    return createResponse(false, 'Hiba történt a kérés feldolgozása közben: ' + error.message);
+  }
+}
+
+function doGet(e) {
+  return createResponse(true, 'Booking API is running. Use POST to create bookings.');
+}
+
+// ============================================
+// Create New Booking
+// ============================================
+function createBooking(data) {
+  // Validate required fields
+  if (!data.name || !data.email || !data.service || !data.date || !data.time) {
+    return createResponse(false, 'Hiányzó kötelező mezők (név, email, kezelés, dátum, időpont)');
+  }
+  
+  // Validate email format
+  if (!data.email.includes('@') || !data.email.includes('.')) {
+    return createResponse(false, 'Érvénytelen email cím');
+  }
+  
+  // Get the default calendar
+  var calendar = CalendarApp.getDefaultCalendar();
+  
+  // Parse date and create start time
+  var dateParts = data.date.split('-');
+  var timeParts = data.time.split(':');
+  var baseStartTime = new Date(
+    parseInt(dateParts[0]),
+    parseInt(dateParts[1]) - 1,
+    parseInt(dateParts[2]),
+    parseInt(timeParts[0]),
+    parseInt(timeParts[1])
+  );
+  
+  // Calculate end time (60 min session)
+  var baseEndTime = new Date(baseStartTime.getTime() + (60 * 60 * 1000));
+  
+  // Handle recurring bookings
+  var recurringCount = data.recurring ? (data.recurringCount || 1) : 1;
+  var recurringType = data.recurringType || 'weekly';
+  var createdEvents = [];
+  var recurringDates = [];
+  
+  // Calculate discount
+  var discountPercent = 0;
+  if (recurringCount >= 6) discountPercent = 15;
+  else if (recurringCount >= 4) discountPercent = 10;
+  else if (recurringCount >= 2) discountPercent = 5;
+  
+  for (var i = 0; i < recurringCount; i++) {
+    var occurrenceStartTime = new Date(baseStartTime);
+    var occurrenceEndTime = new Date(baseEndTime);
+    
+    if (i > 0) {
+      if (recurringType === 'weekly') {
+        occurrenceStartTime.setDate(occurrenceStartTime.getDate() + (i * 7));
+        occurrenceEndTime.setDate(occurrenceEndTime.getDate() + (i * 7));
+      } else if (recurringType === 'biweekly') {
+        occurrenceStartTime.setDate(occurrenceStartTime.getDate() + (i * 14));
+        occurrenceEndTime.setDate(occurrenceEndTime.getDate() + (i * 14));
+      } else if (recurringType === 'monthly') {
+        occurrenceStartTime.setMonth(occurrenceStartTime.getMonth() + i);
+        occurrenceEndTime.setMonth(occurrenceEndTime.getMonth() + i);
+      }
+    }
+    
+    var dateStr = occurrenceStartTime.getFullYear() + '-' + 
+                  String(occurrenceStartTime.getMonth() + 1).padStart(2, '0') + '-' + 
+                  String(occurrenceStartTime.getDate()).padStart(2, '0');
+    recurringDates.push(dateStr);
+    
+    var eventTitle = 'Masszázs - ' + data.name + ' - ' + data.service;
+    if (recurringCount > 1) {
+      eventTitle += ' (' + (i + 1) + '/' + recurringCount + ')';
+    }
+    
+    var event = calendar.createEvent(
+      eventTitle,
+      occurrenceStartTime,
+      occurrenceEndTime,
+      {
+        description: 'Kezelés: ' + data.service + '\n' +
+                     'Név: ' + data.name + '\n' +
+                     'Telefon: ' + (data.phone || 'Nincs megadva') + '\n' +
+                     'Email: ' + data.email + '\n' +
+                     'Megjegyzés: ' + (data.notes || 'Nincs megadva') + '\n' +
+                     (recurringCount > 1 ? 'Ismétlődés: ' + (i + 1) + '/' + recurringCount + '\n' : '') +
+                     (discountPercent > 0 ? 'Kedvezmény: ' + discountPercent + '%\n' : ''),
+        location: 'Angyali Szalon, Dunakeszi'
+      }
+    );
+    
+    event.setColor('6');
+    createdEvents.push(event.getId());
+  }
+  
+  // Send emails
+  sendBookingConfirmationToEdina(data, recurringCount, recurringType, recurringDates, discountPercent);
+  sendBookingConfirmationToCustomer(data, recurringCount, recurringType, recurringDates, discountPercent);
+  
+  return createResponse(true, 'Foglalás sikeresen rögzítve!', {
+    eventIds: createdEvents,
+    recurringCount: recurringCount,
+    recurringDates: recurringDates,
+    discountPercent: discountPercent
+  });
+}
+
+// ============================================
+// Handle Cancellation
+// ============================================
+function handleCancellation(data) {
+  if (!data.clientName || !data.clientEmail || !data.appointmentDate || !data.appointmentTime) {
+    return createResponse(false, 'Hiányzó kötelező mezők');
+  }
+  
+  // Send cancellation email to customer
+  var subject = 'Időpont lemondva - Dunakeszi Masszázs';
+  var body = 'Kedves ' + data.clientName + '!\n\n' +
+             'Értesítjük, hogy az alábbi időpontod lemondásra került:\n\n' +
+             '═══════════════════════════════════════\n' +
+             '💆 Kezelés: ' + (data.service || 'Nincs megadva') + '\n' +
+             '📅 Dátum: ' + data.appointmentDate + '\n' +
+             '⏰ Időpont: ' + data.appointmentTime + '\n' +
+             '═══════════════════════════════════════\n\n';
+  
+  if (data.reason) {
+    body += 'Indoklás: ' + data.reason + '\n\n';
+  }
+  
+  body += 'Ha szeretnél új időpontot foglalni, kérjük, látogass el a weboldalunkra vagy hívj telefonon.\n\n' +
+          '📞 +36 30 487 7883\n' +
+          '🌐 https://dunakeszimasszazs.hu\n\n' +
+          'Üdvözlettel,\n' +
+          'Makra Edina\n' +
+          'Dunakeszi Masszázs - Angyali Szalon';
+  
+  MailApp.sendEmail({
+    to: data.clientEmail,
+    subject: subject,
+    body: body,
+    name: 'Dunakeszi Masszázs - Angyali Szalon'
+  });
+  
+  // Send notification to Edina
+  var edinaSubject = 'Időpont lemondva - ' + data.clientName;
+  var edinaBody = 'Kedves Edina!\n\n' +
+                  'Egy időpont lemondásra került:\n\n' +
+                  '═══════════════════════════════════════\n' +
+                  '👤 Név: ' + data.clientName + '\n' +
+                  '📧 Email: ' + data.clientEmail + '\n' +
+                  '💆 Kezelés: ' + (data.service || 'Nincs megadva') + '\n' +
+                  '📅 Dátum: ' + data.appointmentDate + '\n' +
+                  '⏰ Időpont: ' + data.appointmentTime + '\n' +
+                  '═══════════════════════════════════════\n\n';
+  
+  if (data.reason) {
+    edinaBody += 'Indoklás: ' + data.reason + '\n\n';
+  }
+  
+  edinaBody += 'Ne felejtsd el törölni az időpontot a Google Naptárból!';
+  
+  MailApp.sendEmail({
+    to: 'dunakeszimasszor@gmail.com',
+    subject: edinaSubject,
+    body: edinaBody,
+    name: 'Dunakeszi Masszázs - Admin'
+  });
+  
+  return createResponse(true, 'Lemondási értesítés elküldve!');
+}
+
+// ============================================
+// Handle Change Notification
+// ============================================
+function handleChange(data) {
+  if (!data.clientName || !data.clientEmail || !data.appointmentDate || !data.appointmentTime || !data.newDate || !data.newTime) {
+    return createResponse(false, 'Hiányzó kötelező mezők');
+  }
+  
+  // Send change email to customer
+  var subject = 'Időpont módosítva - Dunakeszi Masszázs';
+  var body = 'Kedves ' + data.clientName + '!\n\n' +
+             'Értesítjük, hogy az időpontod módosításra került:\n\n' +
+             '═══════════════════════════════════════\n' +
+             '❌ EREDETI IDŐPONT:\n' +
+             '📅 Dátum: ' + data.appointmentDate + '\n' +
+             '⏰ Időpont: ' + data.appointmentTime + '\n\n' +
+             '✅ ÚJ IDŐPONT:\n' +
+             '📅 Dátum: ' + data.newDate + '\n' +
+             '⏰ Időpont: ' + data.newTime + '\n' +
+             '💆 Kezelés: ' + (data.service || 'Nincs megadva') + '\n' +
+             '═══════════════════════════════════════\n\n' +
+             '📍 CÍM ÉS MEGKÖZELÍTÉS:\n' +
+             'Dunakeszi, Kolonics György utca 2/B, 2120\n' +
+             'Kapucsengő: 1/43\n\n' +
+             'Ha kérdésed van, hívj bátran:\n' +
+             '📞 +36 30 487 7883\n\n' +
+             'Várunk szeretettel az Angyali Szalonban!\n\n' +
+             'Üdvözlettel,\n' +
+             'Makra Edina\n' +
+             'Dunakeszi Masszázs - Angyali Szalon';
+  
+  MailApp.sendEmail({
+    to: data.clientEmail,
+    subject: subject,
+    body: body,
+    name: 'Dunakeszi Masszázs - Angyali Szalon'
+  });
+  
+  // Send notification to Edina
+  var edinaSubject = 'Időpont módosítva - ' + data.clientName;
+  var edinaBody = 'Kedves Edina!\n\n' +
+                  'Egy időpont módosításra került:\n\n' +
+                  '═══════════════════════════════════════\n' +
+                  '👤 Név: ' + data.clientName + '\n' +
+                  '📧 Email: ' + data.clientEmail + '\n' +
+                  '💆 Kezelés: ' + (data.service || 'Nincs megadva') + '\n\n' +
+                  '❌ EREDETI:\n' +
+                  '📅 ' + data.appointmentDate + ' ' + data.appointmentTime + '\n\n' +
+                  '✅ ÚJ:\n' +
+                  '📅 ' + data.newDate + ' ' + data.newTime + '\n' +
+                  '═══════════════════════════════════════\n\n' +
+                  'Ne felejtsd el frissíteni az időpontot a Google Naptárból!';
+  
+  MailApp.sendEmail({
+    to: 'dunakeszimasszor@gmail.com',
+    subject: edinaSubject,
+    body: edinaBody,
+    name: 'Dunakeszi Masszázs - Admin'
+  });
+  
+  return createResponse(true, 'Módosítási értesítés elküldve!');
+}
+
+// ============================================
+// Send Booking Confirmation to Edina
+// ============================================
+function sendBookingConfirmationToEdina(data, recurringCount, recurringType, recurringDates, discountPercent) {
+  var edinaSubject = recurringCount > 1 
+    ? 'Új ismétlődő foglalás - ' + data.name + ' (' + recurringCount + ' alkalom)'
+    : 'Új időpontfoglalás - ' + data.name;
+  
+  var edinaBody = 'Kedves Edina!\n\n';
+  
+  if (recurringCount > 1) {
+    edinaBody += 'Új ISMÉTLŐDŐ foglalás érkezett a weboldalról:\n\n';
+    edinaBody += '═══════════════════════════════════════\n';
+    edinaBody += '👤 NÉV: ' + data.name + '\n';
+    edinaBody += '📞 TELEFON: ' + (data.phone || 'Nincs megadva') + '\n';
+    edinaBody += '📧 EMAIL: ' + data.email + '\n';
+    edinaBody += '💆 KEZELÉS: ' + data.service + '\n';
+    edinaBody += '📅 ELSŐ DÁTUM: ' + data.date + '\n';
+    edinaBody += '⏰ IDŐPONT: ' + data.time + '\n';
+    edinaBody += '🔄 ISMÉTLŐDÉS: ' + getRecurringTypeText(recurringType) + '\n';
+    edinaBody += '📊 ALKALMAK SZÁMA: ' + recurringCount + '\n';
+    if (discountPercent > 0) {
+      edinaBody += '💰 KEDVEZMÉNY: ' + discountPercent + '%\n';
+    }
+    edinaBody += '📋 ÖSSZES DÁTUM:\n';
+    for (var j = 0; j < recurringDates.length; j++) {
+      edinaBody += '   ' + (j + 1) + '. ' + recurringDates[j] + '\n';
+    }
+    edinaBody += '═══════════════════════════════════════\n\n';
+  } else {
+    edinaBody += 'Új időpontfoglalás érkezett a weboldalról:\n\n';
+    edinaBody += '═══════════════════════════════════════\n';
+    edinaBody += '👤 NÉV: ' + data.name + '\n';
+    edinaBody += '📞 TELEFON: ' + (data.phone || 'Nincs megadva') + '\n';
+    edinaBody += '📧 EMAIL: ' + data.email + '\n';
+    edinaBody += '💆 KEZELÉS: ' + data.service + '\n';
+    edinaBody += '📅 DÁTUM: ' + data.date + '\n';
+    edinaBody += '⏰ IDŐPONT: ' + data.time + '\n';
+    edinaBody += '═══════════════════════════════════════\n\n';
+  }
+  
+  edinaBody += '📝 MEGJEGYZÉS: ' + (data.notes || 'Nincs megadva') + '\n\n';
+  edinaBody += 'A foglalás(ok) automatikusan hozzáadva lettek a Google Naptáradhoz.\n\n';
+  edinaBody += 'Üdvözlettel,\n';
+  edinaBody += 'Dunakeszi Masszázs Weboldal';
+  
+  MailApp.sendEmail({
+    to: 'dunakeszimasszor@gmail.com',
+    subject: edinaSubject,
+    body: edinaBody,
+    name: 'Dunakeszi Masszázs - Foglalási Rendszer'
+  });
+}
+
+// ============================================
+// Send Booking Confirmation to Customer
+// ============================================
+function sendBookingConfirmationToCustomer(data, recurringCount, recurringType, recurringDates, discountPercent) {
+  var customerSubject = recurringCount > 1
+    ? 'Ismétlődő időpontfoglalás visszaigazolás - Dunakeszi Masszázs'
+    : 'Időpontfoglalás visszaigazolás - Dunakeszi Masszázs';
+  
+  var customerBody = 'Kedves ' + data.name + '!\n\n';
+  customerBody += 'Köszönjük az időpontfoglalásodat!\n\n';
+  
+  if (recurringCount > 1) {
+    customerBody += '═══════════════════════════════════════\n';
+    customerBody += '💆 KEZELÉS: ' + data.service + '\n';
+    customerBody += '📅 ELSŐ DÁTUM: ' + data.date + '\n';
+    customerBody += '⏰ IDŐPONT: ' + data.time + '\n';
+    customerBody += '🔄 ISMÉTLŐDÉS: ' + getRecurringTypeText(recurringType) + '\n';
+    customerBody += '📊 ALKALMAK SZÁMA: ' + recurringCount + '\n';
+    if (discountPercent > 0) {
+      customerBody += '💰 KEDVEZMÉNY: ' + discountPercent + '%\n';
+    }
+    customerBody += '═══════════════════════════════════════\n\n';
+    customerBody += '📋 AZ ÖSSZES FOGLALT IDŐPONT:\n';
+    for (var k = 0; k < recurringDates.length; k++) {
+      customerBody += '   ' + (k + 1) + '. ' + recurringDates[k] + ' ' + data.time + '\n';
+    }
+    customerBody += '\n';
+  } else {
+    customerBody += '═══════════════════════════════════════\n';
+    customerBody += '💆 KEZELÉS: ' + data.service + '\n';
+    customerBody += '📅 DÁTUM: ' + data.date + '\n';
+    customerBody += '⏰ IDŐPONT: ' + data.time + '\n';
+    customerBody += '═══════════════════════════════════════\n\n';
+  }
+  
+  customerBody += '📍 CÍM ÉS MEGKÖZELÍTÉS:\n';
+  customerBody += 'Dunakeszi, Kolonics György utca 2/B, 2120\n';
+  customerBody += 'Kapucsengő: 1/43\n\n';
+  customerBody += 'A kapunál a 1/43-as kapucsengőt kell megnyomni.\n\n';
+  
+  if (recurringCount > 1) {
+    customerBody += '⚠️ FONTOS INFORMÁCIÓ ISMÉTLŐDŐ FOGLALÁSHOZ:\n';
+    customerBody += '• Minden alkalom előtt 24 órával emlékeztetőt küldünk\n';
+    customerBody += '• Ha bármelyik alkalomra nem tudsz eljönni, kérjük, 24 órával előtte jelezd\n';
+    customerBody += '• Az időpontok módosíthatók 24 óra előtt ingyenesen\n';
+    if (discountPercent > 0) {
+      customerBody += '• Kedvezmény: ' + discountPercent + '% a több alkalmas foglalásért\n';
+    }
+    customerBody += '\n';
+  }
+  
+  customerBody += 'Ha bármilyen kérdésed van, hívj bátran:\n';
+  customerBody += '📞 +36 30 487 7883\n\n';
+  customerBody += 'Várunk szeretettel az Angyali Szalonban!\n\n';
+  customerBody += 'Üdvözlettel,\n';
+  customerBody += 'Makra Edina\n';
+  customerBody += 'Dunakeszi Masszázs - Angyali Szalon\n';
+  customerBody += '📞 +36 30 487 7883\n';
+  customerBody += '📧 dunakeszimasszor@gmail.com\n';
+  customerBody += '🌐 https://dunakeszimasszazs.hu';
+  
+  MailApp.sendEmail({
+    to: data.email,
+    subject: customerSubject,
+    body: customerBody,
+    name: 'Dunakeszi Masszázs - Angyali Szalon'
+  });
+}
+
+// ============================================
+// Helper Functions
+// ============================================
+function createResponse(success, message, data) {
+  var response = { success: success, message: message };
+  if (data) { response.data = data; }
+  
+  var output = ContentService.createTextOutput(JSON.stringify(response));
+  output.setMimeType(ContentService.MimeType.JSON);
+  return output;
+}
+
+function getRecurringTypeText(type) {
+  switch(type) {
+    case 'weekly': return 'Minden héten';
+    case 'biweekly': return 'Kéthetente';
+    case 'monthly': return 'Minden hónapban';
+    default: return type;
+  }
+}
+
+// ============================================
+// Test Function
+// ============================================
+function testBooking() {
+  var mockEvent = {
+    postData: {
+      contents: JSON.stringify({
+        name: 'Teszt Vendég',
+        phone: '+36 30 123 4567',
+        email: 'test@example.com',
+        service: 'Frissítő masszázs',
+        date: '2025-03-01',
+        time: '14:00',
+        notes: 'Ez egy teszt foglalás',
+        recurring: true,
+        recurringType: 'weekly',
+        recurringCount: 4
+      })
+    }
+  };
+  
+  var result = doPost(mockEvent);
+  Logger.log('Test result: ' + result.getContent());
+}

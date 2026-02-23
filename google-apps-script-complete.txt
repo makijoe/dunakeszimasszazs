@@ -1,0 +1,1288 @@
+// ============================================
+// Google Apps Script for Dunakeszi Masszázs
+// Complete Booking & Customer Management System
+// With P&L Tracking and Session Package Management
+// ============================================
+
+// Sheet names
+const SHEETS = {
+  CUSTOMERS: 'Customers',
+  SESSION_PACKAGES: 'SessionPackages',
+  BOOKINGS: 'Bookings',
+  FINANCIAL: 'Financial',
+  PNL: 'PnL'
+};
+
+// ============================================
+// Setup - Run this once to create sheets
+// ============================================
+function setupSheets() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  
+  // Create Customers sheet
+  let customersSheet = ss.getSheetByName(SHEETS.CUSTOMERS);
+  if (!customersSheet) {
+    customersSheet = ss.insertSheet(SHEETS.CUSTOMERS);
+    customersSheet.appendRow([
+      'CustomerID', 'Name', 'Email', 'Phone', 'CreatedDate', 
+      'TotalSessionsPurchased', 'TotalSessionsUsed', 'TotalSessionsRemaining',
+      'TotalSpent', 'Notes'
+    ]);
+    customersSheet.getRange(1, 1, 1, 10).setFontWeight('bold');
+  }
+  
+  // Create Session Packages sheet
+  let packagesSheet = ss.getSheetByName(SHEETS.SESSION_PACKAGES);
+  if (!packagesSheet) {
+    packagesSheet = ss.insertSheet(SHEETS.SESSION_PACKAGES);
+    packagesSheet.appendRow([
+      'PackageID', 'CustomerID', 'CustomerName', 'PurchaseDate', 
+      'ServiceType', 'SessionsPurchased', 'SessionsUsed', 'SessionsRemaining',
+      'OriginalPrice', 'DiscountPercent', 'DiscountAmount', 'FinalPrice',
+      'DepositPaid', 'Status', 'Notes'
+    ]);
+    packagesSheet.getRange(1, 1, 1, 15).setFontWeight('bold');
+  }
+  
+  // Create Bookings sheet
+  let bookingsSheet = ss.getSheetByName(SHEETS.BOOKINGS);
+  if (!bookingsSheet) {
+    bookingsSheet = ss.insertSheet(SHEETS.BOOKINGS);
+    bookingsSheet.appendRow([
+      'BookingID', 'CustomerID', 'CustomerName', 'Service', 
+      'Date', 'Time', 'Status', 'PackageID', 'SessionNumber',
+      'CreatedDate', 'Notes'
+    ]);
+    bookingsSheet.getRange(1, 1, 1, 11).setFontWeight('bold');
+  }
+  
+  // Create Financial Transactions sheet
+  let financialSheet = ss.getSheetByName(SHEETS.FINANCIAL);
+  if (!financialSheet) {
+    financialSheet = ss.insertSheet(SHEETS.FINANCIAL);
+    financialSheet.appendRow([
+      'TransactionID', 'Date', 'Type', 'CustomerID', 'CustomerName',
+      'Description', 'Amount', 'PaymentMethod', 'RelatedPackageID', 'Notes'
+    ]);
+    financialSheet.getRange(1, 1, 1, 10).setFontWeight('bold');
+  }
+  
+  // Create P&L Summary sheet
+  let pnlSheet = ss.getSheetByName(SHEETS.PNL);
+  if (!pnlSheet) {
+    pnlSheet = ss.insertSheet(SHEETS.PNL);
+    pnlSheet.appendRow(['Dunakeszi Masszázs - P&L Dashboard']);
+    pnlSheet.appendRow(['']);
+    pnlSheet.appendRow(['Monthly Summary']);
+    pnlSheet.appendRow(['Month', 'Total Income', 'Total Deposits', 'Outstanding', 'Sessions Completed']);
+    pnlSheet.getRange(3, 1, 2, 5).setFontWeight('bold');
+  }
+  
+  return 'Sheets created successfully!';
+}
+
+// ============================================
+// Main POST Handler
+// ============================================
+function doPost(e) {
+  try {
+    var data = {};
+    
+    // Google Apps Script form data is in e.parameter
+    if (e && e.parameter && e.parameter.action) {
+      data = e.parameter;
+    } else if (e && e.postData && e.postData.contents) {
+      // Try to parse as JSON
+      try {
+        data = JSON.parse(e.postData.contents);
+      } catch (jsonError) {
+        // If not JSON, parse as form data string
+        var formData = e.postData.contents;
+        var pairs = formData.split('&');
+        for (var i = 0; i < pairs.length; i++) {
+          var pair = pairs[i].split('=');
+          if (pair.length === 2) {
+            data[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1].replace(/\+/g, ' '));
+          }
+        }
+      }
+    }
+    
+    if (!data.action) {
+      return createHtmlResponse('<h1>Hiba</h1><p>Hiányzó művelet</p>');
+    }
+    
+    switch(data.action) {
+      case 'createBooking':
+        return createBooking(data);
+      case 'purchasePackage':
+        return purchasePackage(data);
+      case 'useSession':
+        return useSession(data);
+      case 'getCustomerProfile':
+        return getCustomerProfile(data);
+      case 'getAllCustomers':
+        return getAllCustomers();
+      case 'getPnL':
+        return getPnL(data);
+      case 'cancel':
+        return handleCancellation(data);
+      case 'change':
+        return handleChange(data);
+      case 'createStripeCheckout':
+        return createStripeCheckout(data);
+      default:
+        return createHtmlResponse('<h1>Hiba</h1><p>Ismeretlen művelet: ' + data.action + '</p>');
+    }
+  } catch (error) {
+    console.error('Error in doPost:', error);
+    return createHtmlResponse('<h1>Hiba</h1><p>' + error.message + '</p>');
+  }
+}
+
+// ============================================
+// GET Handler for Dashboard Data
+// ============================================
+function doGet(e) {
+  try {
+    var action = e.parameter.action;
+    
+    switch(action) {
+      case 'dashboard':
+        return getDashboardData();
+      case 'customer':
+        return getCustomerProfile({ email: e.parameter.email });
+      case 'pnl':
+        return getPnL({ month: e.parameter.month, year: e.parameter.year });
+      default:
+        return createResponse(true, 'API is running', { 
+          endpoints: ['dashboard', 'customer', 'pnl'] 
+        });
+    }
+  } catch (error) {
+    return createResponse(false, 'Hiba: ' + error.message);
+  }
+}
+
+// ============================================
+// Create New Booking with Session Tracking
+// ============================================
+function createBooking(data) {
+  // Validate required fields
+  if (!data.name || !data.email || !data.service || !data.date || !data.time) {
+    return createResponse(false, 'Hiányzó kötelező mezők');
+  }
+  
+  var customer = getOrCreateCustomer(data.name, data.email, data.phone);
+  var customerId = customer.customerId;
+  
+  // Check if customer has active session package
+  var activePackage = findActivePackage(customerId, data.service);
+  
+  var packageId = null;
+  var sessionNumber = null;
+  
+  // If using session from package
+  if (data.usePackage && activePackage) {
+    var useResult = deductSessionFromPackage(activePackage.packageId);
+    if (useResult.success) {
+      packageId = activePackage.packageId;
+      sessionNumber = useResult.sessionNumber;
+    }
+  }
+  
+  // Create calendar event
+  var calendar = CalendarApp.getDefaultCalendar();
+  var dateParts = data.date.split('-');
+  var timeParts = data.time.split(':');
+  var startTime = new Date(
+    parseInt(dateParts[0]), parseInt(dateParts[1]) - 1, parseInt(dateParts[2]),
+    parseInt(timeParts[0]), parseInt(timeParts[1])
+  );
+  var endTime = new Date(startTime.getTime() + (60 * 60 * 1000));
+  
+  // Handle recurring bookings
+  var recurringCount = data.recurring ? (data.recurringCount || 1) : 1;
+  var recurringType = data.recurringType || 'weekly';
+  var createdEvents = [];
+  var recurringDates = [];
+  
+  var discountPercent = calculateDiscount(recurringCount);
+  
+  for (var i = 0; i < recurringCount; i++) {
+    var occurrenceStart = new Date(startTime);
+    var occurrenceEnd = new Date(endTime);
+    
+    if (i > 0) {
+      if (recurringType === 'weekly') {
+        occurrenceStart.setDate(occurrenceStart.getDate() + (i * 7));
+        occurrenceEnd.setDate(occurrenceEnd.getDate() + (i * 7));
+      } else if (recurringType === 'biweekly') {
+        occurrenceStart.setDate(occurrenceStart.getDate() + (i * 14));
+        occurrenceEnd.setDate(occurrenceEnd.getDate() + (i * 14));
+      } else if (recurringType === 'monthly') {
+        occurrenceStart.setMonth(occurrenceStart.getMonth() + i);
+        occurrenceEnd.setMonth(occurrenceEnd.getMonth() + i);
+      }
+    }
+    
+    var dateStr = formatDate(occurrenceStart);
+    recurringDates.push(dateStr);
+    
+    // Create calendar event
+    var eventTitle = 'Masszázs - ' + data.name + ' - ' + data.service;
+    if (recurringCount > 1) eventTitle += ' (' + (i + 1) + '/' + recurringCount + ')';
+    if (packageId) eventTitle += ' [Bérlet]';
+    
+    var event = calendar.createEvent(eventTitle, occurrenceStart, occurrenceEnd, {
+      description: buildEventDescription(data, i + 1, recurringCount, packageId, sessionNumber),
+      location: 'Angyali Szalon, Dunakeszi'
+    });
+    event.setColor(packageId ? '2' : '6'); // Green for package sessions, orange for regular
+    createdEvents.push(event.getId());
+    
+    // Record booking
+    recordBooking(customerId, data.name, data.service, dateStr, data.time, packageId, sessionNumber);
+  }
+  
+  // Send confirmation emails
+  sendBookingConfirmationToEdina(data, recurringCount, recurringType, recurringDates, discountPercent, packageId);
+  sendBookingConfirmationToCustomer(data, recurringCount, recurringType, recurringDates, discountPercent, packageId, customer);
+  
+  return createResponse(true, 'Foglalás sikeresen rögzítve!', {
+    customerId: customerId,
+    eventIds: createdEvents,
+    recurringCount: recurringCount,
+    recurringDates: recurringDates,
+    discountPercent: discountPercent,
+    packageUsed: packageId !== null,
+    customerProfile: customer
+  });
+}
+
+// ============================================
+// Purchase Session Package
+// ============================================
+function purchasePackage(data) {
+  if (!data.customerId && !data.email) {
+    return createResponse(false, 'CustomerID vagy email szükséges');
+  }
+  
+  var customer;
+  if (data.customerId) {
+    customer = getCustomerById(data.customerId);
+  } else {
+    customer = getOrCreateCustomer(data.name, data.email, data.phone);
+  }
+  
+  if (!customer) {
+    return createResponse(false, 'Vásárló nem található');
+  }
+  
+  var packageId = 'PKG' + Date.now();
+  var purchaseDate = new Date();
+  
+  var sessionsPurchased = data.sessions || 12;
+  var originalPrice = data.originalPrice || (sessionsPurchased * 15000);
+  var discountPercent = calculateDiscount(sessionsPurchased);
+  var discountAmount = Math.round(originalPrice * (discountPercent / 100));
+  var finalPrice = originalPrice - discountAmount;
+  var depositPaid = data.depositPaid || Math.round(finalPrice * 0.2);
+  
+  // Record package
+  var packagesSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEETS.SESSION_PACKAGES);
+  packagesSheet.appendRow([
+    packageId,
+    customer.customerId,
+    customer.name,
+    formatDate(purchaseDate),
+    data.service || 'Bármely kezelés',
+    sessionsPurchased,
+    0, // sessions used
+    sessionsPurchased, // sessions remaining
+    originalPrice,
+    discountPercent,
+    discountAmount,
+    finalPrice,
+    depositPaid,
+    'Active',
+    data.notes || ''
+  ]);
+  
+  // Record financial transaction
+  recordTransaction(purchaseDate, 'Deposit', customer.customerId, customer.name, 
+    'Bérlet foglaló (' + sessionsPurchased + ' alkalom)', depositPaid, 'Bank Transfer', packageId);
+  
+  // Update customer totals
+  updateCustomerSessionTotals(customer.customerId);
+  
+  // Send confirmation email
+  sendPackagePurchaseConfirmation(customer, {
+    packageId: packageId,
+    sessions: sessionsPurchased,
+    originalPrice: originalPrice,
+    discountPercent: discountPercent,
+    discountAmount: discountAmount,
+    finalPrice: finalPrice,
+    depositPaid: depositPaid
+  });
+  
+  return createResponse(true, 'Bérlet sikeresen létrehozva!', {
+    packageId: packageId,
+    customerId: customer.customerId,
+    sessionsPurchased: sessionsPurchased,
+    finalPrice: finalPrice,
+    depositPaid: depositPaid
+  });
+}
+
+// ============================================
+// Use/Deduct Session from Package
+// ============================================
+function useSession(data) {
+  if (!data.packageId && !data.customerId) {
+    return createResponse(false, 'PackageID vagy CustomerID szükséges');
+  }
+  
+  var package;
+  if (data.packageId) {
+    package = getPackageById(data.packageId);
+  } else {
+    package = findActivePackage(data.customerId, data.service);
+  }
+  
+  if (!package || package.sessionsRemaining <= 0) {
+    return createResponse(false, 'Nincs aktív bérlet vagy elfogytak az alkalmak');
+  }
+  
+  return deductSessionFromPackage(package.packageId);
+}
+
+function deductSessionFromPackage(packageId) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var packagesSheet = ss.getSheetByName(SHEETS.SESSION_PACKAGES);
+  var data = packagesSheet.getDataRange().getValues();
+  
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][0] === packageId) {
+      var sessionsUsed = data[i][6] + 1;
+      var sessionsRemaining = data[i][5] - sessionsUsed;
+      
+      packagesSheet.getRange(i + 1, 7).setValue(sessionsUsed);
+      packagesSheet.getRange(i + 1, 8).setValue(sessionsRemaining);
+      
+      if (sessionsRemaining <= 0) {
+        packagesSheet.getRange(i + 1, 14).setValue('Completed');
+      }
+      
+      // Update customer totals
+      updateCustomerSessionTotals(data[i][1]);
+      
+      return {
+        success: true,
+        packageId: packageId,
+        sessionNumber: sessionsUsed,
+        sessionsRemaining: sessionsRemaining
+      };
+    }
+  }
+  
+  return { success: false, message: 'Bérlet nem található' };
+}
+
+// ============================================
+// Customer Management
+// ============================================
+function getOrCreateCustomer(name, email, phone) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var customersSheet = ss.getSheetByName(SHEETS.CUSTOMERS);
+  var data = customersSheet.getDataRange().getValues();
+  
+  // Search by email
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][2] === email) {
+      return {
+        customerId: data[i][0],
+        name: data[i][1],
+        email: data[i][2],
+        phone: data[i][3],
+        createdDate: data[i][4],
+        totalSessionsPurchased: data[i][5],
+        totalSessionsUsed: data[i][6],
+        totalSessionsRemaining: data[i][7],
+        totalSpent: data[i][8],
+        notes: data[i][9],
+        isNew: false
+      };
+    }
+  }
+  
+  // Create new customer
+  var customerId = 'CUST' + Date.now();
+  var createdDate = new Date();
+  
+  customersSheet.appendRow([
+    customerId,
+    name,
+    email,
+    phone || '',
+    formatDate(createdDate),
+    0, 0, 0, 0, ''
+  ]);
+  
+  return {
+    customerId: customerId,
+    name: name,
+    email: email,
+    phone: phone || '',
+    createdDate: formatDate(createdDate),
+    totalSessionsPurchased: 0,
+    totalSessionsUsed: 0,
+    totalSessionsRemaining: 0,
+    totalSpent: 0,
+    notes: '',
+    isNew: true
+  };
+}
+
+function getCustomerById(customerId) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var customersSheet = ss.getSheetByName(SHEETS.CUSTOMERS);
+  var data = customersSheet.getDataRange().getValues();
+  
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][0] === customerId) {
+      return {
+        customerId: data[i][0],
+        name: data[i][1],
+        email: data[i][2],
+        phone: data[i][3],
+        createdDate: data[i][4],
+        totalSessionsPurchased: data[i][5],
+        totalSessionsUsed: data[i][6],
+        totalSessionsRemaining: data[i][7],
+        totalSpent: data[i][8],
+        notes: data[i][9]
+      };
+    }
+  }
+  return null;
+}
+
+function getCustomerProfile(data) {
+  if (!data.email && !data.customerId) {
+    return createResponse(false, 'Email vagy CustomerID szükséges');
+  }
+  
+  var customer;
+  if (data.customerId) {
+    customer = getCustomerById(data.customerId);
+  } else {
+    var result = getOrCreateCustomer(data.name || '', data.email, data.phone || '');
+    customer = result;
+  }
+  
+  if (!customer) {
+    return createResponse(false, 'Vásárló nem található');
+  }
+  
+  // Get active packages
+  var packages = getCustomerPackages(customer.customerId);
+  
+  // Get booking history
+  var bookings = getCustomerBookings(customer.customerId);
+  
+  return createResponse(true, 'Profil betöltve', {
+    customer: customer,
+    activePackages: packages.filter(p => p.status === 'Active'),
+    completedPackages: packages.filter(p => p.status === 'Completed'),
+    recentBookings: bookings.slice(0, 10),
+    allBookings: bookings
+  });
+}
+
+function getAllCustomers() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var customersSheet = ss.getSheetByName(SHEETS.CUSTOMERS);
+  var data = customersSheet.getDataRange().getValues();
+  
+  var customers = [];
+  for (var i = 1; i < data.length; i++) {
+    customers.push({
+      customerId: data[i][0],
+      name: data[i][1],
+      email: data[i][2],
+      phone: data[i][3],
+      totalSessionsRemaining: data[i][7],
+      totalSpent: data[i][8]
+    });
+  }
+  
+  return createResponse(true, 'Vásárlók listája', { customers: customers });
+}
+
+function getCustomerPackages(customerId) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var packagesSheet = ss.getSheetByName(SHEETS.SESSION_PACKAGES);
+  var data = packagesSheet.getDataRange().getValues();
+  
+  var packages = [];
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][1] === customerId) {
+      packages.push({
+        packageId: data[i][0],
+        purchaseDate: data[i][3],
+        serviceType: data[i][4],
+        sessionsPurchased: data[i][5],
+        sessionsUsed: data[i][6],
+        sessionsRemaining: data[i][7],
+        originalPrice: data[i][8],
+        discountPercent: data[i][9],
+        discountAmount: data[i][10],
+        finalPrice: data[i][11],
+        depositPaid: data[i][12],
+        status: data[i][13]
+      });
+    }
+  }
+  return packages;
+}
+
+function getCustomerBookings(customerId) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var bookingsSheet = ss.getSheetByName(SHEETS.BOOKINGS);
+  var data = bookingsSheet.getDataRange().getValues();
+  
+  var bookings = [];
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][1] === customerId) {
+      bookings.push({
+        bookingId: data[i][0],
+        service: data[i][3],
+        date: data[i][4],
+        time: data[i][5],
+        status: data[i][6],
+        packageId: data[i][7],
+        sessionNumber: data[i][8]
+      });
+    }
+  }
+  return bookings.reverse(); // Most recent first
+}
+
+function findActivePackage(customerId, serviceType) {
+  var packages = getCustomerPackages(customerId);
+  
+  for (var i = 0; i < packages.length; i++) {
+    if (packages[i].status === 'Active' && packages[i].sessionsRemaining > 0) {
+      // Check if service matches or package is for any service
+      if (packages[i].serviceType === 'Bármely kezelés' || 
+          packages[i].serviceType === serviceType ||
+          !serviceType) {
+        return packages[i];
+      }
+    }
+  }
+  return null;
+}
+
+function getPackageById(packageId) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var packagesSheet = ss.getSheetByName(SHEETS.SESSION_PACKAGES);
+  var data = packagesSheet.getDataRange().getValues();
+  
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][0] === packageId) {
+      return {
+        packageId: data[i][0],
+        customerId: data[i][1],
+        sessionsPurchased: data[i][5],
+        sessionsUsed: data[i][6],
+        sessionsRemaining: data[i][7],
+        status: data[i][13]
+      };
+    }
+  }
+  return null;
+}
+
+function updateCustomerSessionTotals(customerId) {
+  var packages = getCustomerPackages(customerId);
+  
+  var totalPurchased = 0;
+  var totalUsed = 0;
+  var totalSpent = 0;
+  
+  for (var i = 0; i < packages.length; i++) {
+    totalPurchased += packages[i].sessionsPurchased;
+    totalUsed += packages[i].sessionsUsed;
+    totalSpent += packages[i].finalPrice;
+  }
+  
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var customersSheet = ss.getSheetByName(SHEETS.CUSTOMERS);
+  var data = customersSheet.getDataRange().getValues();
+  
+  for (var j = 1; j < data.length; j++) {
+    if (data[j][0] === customerId) {
+      customersSheet.getRange(j + 1, 6).setValue(totalPurchased);
+      customersSheet.getRange(j + 1, 7).setValue(totalUsed);
+      customersSheet.getRange(j + 1, 8).setValue(totalPurchased - totalUsed);
+      customersSheet.getRange(j + 1, 9).setValue(totalSpent);
+      break;
+    }
+  }
+}
+
+// ============================================
+// Stripe Checkout Integration
+// ============================================
+
+// TEST MODE - Use this for testing
+const STRIPE_SECRET_KEY = 'sk_test_51T3eLEFawEzXRruVJYOIs80pKcEIuNm1S9Z5T36babkdg2nBt305WL4nGU2OejuxfB8TPL1wDAE5U4HQ3Ub6krDx00FkYFPPww';
+
+// LIVE MODE - Uncomment this and comment out the test key when going live
+// const STRIPE_SECRET_KEY = 'sk_live_YOUR_LIVE_SECRET_KEY_HERE';
+
+function createStripeCheckout(data) {
+  try {
+    // Validate required fields
+    if (!data.name || !data.email || !data.amount) {
+      return createHtmlResponse('<h1>Hiba</h1><p>Hiányzó kötelező mezők (név, email, összeg)</p>');
+    }
+    
+    var amount = parseInt(data.amount);
+    var serviceName = data.service || 'Masszázs kezelés';
+    var recurringText = data.recurring === 'yes' ? ' (' + data.recurringCount + ' alkalom)' : '';
+    
+    // Build form-encoded payload for Stripe API
+    // Stripe requires application/x-www-form-urlencoded format
+    var payload = 
+      'mode=payment' +
+      '&line_items[0][price_data][currency]=huf' +
+      '&line_items[0][price_data][product_data][name]=' + encodeURIComponent('Foglalási díj - ' + serviceName + recurringText) +
+      '&line_items[0][price_data][product_data][description]=' + encodeURIComponent('Dunakeszi Masszázs - Angyali Szalon foglalási díj') +
+      '&line_items[0][price_data][unit_amount]=' + (amount * 100) + // Stripe uses cents
+      '&line_items[0][quantity]=1' +
+      '&customer_email=' + encodeURIComponent(data.email) +
+      '&success_url=' + encodeURIComponent(data.successUrl || 'https://dunakeszimasszazs.hu/#booking-success') +
+      '&cancel_url=' + encodeURIComponent(data.cancelUrl || 'https://dunakeszimasszazs.hu/#booking-cancel') +
+      '&metadata[customer_name]=' + encodeURIComponent(data.name) +
+      '&metadata[customer_email]=' + encodeURIComponent(data.email) +
+      '&metadata[service]=' + encodeURIComponent(data.service || '') +
+      '&metadata[date]=' + encodeURIComponent(data.date || '') +
+      '&metadata[time]=' + encodeURIComponent(data.time || '') +
+      '&metadata[recurring]=' + encodeURIComponent(data.recurring || 'no') +
+      '&metadata[recurring_count]=' + encodeURIComponent(data.recurringCount || '1');
+    
+    var options = {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + STRIPE_SECRET_KEY,
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      payload: payload,
+      muteHttpExceptions: true // This allows us to see the full error response
+    };
+    
+    var response = UrlFetchApp.fetch('https://api.stripe.com/v1/checkout/sessions', options);
+    var responseCode = response.getResponseCode();
+    var result = JSON.parse(response.getContentText());
+    
+    if (responseCode === 200 && result.url) {
+      // Store pending booking data
+      storePendingBooking(data);
+      
+      // Return HTML that redirects to Stripe
+      return createHtmlResponse(
+        '<!DOCTYPE html>' +
+        '<html>' +
+        '<head>' +
+        '<title>Átirányítás a fizetéshez...</title>' +
+        '<meta http-equiv="refresh" content="0; url=' + result.url + '">' +
+        '<style>' +
+        'body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background: #f5f5f5; }' +
+        '.container { max-width: 500px; margin: 0 auto; background: white; padding: 40px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }' +
+        'h1 { color: #D4854A; }' +
+        'p { color: #666; }' +
+        '.loader { border: 4px solid #f3f3f3; border-top: 4px solid #D4854A; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; }' +
+        '@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }' +
+        'a { color: #D4854A; text-decoration: none; }' +
+        'a:hover { text-decoration: underline; }' +
+        '</style>' +
+        '</head>' +
+        '<body>' +
+        '<div class="container">' +
+        '<h1>Átirányítás a biztonságos fizetéshez...</h1>' +
+        '<div class="loader"></div>' +
+        '<p>Ha nem történik meg automatikusan, <a href="' + result.url + '">kattints ide</a></p>' +
+        '</div>' +
+        '<script>window.location.href = "' + result.url + '";</script>' +
+        '</body>' +
+        '</html>'
+      );
+    } else {
+      // Log the full error for debugging
+      Logger.log('Stripe error: ' + JSON.stringify(result));
+      return createHtmlResponse('<h1>Hiba</h1><p>Hiba a Stripe checkout létrehozásakor: ' + (result.error ? result.error.message : 'Ismeretlen hiba (HTTP ' + responseCode + ')') + '</p>');
+    }
+    
+  } catch (error) {
+    Logger.log('Stripe checkout error: ' + error);
+    return createHtmlResponse('<h1>Hiba</h1><p>Hiba a Stripe checkout során: ' + error.message + '</p>');
+  }
+}
+
+function storePendingBooking(data) {
+  // Store booking data temporarily until payment is confirmed
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var pendingSheet = ss.getSheetByName('PendingBookings');
+  
+  if (!pendingSheet) {
+    pendingSheet = ss.insertSheet('PendingBookings');
+    pendingSheet.appendRow([
+      'Timestamp', 'Name', 'Email', 'Phone', 'Service', 'Date', 'Time', 
+      'Notes', 'Recurring', 'RecurringType', 'RecurringCount', 'Amount', 'Status'
+    ]);
+    pendingSheet.getRange(1, 1, 1, 13).setFontWeight('bold');
+  }
+  
+  pendingSheet.appendRow([
+    new Date(),
+    data.name,
+    data.email,
+    data.phone || '',
+    data.service,
+    data.date,
+    data.time,
+    data.notes || '',
+    data.recurring ? 'yes' : 'no',
+    data.recurringType || '',
+    data.recurringCount || 1,
+    data.amount,
+    'pending'
+  ]);
+}
+
+// ============================================
+// Record Booking
+// ============================================
+function recordBooking(customerId, customerName, service, date, time, packageId, sessionNumber) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var bookingsSheet = ss.getSheetByName(SHEETS.BOOKINGS);
+  
+  var bookingId = 'BK' + Date.now() + Math.random().toString(36).substr(2, 5);
+  
+  bookingsSheet.appendRow([
+    bookingId,
+    customerId,
+    customerName,
+    service,
+    date,
+    time,
+    'Confirmed',
+    packageId || '',
+    sessionNumber || '',
+    formatDate(new Date()),
+    ''
+  ]);
+  
+  return bookingId;
+}
+
+// ============================================
+// Financial Tracking
+// ============================================
+function recordTransaction(date, type, customerId, customerName, description, amount, paymentMethod, relatedId) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var financialSheet = ss.getSheetByName(SHEETS.FINANCIAL);
+  
+  var transactionId = 'TXN' + Date.now();
+  
+  financialSheet.appendRow([
+    transactionId,
+    formatDate(date),
+    type,
+    customerId || '',
+    customerName || '',
+    description,
+    amount,
+    paymentMethod || '',
+    relatedId || '',
+    ''
+  ]);
+  
+  return transactionId;
+}
+
+// ============================================
+// P&L Dashboard
+// ============================================
+function getPnL(data) {
+  var month = data.month || new Date().getMonth() + 1;
+  var year = data.year || new Date().getFullYear();
+  
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var financialSheet = ss.getSheetByName(SHEETS.FINANCIAL);
+  var data = financialSheet.getDataRange().getValues();
+  
+  var monthlyIncome = 0;
+  var monthlyDeposits = 0;
+  var monthlyOutstanding = 0;
+  
+  var transactions = [];
+  
+  for (var i = 1; i < data.length; i++) {
+    var txnDate = new Date(data[i][1]);
+    if (txnDate.getMonth() + 1 === parseInt(month) && txnDate.getFullYear() === parseInt(year)) {
+      var amount = data[i][6];
+      var type = data[i][2];
+      
+      if (type === 'Income' || type === 'Payment') {
+        monthlyIncome += amount;
+      } else if (type === 'Deposit') {
+        monthlyDeposits += amount;
+      }
+      
+      transactions.push({
+        date: data[i][1],
+        type: type,
+        customer: data[i][4],
+        description: data[i][5],
+        amount: amount
+      });
+    }
+  }
+  
+  // Get session stats
+  var bookingsSheet = ss.getSheetByName(SHEETS.BOOKINGS);
+  var bookingsData = bookingsSheet.getDataRange().getValues();
+  var sessionsCompleted = 0;
+  
+  for (var j = 1; j < bookingsData.length; j++) {
+    var bookingDate = new Date(bookingsData[j][4]);
+    if (bookingDate.getMonth() + 1 === parseInt(month) && 
+        bookingDate.getFullYear() === parseInt(year) &&
+        bookingsData[j][6] === 'Confirmed') {
+      sessionsCompleted++;
+    }
+  }
+  
+  return createResponse(true, 'P&L adatok', {
+    month: month,
+    year: year,
+    totalIncome: monthlyIncome,
+    totalDeposits: monthlyDeposits,
+    outstanding: monthlyIncome - monthlyDeposits,
+    sessionsCompleted: sessionsCompleted,
+    transactions: transactions
+  });
+}
+
+function getDashboardData() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  
+  // Get customer count
+  var customersSheet = ss.getSheetByName(SHEETS.CUSTOMERS);
+  var customerCount = customersSheet.getLastRow() - 1;
+  
+  // Get active packages count
+  var packagesSheet = ss.getSheetByName(SHEETS.SESSION_PACKAGES);
+  var packagesData = packagesSheet.getDataRange().getValues();
+  var activePackages = 0;
+  var totalSessionsRemaining = 0;
+  
+  for (var i = 1; i < packagesData.length; i++) {
+    if (packagesData[i][13] === 'Active') {
+      activePackages++;
+      totalSessionsRemaining += packagesData[i][7];
+    }
+  }
+  
+  // Get today's bookings
+  var bookingsSheet = ss.getSheetByName(SHEETS.BOOKINGS);
+  var bookingsData = bookingsSheet.getDataRange().getValues();
+  var today = formatDate(new Date());
+  var todaysBookings = [];
+  
+  for (var j = 1; j < bookingsData.length; j++) {
+    if (bookingsData[j][4] === today) {
+      todaysBookings.push({
+        customer: bookingsData[j][2],
+        service: bookingsData[j][3],
+        time: bookingsData[j][5]
+      });
+    }
+  }
+  
+  // Get current month P&L
+  var pnlData = getPnL({ month: new Date().getMonth() + 1, year: new Date().getFullYear() });
+  
+  return createResponse(true, 'Dashboard adatok', {
+    customerCount: customerCount,
+    activePackages: activePackages,
+    totalSessionsRemaining: totalSessionsRemaining,
+    todaysBookings: todaysBookings,
+    monthlyPnL: pnlData.data
+  });
+}
+
+// ============================================
+// Cancellation & Change Handlers
+// ============================================
+function handleCancellation(data) {
+  if (!data.clientName || !data.clientEmail || !data.appointmentDate || !data.appointmentTime) {
+    return createResponse(false, 'Hiányzó kötelező mezők');
+  }
+  
+  // Send cancellation email to customer
+  var subject = 'Időpont lemondva - Dunakeszi Masszázs';
+  var body = 'Kedves ' + data.clientName + '!\n\n' +
+             'Értesítjük, hogy az alábbi időpontod lemondásra került:\n\n' +
+             '═══════════════════════════════════════\n' +
+             '💆 Kezelés: ' + (data.service || 'Nincs megadva') + '\n' +
+             '📅 Dátum: ' + data.appointmentDate + '\n' +
+             '⏰ Időpont: ' + data.appointmentTime + '\n' +
+             '═══════════════════════════════════════\n\n';
+  
+  if (data.reason) {
+    body += 'Indoklás: ' + data.reason + '\n\n';
+  }
+  
+  body += 'Ha szeretnél új időpontot foglalni, kérjük, látogass el a weboldalunkra vagy hívj telefonon.\n\n' +
+          '📞 +36 30 487 7883\n' +
+          '🌐 https://dunakeszimasszazs.hu\n\n' +
+          'Üdvözlettel,\n' +
+          'Makra Edina\n' +
+          'Dunakeszi Masszázs - Angyali Szalon';
+  
+  MailApp.sendEmail({
+    to: data.clientEmail,
+    subject: subject,
+    body: body,
+    name: 'Dunakeszi Masszázs - Angyali Szalon'
+  });
+  
+  // Send notification to Edina
+  var edinaSubject = 'Időpont lemondva - ' + data.clientName;
+  var edinaBody = 'Kedves Edina!\n\n' +
+                  'Egy időpont lemondásra került:\n\n' +
+                  '═══════════════════════════════════════\n' +
+                  '👤 Név: ' + data.clientName + '\n' +
+                  '📧 Email: ' + data.clientEmail + '\n' +
+                  '💆 Kezelés: ' + (data.service || 'Nincs megadva') + '\n' +
+                  '📅 Dátum: ' + data.appointmentDate + '\n' +
+                  '⏰ Időpont: ' + data.appointmentTime + '\n' +
+                  '═══════════════════════════════════════\n\n';
+  
+  if (data.reason) {
+    edinaBody += 'Indoklás: ' + data.reason + '\n\n';
+  }
+  
+  edinaBody += 'Ne felejtsd el törölni az időpontot a Google Naptárból!';
+  
+  MailApp.sendEmail({
+    to: 'dunakeszimasszor@gmail.com',
+    subject: edinaSubject,
+    body: edinaBody,
+    name: 'Dunakeszi Masszázs - Admin'
+  });
+  
+  return createResponse(true, 'Lemondási értesítés elküldve!');
+}
+
+function handleChange(data) {
+  if (!data.clientName || !data.clientEmail || !data.appointmentDate || !data.appointmentTime || !data.newDate || !data.newTime) {
+    return createResponse(false, 'Hiányzó kötelező mezők');
+  }
+  
+  // Send change email to customer
+  var subject = 'Időpont módosítva - Dunakeszi Masszázs';
+  var body = 'Kedves ' + data.clientName + '!\n\n' +
+             'Értesítjük, hogy az időpontod módosításra került:\n\n' +
+             '═══════════════════════════════════════\n' +
+             '❌ EREDETI IDŐPONT:\n' +
+             '📅 Dátum: ' + data.appointmentDate + '\n' +
+             '⏰ Időpont: ' + data.appointmentTime + '\n\n' +
+             '✅ ÚJ IDŐPONT:\n' +
+             '📅 Dátum: ' + data.newDate + '\n' +
+             '⏰ Időpont: ' + data.newTime + '\n' +
+             '💆 Kezelés: ' + (data.service || 'Nincs megadva') + '\n' +
+             '═══════════════════════════════════════\n\n' +
+             '📍 CÍM ÉS MEGKÖZELÍTÉS:\n' +
+             'Dunakeszi, Kolonics György utca 2/B, 2120\n' +
+             'Kapucsengő: 1/43\n\n' +
+             'Ha kérdésed van, hívj bátran:\n' +
+             '📞 +36 30 487 7883\n\n' +
+             'Várunk szeretettel az Angyali Szalonban!\n\n' +
+             'Üdvözlettel,\n' +
+             'Makra Edina\n' +
+             'Dunakeszi Masszázs - Angyali Szalon';
+  
+  MailApp.sendEmail({
+    to: data.clientEmail,
+    subject: subject,
+    body: body,
+    name: 'Dunakeszi Masszázs - Angyali Szalon'
+  });
+  
+  // Send notification to Edina
+  var edinaSubject = 'Időpont módosítva - ' + data.clientName;
+  var edinaBody = 'Kedves Edina!\n\n' +
+                  'Egy időpont módosításra került:\n\n' +
+                  '═══════════════════════════════════════\n' +
+                  '👤 Név: ' + data.clientName + '\n' +
+                  '📧 Email: ' + data.clientEmail + '\n' +
+                  '💆 Kezelés: ' + (data.service || 'Nincs megadva') + '\n\n' +
+                  '❌ EREDETI:\n' +
+                  '📅 ' + data.appointmentDate + ' ' + data.appointmentTime + '\n\n' +
+                  '✅ ÚJ:\n' +
+                  '📅 ' + data.newDate + ' ' + data.newTime + '\n' +
+                  '═══════════════════════════════════════\n\n' +
+                  'Ne felejtsd el frissíteni az időpontot a Google Naptárból!';
+  
+  MailApp.sendEmail({
+    to: 'dunakeszimasszor@gmail.com',
+    subject: edinaSubject,
+    body: edinaBody,
+    name: 'Dunakeszi Masszázs - Admin'
+  });
+  
+  return createResponse(true, 'Módosítási értesítés elküldve!');
+}
+
+// ============================================
+// Email Functions
+// ============================================
+function sendBookingConfirmationToEdina(data, recurringCount, recurringType, recurringDates, discountPercent, packageId) {
+  var edinaSubject = recurringCount > 1 
+    ? 'Új ismétlődő foglalás - ' + data.name + ' (' + recurringCount + ' alkalom)'
+    : 'Új időpontfoglalás - ' + data.name;
+  
+  var edinaBody = 'Kedves Edina!\n\n';
+  
+  if (recurringCount > 1) {
+    edinaBody += 'Új ISMÉTLŐDŐ foglalás érkezett a weboldalról:\n\n';
+    edinaBody += '═══════════════════════════════════════\n';
+    edinaBody += '👤 NÉV: ' + data.name + '\n';
+    edinaBody += '📞 TELEFON: ' + (data.phone || 'Nincs megadva') + '\n';
+    edinaBody += '📧 EMAIL: ' + data.email + '\n';
+    edinaBody += '💆 KEZELÉS: ' + data.service + '\n';
+    edinaBody += '📅 ELSŐ DÁTUM: ' + data.date + '\n';
+    edinaBody += '⏰ IDŐPONT: ' + data.time + '\n';
+    edinaBody += '🔄 ISMÉTLŐDÉS: ' + getRecurringTypeText(recurringType) + '\n';
+    edinaBody += '📊 ALKALMAK SZÁMA: ' + recurringCount + '\n';
+    if (discountPercent > 0) {
+      edinaBody += '💰 KEDVEZMÉNY: ' + discountPercent + '%\n';
+    }
+    if (packageId) {
+      edinaBody += '🎫 BÉRLET: ' + packageId + '\n';
+    }
+    edinaBody += '📋 ÖSSZES DÁTUM:\n';
+    for (var j = 0; j < recurringDates.length; j++) {
+      edinaBody += '   ' + (j + 1) + '. ' + recurringDates[j] + '\n';
+    }
+    edinaBody += '═══════════════════════════════════════\n\n';
+  } else {
+    edinaBody += 'Új időpontfoglalás érkezett a weboldalról:\n\n';
+    edinaBody += '═══════════════════════════════════════\n';
+    edinaBody += '👤 NÉV: ' + data.name + '\n';
+    edinaBody += '📞 TELEFON: ' + (data.phone || 'Nincs megadva') + '\n';
+    edinaBody += '📧 EMAIL: ' + data.email + '\n';
+    edinaBody += '💆 KEZELÉS: ' + data.service + '\n';
+    edinaBody += '📅 DÁTUM: ' + data.date + '\n';
+    edinaBody += '⏰ IDŐPONT: ' + data.time + '\n';
+    if (packageId) {
+      edinaBody += '🎫 BÉRLET: ' + packageId + '\n';
+    }
+    edinaBody += '═══════════════════════════════════════\n\n';
+  }
+  
+  edinaBody += '📝 MEGJEGYZÉS: ' + (data.notes || 'Nincs megadva') + '\n\n';
+  edinaBody += 'A foglalás(ok) automatikusan hozzáadva lettek a Google Naptáradhoz.\n\n';
+  edinaBody += 'Üdvözlettel,\n';
+  edinaBody += 'Dunakeszi Masszázs Weboldal';
+  
+  MailApp.sendEmail({
+    to: 'dunakeszimasszor@gmail.com',
+    subject: edinaSubject,
+    body: edinaBody,
+    name: 'Dunakeszi Masszázs - Foglalási Rendszer'
+  });
+}
+
+function sendBookingConfirmationToCustomer(data, recurringCount, recurringType, recurringDates, discountPercent, packageId, customer) {
+  var customerSubject = recurringCount > 1
+    ? 'Ismétlődő időpontfoglalás visszaigazolás - Dunakeszi Masszázs'
+    : 'Időpontfoglalás visszaigazolás - Dunakeszi Masszázs';
+  
+  var customerBody = 'Kedves ' + data.name + '!\n\n';
+  customerBody += 'Köszönjük az időpontfoglalásodat!\n\n';
+  
+  if (recurringCount > 1) {
+    customerBody += '═══════════════════════════════════════\n';
+    customerBody += '💆 KEZELÉS: ' + data.service + '\n';
+    customerBody += '📅 ELSŐ DÁTUM: ' + data.date + '\n';
+    customerBody += '⏰ IDŐPONT: ' + data.time + '\n';
+    customerBody += '🔄 ISMÉTLŐDÉS: ' + getRecurringTypeText(recurringType) + '\n';
+    customerBody += '📊 ALKALMAK SZÁMA: ' + recurringCount + '\n';
+    if (discountPercent > 0) {
+      customerBody += '💰 KEDVEZMÉNY: ' + discountPercent + '%\n';
+    }
+    if (packageId) {
+      customerBody += '🎫 BÉRLETBŐL FELHASZNÁLVA\n';
+    }
+    customerBody += '═══════════════════════════════════════\n\n';
+    customerBody += '📋 AZ ÖSSZES FOGLALT IDŐPONT:\n';
+    for (var k = 0; k < recurringDates.length; k++) {
+      customerBody += '   ' + (k + 1) + '. ' + recurringDates[k] + ' ' + data.time + '\n';
+    }
+    customerBody += '\n';
+  } else {
+    customerBody += '═══════════════════════════════════════\n';
+    customerBody += '💆 KEZELÉS: ' + data.service + '\n';
+    customerBody += '📅 DÁTUM: ' + data.date + '\n';
+    customerBody += '⏰ IDŐPONT: ' + data.time + '\n';
+    if (packageId) {
+      customerBody += '🎫 BÉRLETBŐL FELHASZNÁLVA\n';
+    }
+    customerBody += '═══════════════════════════════════════\n\n';
+  }
+  
+  // Add remaining sessions info if customer has packages
+  if (customer.totalSessionsRemaining > 0) {
+    customerBody += '🎫 BÉRLET EGYENLEG:\n';
+    customerBody += 'Hátralévő alkalmak: ' + customer.totalSessionsRemaining + '\n\n';
+  }
+  
+  customerBody += '📍 CÍM ÉS MEGKÖZELÍTÉS:\n';
+  customerBody += 'Dunakeszi, Kolonics György utca 2/B, 2120\n';
+  customerBody += 'Kapucsengő: 1/43\n\n';
+  customerBody += 'A kapunál a 1/43-as kapucsengőt kell megnyomni.\n\n';
+  
+  if (recurringCount > 1) {
+    customerBody += '⚠️ FONTOS INFORMÁCIÓ ISMÉTLŐDŐ FOGLALÁSHOZ:\n';
+    customerBody += '• Minden alkalom előtt 24 órával emlékeztetőt küldünk\n';
+    customerBody += '• Ha bármelyik alkalomra nem tudsz eljönni, kérjük, 24 órával előtte jelezd\n';
+    customerBody += '• Az időpontok módosíthatók 24 óra előtt ingyenesen\n';
+    if (discountPercent > 0) {
+      customerBody += '• Kedvezmény: ' + discountPercent + '% a több alkalmas foglalásért\n';
+    }
+    customerBody += '\n';
+  }
+  
+  customerBody += 'Ha bármilyen kérdésed van, hívj bátran:\n';
+  customerBody += '📞 +36 30 487 7883\n\n';
+  customerBody += 'Várunk szeretettel az Angyali Szalonban!\n\n';
+  customerBody += 'Üdvözlettel,\n';
+  customerBody += 'Makra Edina\n';
+  customerBody += 'Dunakeszi Masszázs - Angyali Szalon\n';
+  customerBody += '📞 +36 30 487 7883\n';
+  customerBody += '📧 dunakeszimasszor@gmail.com\n';
+  customerBody += '🌐 https://dunakeszimasszazs.hu';
+  
+  MailApp.sendEmail({
+    to: data.email,
+    subject: customerSubject,
+    body: customerBody,
+    name: 'Dunakeszi Masszázs - Angyali Szalon'
+  });
+}
+
+function sendPackagePurchaseConfirmation(customer, package) {
+  var subject = 'Bérlet vásárlás visszaigazolás - Dunakeszi Masszázs';
+  
+  var body = 'Kedves ' + customer.name + '!\n\n';
+  body += 'Köszönjük a bérlet vásárlásodat!\n\n';
+  body += '═══════════════════════════════════════\n';
+  body += '🎫 BÉRLET RÉSZLETEI:\n';
+  body += 'Bérlet száma: ' + package.packageId + '\n';
+  body += 'Alkalmak száma: ' + package.sessions + '\n';
+  body += 'Eredeti ár: ' + package.originalPrice.toLocaleString() + ' Ft\n';
+  if (package.discountPercent > 0) {
+    body += 'Kedvezmény: ' + package.discountPercent + '% (-' + package.discountAmount.toLocaleString() + ' Ft)\n';
+  }
+  body += 'Fizetendő: ' + package.finalPrice.toLocaleString() + ' Ft\n';
+  body += 'Foglaló befizetve: ' + package.depositPaid.toLocaleString() + ' Ft\n';
+  body += 'Hátralék: ' + (package.finalPrice - package.depositPaid).toLocaleString() + ' Ft\n';
+  body += '═══════════════════════════════════════\n\n';
+  
+  body += 'Hogyan használhatod a bérletet:\n';
+  body += '• Foglalj időpontot a weboldalon vagy telefonon\n';
+  body += '• A rendszer automatikusan levon egy alkalmat a bérletedből\n';
+  body += '• A hátralékot az első kezelésnél kell kifizetni\n\n';
+  
+  body += 'Bérlet egyenleged: ' + (customer.totalSessionsRemaining + package.sessions) + ' alkalom\n\n';
+  
+  body += 'Ha kérdésed van, hívj bátran:\n';
+  body += '📞 +36 30 487 7883\n\n';
+  body += 'Üdvözlettel,\n';
+  body += 'Makra Edina\n';
+  body += 'Dunakeszi Masszázs - Angyali Szalon';
+  
+  MailApp.sendEmail({
+    to: customer.email,
+    subject: subject,
+    body: body,
+    name: 'Dunakeszi Masszázs - Angyali Szalon'
+  });
+}
+
+// ============================================
+// Helper Functions
+// ============================================
+function createResponse(success, message, data) {
+  var response = { success: success, message: message };
+  if (data) { response.data = data; }
+  
+  var output = ContentService.createTextOutput(JSON.stringify(response));
+  output.setMimeType(ContentService.MimeType.JSON);
+  return output;
+}
+
+function createHtmlResponse(html) {
+  var output = ContentService.createTextOutput(html);
+  output.setMimeType(ContentService.MimeType.HTML);
+  return output;
+}
+
+function formatDate(date) {
+  return date.getFullYear() + '-' + 
+         String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+         String(date.getDate()).padStart(2, '0');
+}
+
+function getRecurringTypeText(type) {
+  switch(type) {
+    case 'weekly': return 'Minden héten';
+    case 'biweekly': return 'Kéthetente';
+    case 'monthly': return 'Minden hónapban';
+    default: return type;
+  }
+}
+
+function calculateDiscount(sessionCount) {
+  if (sessionCount >= 6) return 15;
+  if (sessionCount >= 4) return 10;
+  if (sessionCount >= 2) return 5;
+  return 0;
+}
+
+function buildEventDescription(data, sessionNum, totalSessions, packageId, sessionNumber) {
+  var desc = 'Kezelés: ' + data.service + '\n' +
+             'Név: ' + data.name + '\n' +
+             'Telefon: ' + (data.phone || 'Nincs megadva') + '\n' +
+             'Email: ' + data.email + '\n' +
+             'Megjegyzés: ' + (data.notes || 'Nincs megadva') + '\n';
+  
+  if (totalSessions > 1) {
+    desc += 'Alkalom: ' + sessionNum + '/' + totalSessions + '\n';
+  }
+  
+  if (packageId) {
+    desc += 'Bérlet: ' + packageId + '\n';
+    desc += 'Bérlet alkalmak: ' + sessionNumber + '\n';
+  }
+  
+  return desc;
+}
