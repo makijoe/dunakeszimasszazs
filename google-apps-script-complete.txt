@@ -168,6 +168,10 @@ function doGet(e) {
         return getCustomerProfile({ email: e.parameter.email });
       case 'pnl':
         return getPnL({ month: e.parameter.month, year: e.parameter.year });
+      case 'allBookings':
+        return getAllBookings_();
+      case 'pendingBookings':
+        return getPendingBookings_();
       default:
         return createResponse(true, 'API is running', { 
           endpoints: ['dashboard', 'customer', 'pnl'] 
@@ -857,6 +861,56 @@ function storePendingBooking(data) {
     data.amount,
     'pending'
   ]);
+}
+
+// ============================================
+// Get All Bookings & Pending Bookings (for Admin Panel)
+// ============================================
+function getAllBookings_() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var bookingsSheet = ss.getSheetByName(SHEETS.BOOKINGS);
+  var data = bookingsSheet.getDataRange().getValues();
+  var bookings = [];
+  for (var i = 1; i < data.length; i++) {
+    bookings.push({
+      bookingId: data[i][0],
+      customerId: data[i][1],
+      customerName: data[i][2],
+      service: data[i][3],
+      date: data[i][4],
+      time: data[i][5],
+      status: data[i][6],
+      packageId: data[i][7],
+      sessionNumber: data[i][8],
+      createdDate: data[i][9]
+    });
+  }
+  return createResponse(true, 'Összes foglálás', { bookings: bookings.reverse() });
+}
+
+function getPendingBookings_() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var pendingSheet = ss.getSheetByName('PendingBookings');
+  if (!pendingSheet) return createResponse(true, 'Nincs függő foglálás', { bookings: [] });
+  var data = pendingSheet.getDataRange().getValues();
+  var bookings = [];
+  for (var i = 1; i < data.length; i++) {
+    bookings.push({
+      timestamp: data[i][0],
+      name: data[i][1],
+      email: data[i][2],
+      phone: data[i][3],
+      service: data[i][4],
+      date: data[i][5],
+      time: data[i][6],
+      notes: data[i][7],
+      recurring: data[i][8],
+      recurringCount: data[i][10],
+      amount: data[i][11],
+      status: data[i][12]
+    });
+  }
+  return createResponse(true, 'Függő foglálások', { bookings: bookings.reverse() });
 }
 
 // ============================================

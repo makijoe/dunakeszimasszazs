@@ -2313,7 +2313,7 @@ function FooterSection() {
 function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'customers' | 'packages' | 'pnl' | 'cancel' | 'notify'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'bookings' | 'pending' | 'customers' | 'packages' | 'pnl' | 'cancel' | 'notify'>('dashboard');
   const [formData, setFormData] = useState({
     clientName: '',
     clientEmail: '',
@@ -2341,6 +2341,8 @@ function AdminPage() {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [searchEmail, setSearchEmail] = useState('');
   const [customerProfile, setCustomerProfile] = useState<any>(null);
+  const [allBookings, setAllBookings] = useState<any[]>([]);
+  const [pendingBookings, setPendingBookings] = useState<any[]>([]);
 
   const ADMIN_PASSWORD = 'Edina2025!';
 
@@ -2376,6 +2378,26 @@ function AdminPage() {
       }
     } catch (error) {
       console.error('Error loading P&L:', error);
+    }
+  };
+
+  const loadAllBookings = async () => {
+    try {
+      const response = await fetch(`${SCRIPT_URL}?action=allBookings`);
+      const data = await response.json();
+      if (data.success) setAllBookings(data.data.bookings || []);
+    } catch (error) {
+      console.error('Error loading bookings:', error);
+    }
+  };
+
+  const loadPendingBookings = async () => {
+    try {
+      const response = await fetch(`${SCRIPT_URL}?action=pendingBookings`);
+      const data = await response.json();
+      if (data.success) setPendingBookings(data.data.bookings || []);
+    } catch (error) {
+      console.error('Error loading pending bookings:', error);
     }
   };
 
@@ -2616,6 +2638,8 @@ function AdminPage() {
           <nav className="flex overflow-x-auto">
             {[
               { id: 'dashboard', label: 'Áttekintés', icon: '📊' },
+              { id: 'bookings', label: 'Foglálások', icon: '📅' },
+              { id: 'pending', label: 'Függőben', icon: '⏳' },
               { id: 'customers', label: 'Vásárlók', icon: '👥' },
               { id: 'packages', label: 'Bérletek', icon: '🎫' },
               { id: 'pnl', label: 'P&L', icon: '💰' },
@@ -2624,7 +2648,11 @@ function AdminPage() {
             ].map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
+                onClick={() => {
+                  setActiveTab(tab.id as any);
+                  if (tab.id === 'bookings') loadAllBookings();
+                  if (tab.id === 'pending') loadPendingBookings();
+                }}
                 className={`flex items-center gap-2 px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === tab.id
                     ? 'text-[#D4854A] border-b-2 border-[#D4854A]'
                     : 'text-[#8B7355] hover:text-[#4A3F35]'
@@ -2747,7 +2775,93 @@ function AdminPage() {
           </div>
         )}
 
-        {/* CUSTOMERS TAB */}
+        {/* BOOKINGS TAB */}
+        {activeTab === 'bookings' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-[#4A3F35]">Összes foglalás</h2>
+              <button onClick={loadAllBookings} className="px-4 py-2 bg-[#D4854A] text-white rounded-lg text-sm hover:bg-[#B87333]">Frissítés</button>
+            </div>
+            <div className="bg-white rounded-2xl shadow-warm overflow-hidden">
+              {allBookings.length === 0 ? (
+                <div className="p-8 text-center text-[#8B7355]">Még nincs foglalás rögzítve.</div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-[#F9F1EA]">
+                      <tr>
+                        {['Név', 'Kezelés', 'Dátum', 'Időpont', 'Státusz', 'Létrehozva'].map(h => (
+                          <th key={h} className="px-4 py-3 text-left text-[#4A3F35] font-semibold">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {allBookings.map((b: any, i: number) => (
+                        <tr key={i} className="border-t border-[#F5E6D8] hover:bg-[#FFFBF7]">
+                          <td className="px-4 py-3 font-medium text-[#4A3F35]">{b.customerName}</td>
+                          <td className="px-4 py-3 text-[#8B7355]">{b.service}</td>
+                          <td className="px-4 py-3 text-[#8B7355]">{b.date}</td>
+                          <td className="px-4 py-3 text-[#8B7355]">{b.time}</td>
+                          <td className="px-4 py-3">
+                            <span className="px-2 py-1 bg-[#8B9A7C]/15 text-[#4A7C59] rounded-full text-xs font-medium">{b.status}</span>
+                          </td>
+                          <td className="px-4 py-3 text-[#8B7355]">{b.createdDate}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* PENDING TAB */}
+        {activeTab === 'pending' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-[#4A3F35]">Függőben lévő foglalások</h2>
+              <button onClick={loadPendingBookings} className="px-4 py-2 bg-[#D4854A] text-white rounded-lg text-sm hover:bg-[#B87333]">Frissítés</button>
+            </div>
+            <p className="text-sm text-[#8B7355]">Ezek a Stripe-on keresztül elindított, de még meg nem erősített (vagy meg nem fizetett) foglalások.</p>
+            <div className="bg-white rounded-2xl shadow-warm overflow-hidden">
+              {pendingBookings.length === 0 ? (
+                <div className="p-8 text-center text-[#8B7355]">Nincs függőben lévő foglalás.</div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-[#F9F1EA]">
+                      <tr>
+                        {['Név', 'Email', 'Kezelés', 'Dátum', 'Időpont', 'Összeg', 'Státusz', 'Időbélyeg'].map(h => (
+                          <th key={h} className="px-4 py-3 text-left text-[#4A3F35] font-semibold">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pendingBookings.map((b: any, i: number) => (
+                        <tr key={i} className="border-t border-[#F5E6D8] hover:bg-[#FFFBF7]">
+                          <td className="px-4 py-3 font-medium text-[#4A3F35]">{b.name}</td>
+                          <td className="px-4 py-3 text-[#8B7355]">{b.email}</td>
+                          <td className="px-4 py-3 text-[#8B7355]">{b.service}</td>
+                          <td className="px-4 py-3 text-[#8B7355]">{b.date}</td>
+                          <td className="px-4 py-3 text-[#8B7355]">{b.time}</td>
+                          <td className="px-4 py-3 text-[#8B7355]">{b.amount ? Number(b.amount).toLocaleString() + ' Ft' : '-'}</td>
+                          <td className="px-4 py-3">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              b.status === 'paid' ? 'bg-[#8B9A7C]/15 text-[#4A7C59]' : 'bg-orange-100 text-orange-700'
+                            }`}>{b.status === 'paid' ? '✓ Fizetve' : '⏳ Függőben'}</span>
+                          </td>
+                          <td className="px-4 py-3 text-[#8B7355] text-xs">{b.timestamp ? new Date(b.timestamp).toLocaleString('hu-HU') : '-'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {activeTab === 'customers' && (
           <div className="space-y-6">
             <h2 className="text-2xl font-bold text-[#4A3F35]">Vásárló keresése</h2>
