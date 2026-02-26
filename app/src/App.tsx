@@ -2482,7 +2482,7 @@ function AdminPage() {
     setIsSubmitting(true);
 
     try {
-      await fetch(SCRIPT_URL, {
+      const response = await fetch(SCRIPT_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -2495,6 +2495,8 @@ function AdminPage() {
           reason: formData.reason
         })
       });
+      const result = await response.json();
+      if (!result.success) throw new Error(result.message || 'Hiba a lemondás küldésekor');
 
       toast.success('Lemondási értesítés elküldve!');
       setFormData({
@@ -2519,7 +2521,7 @@ function AdminPage() {
     setIsSubmitting(true);
 
     try {
-      await fetch(SCRIPT_URL, {
+      const response = await fetch(SCRIPT_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -2533,6 +2535,8 @@ function AdminPage() {
           newTime: formData.newTime
         })
       });
+      const result = await response.json();
+      if (!result.success) throw new Error(result.message || 'Hiba a módosítás küldésekor');
 
       toast.success('Módosítási értesítés elküldve!');
       setFormData({

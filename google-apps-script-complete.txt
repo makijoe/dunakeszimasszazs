@@ -1284,8 +1284,8 @@ function handleChange(data) {
 // ============================================
 function sendBookingConfirmationToEdina(data, recurringCount, recurringType, recurringDates, discountPercent, packageId) {
   var edinaSubject = recurringCount > 1 
-    ? 'Új ismétlődő foglalás - ' + data.name + ' (' + recurringCount + ' alkalom)'
-    : 'Új időpontfoglalás - ' + data.name;
+    ? 'Új ismétlődő foglalás - Angyali Szalon (' + data.name + ', ' + recurringCount + ' alkalom)'
+    : 'Új időpontfoglalás - Angyali Szalon (' + data.name + ')';
   
   var edinaBody = 'Kedves Edina!\n\n';
   
