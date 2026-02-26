@@ -172,6 +172,8 @@ function doGet(e) {
         return getAllBookings_();
       case 'pendingBookings':
         return getPendingBookings_();
+      case 'allPackages':
+        return getAllPackages_();
       default:
         return createResponse(true, 'API is running', { 
           endpoints: ['dashboard', 'customer', 'pnl'] 
@@ -975,6 +977,39 @@ function recordTransaction(date, type, customerId, customerName, description, am
 }
 
 // ============================================
+// Get All Packages
+// ============================================
+function getAllPackages_() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var packagesSheet = ss.getSheetByName(SHEETS.SESSION_PACKAGES);
+  if (!packagesSheet) return createResponse(false, 'SessionPackages lap nem található');
+  var data = packagesSheet.getDataRange().getValues();
+  var packages = [];
+  for (var i = 1; i < data.length; i++) {
+    if (!data[i][0]) continue; // skip empty rows
+    packages.push({
+      packageId: data[i][0],
+      customerId: data[i][1],
+      customerName: data[i][2],
+      purchaseDate: data[i][3],
+      serviceType: data[i][4],
+      sessionsPurchased: data[i][5],
+      sessionsUsed: data[i][6],
+      sessionsRemaining: data[i][7],
+      originalPrice: data[i][8],
+      discountPercent: data[i][9],
+      discountAmount: data[i][10],
+      finalPrice: data[i][11],
+      depositPaid: data[i][12],
+      status: data[i][13],
+      notes: data[i][14] || ''
+    });
+  }
+  packages.reverse();
+  return createResponse(true, 'Bérletek listája', { packages: packages });
+}
+
+// ============================================
 // P&L Dashboard
 // ============================================
 // Internal helper – returns a plain object (no ContentService wrapping).
@@ -986,6 +1021,7 @@ function getPnLData_(month, year) {
   
   var monthlyIncome = 0;
   var monthlyDeposits = 0;
+  var estimatedFullRevenue = 0;
   
   var transactions = [];
   
@@ -997,6 +1033,12 @@ function getPnLData_(month, year) {
       
       if (type === 'Income' || type === 'Payment') {
         monthlyIncome += amount;
+        // Payment = 20% deposit → estimate full session value
+        if (type === 'Payment') {
+          estimatedFullRevenue += amount * 5;
+        } else {
+          estimatedFullRevenue += amount;
+        }
       } else if (type === 'Deposit') {
         monthlyDeposits += amount;
       }
@@ -1030,6 +1072,7 @@ function getPnLData_(month, year) {
     year: year,
     totalIncome: monthlyIncome,
     totalDeposits: monthlyDeposits,
+    estimatedFullRevenue: estimatedFullRevenue,
     outstanding: monthlyIncome - monthlyDeposits,
     sessionsCompleted: sessionsCompleted,
     transactions: transactions
@@ -1049,6 +1092,7 @@ function getPnLDataRange_(startDateStr, endDateStr) {
 
   var totalIncome = 0;
   var totalDeposits = 0;
+  var estimatedFullRevenue = 0;
   var transactions = [];
 
   for (var i = 1; i < txnData.length; i++) {
@@ -1058,6 +1102,11 @@ function getPnLDataRange_(startDateStr, endDateStr) {
       var type = txnData[i][2];
       if (type === 'Income' || type === 'Payment') {
         totalIncome += amount;
+        if (type === 'Payment') {
+          estimatedFullRevenue += amount * 5;
+        } else {
+          estimatedFullRevenue += amount;
+        }
       } else if (type === 'Deposit') {
         totalDeposits += amount;
       }
@@ -1084,6 +1133,7 @@ function getPnLDataRange_(startDateStr, endDateStr) {
   return {
     totalIncome: totalIncome,
     totalDeposits: totalDeposits,
+    estimatedFullRevenue: estimatedFullRevenue,
     outstanding: totalIncome - totalDeposits,
     sessionsCompleted: sessionsCompleted,
     transactions: transactions
@@ -1347,6 +1397,14 @@ function sendBookingConfirmationToCustomer(data, recurringCount, recurringType, 
   var customerBody = 'Kedves ' + data.name + '!\n\n';
   customerBody += 'Köszönöm az időpontfoglalásodat!\n\n';
   
+  // Calculate price breakdown
+  var servicePricePerSession = (data.service && data.service.toLowerCase().indexOf('arany') !== -1) ? 30000 : 15000;
+  var totalServicePrice = servicePricePerSession * recurringCount;
+  var discountAmount = discountPercent > 0 ? Math.round(totalServicePrice * discountPercent / 100) : 0;
+  var discountedTotal = totalServicePrice - discountAmount;
+  var depositPaid = data.amount ? Math.round(data.amount) : Math.round(discountedTotal * 0.2);
+  var remainingAmount = discountedTotal - depositPaid;
+
   if (recurringCount > 1) {
     customerBody += '═══════════════════════════════════════\n';
     customerBody += '💆 KEZELÉS: ' + data.service + '\n';
@@ -1354,11 +1412,18 @@ function sendBookingConfirmationToCustomer(data, recurringCount, recurringType, 
     customerBody += '⏰ IDŐPONT: ' + data.time + '\n';
     customerBody += '🔄 ISMÉTLŐDÉS: ' + getRecurringTypeText(recurringType) + '\n';
     customerBody += '📊 ALKALMAK SZÁMA: ' + recurringCount + '\n';
+    customerBody += '═══════════════════════════════════════\n\n';
+    customerBody += '💳 ÁRÖSSZEGZÉS:\n';
+    customerBody += 'Kezelés ára (' + recurringCount + ' × ' + servicePricePerSession.toLocaleString() + ' Ft): ' + totalServicePrice.toLocaleString() + ' Ft\n';
     if (discountPercent > 0) {
-      customerBody += '💰 KEDVEZMÉNY: ' + discountPercent + '%\n';
+      customerBody += 'Kedvezmény (' + discountPercent + '%): -' + discountAmount.toLocaleString() + ' Ft\n';
     }
-    if (packageId) {
-      customerBody += '🎫 BÉRLETBŐL FELHASZNÁLVA\n';
+    if (!packageId) {
+      customerBody += 'Összesen: ' + discountedTotal.toLocaleString() + ' Ft\n';
+      customerBody += '✅ Befizetett foglaló (20%): ' + depositPaid.toLocaleString() + ' Ft\n';
+      customerBody += '💵 Hátralék (kezeléskor): ' + remainingAmount.toLocaleString() + ' Ft\n';
+    } else {
+      customerBody += '🎫 Bérletből felhasználva\n';
     }
     customerBody += '═══════════════════════════════════════\n\n';
     customerBody += '📋 AZ ÖSSZES FOGLALT IDŐPONT:\n';
@@ -1371,8 +1436,14 @@ function sendBookingConfirmationToCustomer(data, recurringCount, recurringType, 
     customerBody += '💆 KEZELÉS: ' + data.service + '\n';
     customerBody += '📅 DÁTUM: ' + data.date + '\n';
     customerBody += '⏰ IDŐPONT: ' + data.time + '\n';
-    if (packageId) {
-      customerBody += '🎫 BÉRLETBŐL FELHASZNÁLVA\n';
+    customerBody += '═══════════════════════════════════════\n\n';
+    customerBody += '💳 ÁRÖSSZEGZÉS:\n';
+    customerBody += 'Kezelés ára: ' + servicePricePerSession.toLocaleString() + ' Ft\n';
+    if (!packageId) {
+      customerBody += '✅ Befizetett foglaló (20%): ' + depositPaid.toLocaleString() + ' Ft\n';
+      customerBody += '💵 Hátralék (kezeléskor): ' + remainingAmount.toLocaleString() + ' Ft\n';
+    } else {
+      customerBody += '🎫 Bérletből felhasználva\n';
     }
     customerBody += '═══════════════════════════════════════\n\n';
   }
@@ -1564,6 +1635,14 @@ function buildCustomerConfirmationHtml(data, recurringCount, recurringType, recu
   var primaryColor = '#D4854A';
   var html = '<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;border:1px solid #e0d6c8;border-radius:12px;overflow:hidden;">';
 
+  // Price calculations
+  var servicePricePerSession = (data.service && data.service.toLowerCase().indexOf('arany') !== -1) ? 30000 : 15000;
+  var totalServicePrice = servicePricePerSession * recurringCount;
+  var discountAmount = discountPercent > 0 ? Math.round(totalServicePrice * discountPercent / 100) : 0;
+  var discountedTotal = totalServicePrice - discountAmount;
+  var depositPaid = data.amount ? Math.round(data.amount) : Math.round(discountedTotal * 0.2);
+  var remainingAmount = discountedTotal - depositPaid;
+
   // Header
   html += '<div style="background:' + primaryColor + ';padding:24px;text-align:center;">';
   html += '<h1 style="color:white;margin:0;font-size:24px;">&#10003; Sikeres Foglalás!</h1>';
@@ -1584,9 +1663,6 @@ function buildCustomerConfirmationHtml(data, recurringCount, recurringType, recu
     html += '<p style="margin:6px 0;">&#8987; <b>Időpont:</b> ' + data.time + '</p>';
     html += '<p style="margin:6px 0;">&#128260; <b>Ismétlődés:</b> ' + getRecurringTypeText(recurringType) + '</p>';
     html += '<p style="margin:6px 0;">&#128202; <b>Alkalmak száma:</b> ' + recurringCount + '</p>';
-    if (discountPercent > 0) {
-      html += '<p style="margin:6px 0;">&#128176; <b>Kedvezmény:</b> ' + discountPercent + '%</p>';
-    }
     html += '<hr style="border:none;border-top:1px solid #e0d6c8;margin:12px 0;">';
     html += '<p style="margin:6px 0;"><b>&#128203; Összes foglalt időpont:</b></p>';
     for (var k = 0; k < recurringDates.length; k++) {
@@ -1596,8 +1672,37 @@ function buildCustomerConfirmationHtml(data, recurringCount, recurringType, recu
     html += '<p style="margin:6px 0;">&#128197; <b>Dátum:</b> ' + data.date + '</p>';
     html += '<p style="margin:6px 0;">&#8987; <b>Időpont:</b> ' + data.time + '</p>';
   }
-  if (packageId) {
-    html += '<p style="margin:6px 0;">&#127903; <b>Bérletből felhasználva</b></p>';
+  html += '</div>';
+
+  // Price breakdown box
+  html += '<div style="background:#fff8f0;border:1px solid #f0dcc8;border-radius:8px;padding:16px;margin:16px 0;">';
+  html += '<p style="margin:0 0 10px;font-weight:bold;color:#4A3F35;">&#128176; Árösszegzés</p>';
+  if (recurringCount > 1) {
+    html += '<div style="display:flex;justify-content:space-between;margin:4px 0;font-size:14px;">';
+    html += '<span style="color:#8B7355;">Kezelés ára (' + recurringCount + ' × ' + servicePricePerSession.toLocaleString() + ' Ft):</span>';
+    html += '<span style="color:#4A3F35;font-weight:500;">' + totalServicePrice.toLocaleString() + ' Ft</span></div>';
+  } else {
+    html += '<div style="display:flex;justify-content:space-between;margin:4px 0;font-size:14px;">';
+    html += '<span style="color:#8B7355;">Kezelés ára:</span>';
+    html += '<span style="color:#4A3F35;font-weight:500;">' + servicePricePerSession.toLocaleString() + ' Ft</span></div>';
+  }
+  if (discountPercent > 0) {
+    html += '<div style="display:flex;justify-content:space-between;margin:4px 0;font-size:14px;">';
+    html += '<span style="color:#8B9A7C;">Kedvezmény (' + discountPercent + '%):</span>';
+    html += '<span style="color:#8B9A7C;">-' + discountAmount.toLocaleString() + ' Ft</span></div>';
+    html += '<div style="display:flex;justify-content:space-between;margin:4px 0 8px;font-size:14px;border-top:1px solid #e0d6c8;padding-top:8px;">';
+    html += '<span style="color:#4A3F35;font-weight:bold;">Összesen:</span>';
+    html += '<span style="color:#4A3F35;font-weight:bold;">' + discountedTotal.toLocaleString() + ' Ft</span></div>';
+  }
+  if (!packageId) {
+    html += '<div style="display:flex;justify-content:space-between;margin:4px 0;font-size:14px;background:#e8f5e9;padding:6px 8px;border-radius:4px;">';
+    html += '<span style="color:#2e7d32;">&#10003; Befizetett foglaló (20%):</span>';
+    html += '<span style="color:#2e7d32;font-weight:bold;">' + depositPaid.toLocaleString() + ' Ft</span></div>';
+    html += '<div style="display:flex;justify-content:space-between;margin:4px 0;font-size:14px;background:#fff3e0;padding:6px 8px;border-radius:4px;">';
+    html += '<span style="color:#e65100;">&#128197; Hátralék (kezeléskor fizetendő):</span>';
+    html += '<span style="color:#e65100;font-weight:bold;">' + remainingAmount.toLocaleString() + ' Ft</span></div>';
+  } else {
+    html += '<div style="margin:4px 0;font-size:14px;color:#4A7C59;font-weight:500;">&#127903; Bérletből felhasználva</div>';
   }
   html += '</div>';
 

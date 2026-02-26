@@ -2353,6 +2353,7 @@ function AdminPage() {
   const [customerProfile, setCustomerProfile] = useState<any>(null);
   const [allBookings, setAllBookings] = useState<any[]>([]);
   const [pendingBookings, setPendingBookings] = useState<any[]>([]);
+  const [allPackages, setAllPackages] = useState<any[]>([]);
 
   const ADMIN_PASSWORD = 'Edina2025!';
 
@@ -2414,6 +2415,37 @@ function AdminPage() {
       if (data.success) setPendingBookings(data.data.bookings || []);
     } catch (error) {
       console.error('Error loading pending bookings:', error);
+    }
+  };
+
+  const loadAllPackages = async () => {
+    try {
+      const response = await fetch(`${SCRIPT_URL}?action=allPackages`);
+      const data = await response.json();
+      if (data.success) setAllPackages(data.data.packages || []);
+    } catch (error) {
+      console.error('Error loading packages:', error);
+    }
+  };
+
+  const handleUseSession = async (packageId: string, customerName: string) => {
+    if (!confirm(`Biztosan levonsz 1 alkalmat? Vásárló: ${customerName}`)) return;
+    try {
+      const response = await fetch(SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'useSession', packageId })
+      });
+      const result = await response.json();
+      if (result.success) {
+        toast.success(`Alkalom felhasználva! Maradék: ${result.data?.sessionsRemaining ?? '?'} alkalom`);
+        loadAllPackages();
+        loadDashboardData();
+      } else {
+        toast.error(result.message || 'Hiba történt');
+      }
+    } catch (error) {
+      toast.error('Hiba az alkalom felhasználása során');
     }
   };
 
@@ -2673,6 +2705,7 @@ function AdminPage() {
                   if (tab.id === 'bookings') loadAllBookings();
                   if (tab.id === 'pending') loadPendingBookings();
                   if (tab.id === 'pnl') loadPnLData();
+                  if (tab.id === 'packages') loadAllPackages();
                   if (tab.id === 'cancel' && allBookings.length === 0) loadAllBookings();
                 }}
                 className={`flex items-center gap-2 px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === tab.id
@@ -2729,8 +2762,9 @@ function AdminPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
-                <p className="text-[#8B7355] text-sm">Havi bevétel</p>
+                <p className="text-[#8B7355] text-sm">Havi befolyt összeg</p>
                 <p className="text-3xl font-bold text-[#4A3F35]">{dashboardData?.monthlyPnL?.totalIncome?.toLocaleString() || 0} Ft</p>
+                <p className="text-xs text-[#8B7355] mt-1">foglalók &amp; fizetések</p>
               </div>
             </div>
 
@@ -2979,8 +3013,89 @@ function AdminPage() {
         {/* PACKAGES TAB */}
         {activeTab === 'packages' && (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-[#4A3F35]">Új bérlet létrehozása</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-[#4A3F35]">Bérletek</h2>
+              <button onClick={loadAllPackages} className="px-4 py-2 bg-[#D4854A] text-white rounded-lg text-sm hover:bg-[#B87333]">Frissítés</button>
+            </div>
 
+            {/* Active Packages List */}
+            {allPackages.filter((p: any) => p.status === 'Active').length > 0 && (
+              <div className="space-y-3">
+                <h3 className="text-lg font-semibold text-[#4A3F35]">Aktív bérletek</h3>
+                {allPackages.filter((p: any) => p.status === 'Active').map((pkg: any, i: number) => (
+                  <div key={i} className="bg-white rounded-2xl shadow-warm p-5">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="font-semibold text-[#4A3F35]">{pkg.customerName}</span>
+                          <span className="px-2 py-0.5 bg-[#8B9A7C]/15 text-[#4A7C59] rounded-full text-xs font-medium">Aktív</span>
+                        </div>
+                        <p className="text-sm text-[#8B7355]">{pkg.serviceType || 'Általános bérlet'}</p>
+                        <p className="text-xs text-[#8B7355] mt-0.5">Vásárolva: {pkg.purchaseDate ? (typeof pkg.purchaseDate === 'string' ? pkg.purchaseDate.slice(0, 10) : new Date(pkg.purchaseDate).toLocaleDateString('hu-HU')) : '–'}</p>
+                        <div className="mt-3">
+                          <div className="flex justify-between text-xs text-[#8B7355] mb-1">
+                            <span>Alkalmak: {pkg.sessionsUsed} / {pkg.sessionsPurchased} felhasználva</span>
+                            <span className="font-medium text-[#4A3F35]">{pkg.sessionsRemaining} maradt</span>
+                          </div>
+                          <div className="w-full bg-[#F5E6D8] rounded-full h-2">
+                            <div
+                              className="bg-[#D4854A] h-2 rounded-full transition-all"
+                              style={{ width: `${Math.min(100, ((pkg.sessionsUsed || 0) / (pkg.sessionsPurchased || 1)) * 100)}%` }}
+                            />
+                          </div>
+                        </div>
+                        {pkg.finalPrice > 0 && (
+                          <div className="mt-2 flex gap-4 text-xs">
+                            <span className="text-[#8B7355]">Fizetendő: <b className="text-[#4A3F35]">{Number(pkg.finalPrice).toLocaleString()} Ft</b></span>
+                            <span className="text-[#8B7355]">Foglaló: <b className="text-[#8B9A7C]">{Number(pkg.depositPaid).toLocaleString()} Ft</b></span>
+                            <span className="text-[#8B7355]">Hátralék: <b className="text-[#D4854A]">{(Number(pkg.finalPrice) - Number(pkg.depositPaid)).toLocaleString()} Ft</b></span>
+                          </div>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => handleUseSession(pkg.packageId, pkg.customerName)}
+                        disabled={pkg.sessionsRemaining <= 0}
+                        className="px-4 py-2 bg-[#4A7C59] text-white rounded-xl text-sm font-medium hover:bg-[#3d6849] disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
+                      >
+                        ✓ Alkalom felhasználása
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Completed/other packages */}
+            {allPackages.filter((p: any) => p.status !== 'Active').length > 0 && (
+              <details className="group">
+                <summary className="cursor-pointer text-sm font-medium text-[#8B7355] hover:text-[#4A3F35] list-none flex items-center gap-2">
+                  <span className="group-open:rotate-90 transition-transform inline-block">▶</span>
+                  Lezárt bérletek ({allPackages.filter((p: any) => p.status !== 'Active').length} db)
+                </summary>
+                <div className="mt-3 space-y-2">
+                  {allPackages.filter((p: any) => p.status !== 'Active').map((pkg: any, i: number) => (
+                    <div key={i} className="bg-white rounded-xl shadow-warm p-4 opacity-70">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <span className="font-medium text-[#4A3F35]">{pkg.customerName}</span>
+                          <span className="ml-2 px-2 py-0.5 bg-gray-100 text-gray-500 rounded-full text-xs">{pkg.status}</span>
+                          <p className="text-sm text-[#8B7355]">{pkg.serviceType}</p>
+                        </div>
+                        <span className="text-sm text-[#8B7355]">{pkg.sessionsUsed} / {pkg.sessionsPurchased} alkalom</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </details>
+            )}
+
+            {allPackages.length === 0 && (
+              <div className="bg-white rounded-2xl shadow-warm p-8 text-center text-[#8B7355]">Még nincs bérlet rögzítve.</div>
+            )}
+
+            {/* New Package Form */}
+            <div className="border-t border-[#E8D4C0] pt-6">
+              <h3 className="text-xl font-bold text-[#4A3F35] mb-4">Új bérlet létrehozása</h3>
             <div className="bg-white rounded-2xl shadow-warm p-6">
               <form onSubmit={handleCreatePackage} className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-6">
@@ -3109,6 +3224,7 @@ function AdminPage() {
                 </Button>
               </form>
             </div>
+            </div>
           </div>
         )}
 
@@ -3196,18 +3312,26 @@ function AdminPage() {
             {pnlData && (
               <>
                 {/* Summary Cards */}
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                   <div className="bg-white rounded-2xl p-5 shadow-warm">
-                    <p className="text-[#8B7355] text-xs mb-1">Összes bevétel</p>
+                    <p className="text-[#8B7355] text-xs mb-1">Befolyt összeg</p>
                     <p className="text-xl font-bold text-[#4A3F35]">{pnlData.totalIncome?.toLocaleString() || 0} Ft</p>
+                    <p className="text-[10px] text-[#8B7355] mt-1">foglalók &amp; fizetések</p>
                   </div>
                   <div className="bg-white rounded-2xl p-5 shadow-warm">
-                    <p className="text-[#8B7355] text-xs mb-1">Foglalók</p>
+                    <p className="text-[#8B7355] text-xs mb-1">Becsült forgalom</p>
+                    <p className="text-xl font-bold text-[#4A7C59]">{pnlData.estimatedFullRevenue?.toLocaleString() || 0} Ft</p>
+                    <p className="text-[10px] text-[#8B7355] mt-1">teljes kezelési érték</p>
+                  </div>
+                  <div className="bg-white rounded-2xl p-5 shadow-warm">
+                    <p className="text-[#8B7355] text-xs mb-1">Bérlet foglalók</p>
                     <p className="text-xl font-bold text-[#D4854A]">{pnlData.totalDeposits?.toLocaleString() || 0} Ft</p>
+                    <p className="text-[10px] text-[#8B7355] mt-1">bérlet foglaló (Deposit)</p>
                   </div>
                   <div className="bg-white rounded-2xl p-5 shadow-warm">
-                    <p className="text-[#8B7355] text-xs mb-1">Hátralék</p>
+                    <p className="text-[#8B7355] text-xs mb-1">Bérlet hátralék</p>
                     <p className="text-xl font-bold text-red-500">{pnlData.outstanding?.toLocaleString() || 0} Ft</p>
+                    <p className="text-[10px] text-[#8B7355] mt-1">befolyt − bérlet foglaló</p>
                   </div>
                   <div className="bg-white rounded-2xl p-5 shadow-warm">
                     <p className="text-[#8B7355] text-xs mb-1">Kezelések</p>
@@ -3217,7 +3341,7 @@ function AdminPage() {
                     <p className="text-[#8B7355] text-xs mb-1">Átlag / kezelés</p>
                     <p className="text-xl font-bold text-[#4A7C59]">
                       {pnlData.sessionsCompleted > 0
-                        ? Math.round((pnlData.totalIncome || 0) / pnlData.sessionsCompleted).toLocaleString()
+                        ? Math.round((pnlData.estimatedFullRevenue || pnlData.totalIncome || 0) / pnlData.sessionsCompleted).toLocaleString()
                         : 0} Ft
                     </p>
                   </div>
