@@ -2053,7 +2053,7 @@ function BookingSection() {
               >
                 <X className="w-5 h-5 text-[#4A3F35]" />
               </button>
-              <h3 className="text-xl font-bold text-[#4A3F35] mb-4">Általános Szerződési Feltételek</h2>
+              <h3 className="text-xl font-bold text-[#4A3F35] mb-4">Általános Szerződési Feltételek</h3>
               <div className="space-y-4 text-sm text-[#4A3F35]">
                 <p><strong>1. Foglalási díj:</strong> A kezelés árának 20%-a, amely online fizetéssel vagy banki átutalással esedékes a foglaláskor.</p>
                 <p><strong>2. Lemondási feltételek:</strong></p>
