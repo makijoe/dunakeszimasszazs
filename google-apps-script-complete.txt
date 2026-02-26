@@ -217,7 +217,7 @@ function createBooking(data) {
     parseInt(dateParts[0]), parseInt(dateParts[1]) - 1, parseInt(dateParts[2]),
     parseInt(timeParts[0]), parseInt(timeParts[1])
   );
-  var endTime = new Date(startTime.getTime() + (60 * 60 * 1000));
+  var endTime = new Date(startTime.getTime() + (75 * 60 * 1000));
   
   // Handle recurring bookings
   var recurringCount = (data.recurring === true || data.recurring === 'yes' || data.recurring === 'true') ? (parseInt(data.recurringCount) || 1) : 1;
@@ -1091,7 +1091,7 @@ function handleCancellation(data) {
   // Send cancellation email to customer
   var subject = 'Időpont lemondva - Dunakeszi Masszázs';
   var body = 'Kedves ' + data.clientName + '!\n\n' +
-             'Értesítjük, hogy az alábbi időpontod lemondásra került:\n\n' +
+             'Értesítlek, hogy az alábbi időpontod lemondásra került:\n\n' +
              '═══════════════════════════════════════\n' +
              '💆 Kezelés: ' + (data.service || 'Nincs megadva') + '\n' +
              '📅 Dátum: ' + data.appointmentDate + '\n' +
@@ -1102,7 +1102,7 @@ function handleCancellation(data) {
     body += 'Indoklás: ' + data.reason + '\n\n';
   }
   
-  body += 'Ha szeretnél új időpontot foglalni, kérjük, látogass el a weboldalunkra vagy hívj telefonon.\n\n' +
+  body += 'Ha szeretnél új időpontot foglalni, kérem, látogass el a weboldalra vagy hívj telefonon.\n\n' +
           '📞 +36 30 487 7883\n' +
           '🌐 https://dunakeszimasszazs.hu\n\n' +
           'Üdvözlettel,\n' +
@@ -1152,7 +1152,7 @@ function handleChange(data) {
   // Send change email to customer
   var subject = 'Időpont módosítva - Dunakeszi Masszázs';
   var body = 'Kedves ' + data.clientName + '!\n\n' +
-             'Értesítjük, hogy az időpontod módosításra került:\n\n' +
+             'Értesítlek, hogy az időpontod módosításra került:\n\n' +
              '═══════════════════════════════════════\n' +
              '❌ EREDETI IDŐPONT:\n' +
              '📅 Dátum: ' + data.appointmentDate + '\n' +
@@ -1167,7 +1167,7 @@ function handleChange(data) {
              'Kapucsengő: 1/43\n\n' +
              'Ha kérdésed van, hívj bátran:\n' +
              '📞 +36 30 487 7883\n\n' +
-             'Várunk szeretettel az Angyali Szalonban!\n\n' +
+             'Várlak szeretettel az Angyali Szalonban!\n\n' +
              'Üdvözlettel,\n' +
              'Makra Edina\n' +
              'Dunakeszi Masszázs - Angyali Szalon';
@@ -1270,7 +1270,7 @@ function sendBookingConfirmationToCustomer(data, recurringCount, recurringType, 
     : 'Időpontfoglalás visszaigazolás - Dunakeszi Masszázs';
   
   var customerBody = 'Kedves ' + data.name + '!\n\n';
-  customerBody += 'Köszönjük az időpontfoglalásodat!\n\n';
+  customerBody += 'Köszönöm az időpontfoglalásodat!\n\n';
   
   if (recurringCount > 1) {
     customerBody += '═══════════════════════════════════════\n';
@@ -1315,8 +1315,8 @@ function sendBookingConfirmationToCustomer(data, recurringCount, recurringType, 
   
   if (recurringCount > 1) {
     customerBody += '⚠️ FONTOS INFORMÁCIÓ ISMÉTLŐDŐ FOGLALÁSHOZ:\n';
-    customerBody += '• Minden alkalom előtt 24 órával emlékeztetőt küldünk\n';
-    customerBody += '• Ha bármelyik alkalomra nem tudsz eljönni, kérjük, 24 órával előtte jelezd\n';
+    customerBody += '• Minden alkalom előtt 24 órával emlékeztetőt küldök\n';
+    customerBody += '• Ha bármelyik alkalomra nem tudsz eljönni, kérem, 24 órával előtte jelezd\n';
     customerBody += '• Az időpontok módosíthatók 24 óra előtt ingyenesen\n';
     if (discountPercent > 0) {
       customerBody += '• Kedvezmény: ' + discountPercent + '% a több alkalmas foglalásért\n';
@@ -1326,7 +1326,7 @@ function sendBookingConfirmationToCustomer(data, recurringCount, recurringType, 
   
   customerBody += 'Ha bármilyen kérdésed van, hívj bátran:\n';
   customerBody += '📞 +36 30 487 7883\n\n';
-  customerBody += 'Várunk szeretettel az Angyali Szalonban!\n\n';
+  customerBody += 'Várlak szeretettel az Angyali Szalonban!\n\n';
   customerBody += 'Üdvözlettel,\n';
   customerBody += 'Makra Edina\n';
   customerBody += 'Dunakeszi Masszázs - Angyali Szalon\n';
@@ -1347,7 +1347,7 @@ function sendPackagePurchaseConfirmation(customer, pkg) {
   var subject = 'Bérlet vásárlás visszaigazolás - Dunakeszi Masszázs';
   
   var body = 'Kedves ' + customer.name + '!\n\n';
-  body += 'Köszönjük a bérlet vásárlásodat!\n\n';
+  body += 'Köszönöm a bérlet vásárlásodat!\n\n';
   body += '═══════════════════════════════════════\n';
   body += '🎫 BÉRLET RÉSZLETEI:\n';
   body += 'Bérlet száma: ' + pkg.packageId + '\n';
@@ -1498,7 +1498,7 @@ function buildCustomerConfirmationHtml(data, recurringCount, recurringType, recu
   // Body
   html += '<div style="padding:24px;background:#fdfaf7;">';
   html += '<p>Kedves <b>' + data.name + '</b>!</p>';
-  html += '<p>Köszönjük az időpontfoglalásodat! Az alábbiakban találod a foglalásod részleteit:</p>';
+  html += '<p>Köszönöm az időpontfoglalásodat! Az alábbiakban találod a foglalásod részleteit:</p>';
 
   // Details box
   html += '<div style="background:white;border:1px solid #e0d6c8;border-radius:8px;padding:16px;margin:16px 0;">';
@@ -1540,7 +1540,7 @@ function buildCustomerConfirmationHtml(data, recurringCount, recurringType, recu
   html += '</div>';
 
   html += '<p style="font-size:13px;color:#666;">Ha kérdésed van, hívj bátran: <b>+36 30 487 7883</b></p>';
-  html += '<p style="font-size:13px;color:#666;">Várunk szeretettel az Angyali Szalonban!</p>';
+  html += '<p style="font-size:13px;color:#666;">Várlak szeretettel az Angyali Szalonban!</p>';
   html += '</div>';
 
   // Footer strip

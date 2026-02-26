@@ -2652,6 +2652,7 @@ function AdminPage() {
                   setActiveTab(tab.id as any);
                   if (tab.id === 'bookings') loadAllBookings();
                   if (tab.id === 'pending') loadPendingBookings();
+                  if (tab.id === 'pnl') loadPnLData();
                 }}
                 className={`flex items-center gap-2 px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === tab.id
                   ? 'text-[#D4854A] border-b-2 border-[#D4854A]'
