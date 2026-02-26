@@ -1688,9 +1688,15 @@ function sendBookingConfirmationToCustomer(data, recurringCount, recurringType, 
     customerBody += '\n';
   }
   
-  customerBody += '🔗 FOGLALÁSAID KEZELÉSE:\n';
-  customerBody += 'Megtekintheted, módosíthatod vagy lemondhatod az időpontjaidat:\n';
-  customerBody += '➡️ https://dunakeszimasszazs.hu/#foglalaskezeles\n\n';
+  customerBody += '═══════════════════════════════════════\n';
+  customerBody += '🔗 FOGLALÁSAIDAT TE IS KEZELHETED ONLINE:\n';
+  customerBody += '═══════════════════════════════════════\n';
+  customerBody += '1️⃣  Nyisd meg: https://dunakeszimasszazs.hu/#foglalaskezeles\n';
+  customerBody += '2️⃣  Íd be ezt az email címet: ' + data.email + '\n';
+  customerBody += '3️⃣  Megjelennek az összes közelgő foglalásaid\n';
+  customerBody += '4️⃣  Minden alkalom mellé találsz ”Időpont módosítása” és ”Lemondas” gombot\n\n';
+  customerBody += '⚠️ FONTOS: Lemondani vagy módosítást kérni csak 24 órával az alkalom előtt lehetkérni ingyenesen.\n\n';
+  customerBody += '═══════════════════════════════════════\n\n';
 
   customerBody += 'Ha bármilyen kérdésed van, hívj bátran:\n';
   customerBody += '📞 +36 30 487 7883\n\n';
@@ -1941,10 +1947,19 @@ function buildCustomerConfirmationHtml(data, recurringCount, recurringType, recu
   html += '<p style="margin:4px 0;">Kapucsengő: <b>1/43</b></p>';
   html += '</div>';
 
-  html += '<div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;padding:14px;margin:14px 0;text-align:center;">';
-  html += '<p style="margin:0 0 10px;font-size:13px;color:#1D4ED8;font-weight:500;">&#128197; Szükséged van módosításra vagy le szeretned mondani?</p>';
-  html += '<a href="https://dunakeszimasszazs.hu/#foglalaskezeles" style="display:inline-block;background:#D4854A;color:white;text-decoration:none;padding:10px 24px;border-radius:20px;font-size:13px;font-weight:bold;">Foglalásaim kezelése &rarr;</a>';
-  html += '<p style="margin:8px 0 0;font-size:11px;color:#6B7280;">Lemondható vagy módosítás kérhető 24 órával előre</p>';
+  html += '<div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;padding:16px;margin:16px 0;">';
+  html += '<p style="margin:0 0 10px;font-size:14px;color:#1D4ED8;font-weight:bold;">&#128197; Szeretned módosítani vagy lemondani egy időpontot?</p>';
+  html += '<p style="margin:0 0 10px;font-size:13px;color:#374151;">Ezt könnyen meg tudod tenni online, bármikor:</p>';
+  html += '<ol style="margin:0 0 12px;padding-left:20px;font-size:13px;color:#374151;line-height:2;">';
+  html += '<li>Kattints az alábbi gombra</li>';
+  html += '<li>Íd be <b>' + data.email + '</b> címed</li>';
+  html += '<li>Megjelennek az összes közelgő foglalásaid</li>';
+  html += '<li>Minden alkalom mellé találsz <b>Módosítás</b> és <b>Lemondás</b> gombot</li>';
+  html += '</ol>';
+  html += '<div style="text-align:center;margin:12px 0 8px;">';
+  html += '<a href="https://dunakeszimasszazs.hu/#foglalaskezeles" style="display:inline-block;background:#D4854A;color:white;text-decoration:none;padding:12px 28px;border-radius:20px;font-size:14px;font-weight:bold;">Foglalásaim kezelése &rarr;</a>';
+  html += '</div>';
+  html += '<p style="margin:8px 0 0;font-size:11px;color:#6B7280;text-align:center;">&#9888;&#65039; Ingyenes lemondas / módosítás kérés 24 órával az alkalom előtt lehetkérni</p>';
   html += '</div>';
 
   html += '<p style="font-size:13px;color:#666;">Ha kérdésed van, hívj bátran: <b>+36 30 487 7883</b></p>';
