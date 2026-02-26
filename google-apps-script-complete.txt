@@ -10,7 +10,8 @@ const SHEETS = {
   SESSION_PACKAGES: 'SessionPackages',
   BOOKINGS: 'Bookings',
   FINANCIAL: 'Financial',
-  PNL: 'PnL'
+  PNL: 'PnL',
+  LOGS: 'ErrorLogs'
 };
 
 // ============================================
@@ -85,7 +86,9 @@ function setupSheets() {
 // Main POST Handler
 // ============================================
 function doPost(e) {
+  var lock = LockService.getScriptLock();
   try {
+    lock.waitLock(30000);
     var data = {};
     
     // Google Apps Script form data is in e.parameter
@@ -144,8 +147,10 @@ function doPost(e) {
         return createHtmlResponse('<h1>Hiba</h1><p>Ismeretlen művelet: ' + data.action + '</p>');
     }
   } catch (error) {
-    console.error('Error in doPost:', error);
+    logError('doPost', error);
     return createHtmlResponse('<h1>Hiba</h1><p>' + error.message + '</p>');
+  } finally {
+    lock.releaseLock();
   }
 }
 
@@ -677,6 +682,11 @@ function createStripeCheckout(data) {
     }
     
     Logger.log('Creating Stripe checkout with amount: ' + amount + ' Ft');
+
+    // Check if the requested time slot is still available before charging the customer
+    if (data.date && data.time && !isTimeSlotAvailable(data.date, data.time)) {
+      return createResponse(false, 'Ez az időpont sajnos már foglalt. Kérjük válasszon másik időpontot!');
+    }
     
     var serviceName = data.service || 'Masszázs kezelés';
     var recurringText = data.recurring === 'yes' ? ' (' + data.recurringCount + ' alkalom)' : '';
@@ -731,7 +741,7 @@ function createStripeCheckout(data) {
     }
     
   } catch (error) {
-    Logger.log('Stripe checkout error: ' + error);
+    logError('createStripeCheckout', error);
     return createResponse(false, 'Hiba a Stripe checkout során: ' + error.message);
   }
 }
@@ -1274,6 +1284,7 @@ function sendBookingConfirmationToCustomer(data, recurringCount, recurringType, 
     to: data.email,
     subject: customerSubject,
     body: customerBody,
+    htmlBody: buildCustomerConfirmationHtml(data, recurringCount, recurringType, recurringDates, discountPercent, packageId, customer),
     name: 'Dunakeszi Masszázs - Angyali Szalon'
   });
 }
@@ -1370,7 +1381,7 @@ function handleStripeWebhook(event) {
     // Stripe expects a 200 response
     return createResponse(true, 'Webhook feldolgozva: ' + event.type);
   } catch (error) {
-    Logger.log('Webhook error: ' + error);
+    logError('handleStripeWebhook', error);
     return createResponse(false, 'Webhook hiba: ' + error.message);
   }
 }
@@ -1389,6 +1400,102 @@ function updatePendingBookingStatus(email, status) {
       break;
     }
   }
+}
+
+// ============================================
+// Availability Check, Error Logging & HTML Email
+// ============================================
+function isTimeSlotAvailable(dateStr, timeStr) {
+  var calendar = CalendarApp.getDefaultCalendar();
+  var start = new Date(dateStr + 'T' + timeStr + ':00');
+  // 15-min buffer before + 75-min after (60-min massage + 15-min cleanup)
+  var searchStart = new Date(start.getTime() - (15 * 60 * 1000));
+  var searchEnd   = new Date(start.getTime() + (75 * 60 * 1000));
+  var events = calendar.getEvents(searchStart, searchEnd);
+  return events.length === 0;
+}
+
+function logError(context, error) {
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getSheetByName(SHEETS.LOGS);
+    if (!sheet) {
+      sheet = ss.insertSheet(SHEETS.LOGS);
+      sheet.appendRow(['Időpont', 'Helyszín', 'Hibaüzenet']);
+      sheet.getRange(1, 1, 1, 3).setFontWeight('bold');
+    }
+    sheet.appendRow([new Date(), context, error.toString()]);
+  } catch (logErr) {
+    Logger.log('logError failed: ' + logErr);
+  }
+  Logger.log('[' + context + '] ' + error);
+}
+
+function buildCustomerConfirmationHtml(data, recurringCount, recurringType, recurringDates, discountPercent, packageId, customer) {
+  var primaryColor = '#D4854A';
+  var html = '<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;border:1px solid #e0d6c8;border-radius:12px;overflow:hidden;">';
+
+  // Header
+  html += '<div style="background:' + primaryColor + ';padding:24px;text-align:center;">';
+  html += '<h1 style="color:white;margin:0;font-size:24px;">&#10003; Sikeres Foglalás!</h1>';
+  html += '<p style="color:rgba(255,255,255,0.9);margin:8px 0 0;">Dunakeszi Masszázs - Angyali Szalon</p>';
+  html += '</div>';
+
+  // Body
+  html += '<div style="padding:24px;background:#fdfaf7;">';
+  html += '<p>Kedves <b>' + data.name + '</b>!</p>';
+  html += '<p>Köszönjük az időpontfoglalásodat! Az alábbiakban találod a foglalásod részleteit:</p>';
+
+  // Details box
+  html += '<div style="background:white;border:1px solid #e0d6c8;border-radius:8px;padding:16px;margin:16px 0;">';
+  html += '<p style="margin:6px 0;">&#128134; <b>Kezelés:</b> ' + data.service + '</p>';
+
+  if (recurringCount > 1) {
+    html += '<p style="margin:6px 0;">&#128197; <b>Első dátum:</b> ' + data.date + '</p>';
+    html += '<p style="margin:6px 0;">&#8987; <b>Időpont:</b> ' + data.time + '</p>';
+    html += '<p style="margin:6px 0;">&#128260; <b>Ismétlődés:</b> ' + getRecurringTypeText(recurringType) + '</p>';
+    html += '<p style="margin:6px 0;">&#128202; <b>Alkalmak száma:</b> ' + recurringCount + '</p>';
+    if (discountPercent > 0) {
+      html += '<p style="margin:6px 0;">&#128176; <b>Kedvezmény:</b> ' + discountPercent + '%</p>';
+    }
+    html += '<hr style="border:none;border-top:1px solid #e0d6c8;margin:12px 0;">';
+    html += '<p style="margin:6px 0;"><b>&#128203; Összes foglalt időpont:</b></p>';
+    for (var k = 0; k < recurringDates.length; k++) {
+      html += '<p style="margin:4px 0 4px 16px;">' + (k + 1) + '. ' + recurringDates[k] + ' ' + data.time + '</p>';
+    }
+  } else {
+    html += '<p style="margin:6px 0;">&#128197; <b>Dátum:</b> ' + data.date + '</p>';
+    html += '<p style="margin:6px 0;">&#8987; <b>Időpont:</b> ' + data.time + '</p>';
+  }
+  if (packageId) {
+    html += '<p style="margin:6px 0;">&#127903; <b>Bérletből felhasználva</b></p>';
+  }
+  html += '</div>';
+
+  if (customer && customer.totalSessionsRemaining > 0) {
+    html += '<div style="background:#e8f5e9;border-radius:8px;padding:12px;margin:12px 0;">';
+    html += '<p style="margin:0;">&#127903; <b>Bérlet egyenleg:</b> ' + customer.totalSessionsRemaining + ' alkalom</p>';
+    html += '</div>';
+  }
+
+  // Address
+  html += '<div style="background:#fff3e0;border-radius:8px;padding:12px;margin:12px 0;">';
+  html += '<p style="margin:0 0 6px;"><b>&#128205; Cím és megközelítés:</b></p>';
+  html += '<p style="margin:4px 0;">Dunakeszi, Kolonics György utca 2/B, 2120</p>';
+  html += '<p style="margin:4px 0;">Kapucsengő: <b>1/43</b></p>';
+  html += '</div>';
+
+  html += '<p style="font-size:13px;color:#666;">Ha kérdésed van, hívj bátran: <b>+36 30 487 7883</b></p>';
+  html += '<p style="font-size:13px;color:#666;">Várunk szeretettel az Angyali Szalonban!</p>';
+  html += '</div>';
+
+  // Footer strip
+  html += '<div style="background:#f5ede3;padding:12px;text-align:center;font-size:12px;color:#888;">';
+  html += 'Makra Edina &middot; Dunakeszi Masszázs &middot; <a href="https://dunakeszimasszazs.hu" style="color:#D4854A;">dunakeszimasszazs.hu</a>';
+  html += '</div>';
+
+  html += '</div>';
+  return html;
 }
 
 // ============================================
