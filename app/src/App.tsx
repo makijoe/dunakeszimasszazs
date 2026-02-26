@@ -25,7 +25,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { toast } from 'sonner';
+import { toast, Toaster } from 'sonner';
 
 // Google Apps Script URL
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyNNnfTYIlEcuJFD2DaHJcPkv-ErX34TRaxmuc3mFxLVksuoYqs4_GLhilMxHmS3Eg/exec';
@@ -101,6 +101,14 @@ function Navigation() {
                 {link.label}
               </a>
             ))}
+            <a
+              href="/#foglalaskezeles"
+              onClick={(e) => { e.preventDefault(); window.location.href = '/#foglalaskezeles'; }}
+              className="px-4 py-2 rounded-full text-sm font-medium text-[#4A3F35] hover:bg-[#F5E6D8] hover:text-[#D4854A] transition-all duration-300 flex items-center gap-1.5"
+            >
+              <Calendar className="w-3.5 h-3.5" />
+              Foglalásaim
+            </a>
           </div>
 
           {/* Mobile Menu Button */}
@@ -133,6 +141,14 @@ function Navigation() {
                   {link.label}
                 </a>
               ))}
+              <a
+                href="/#foglalaskezeles"
+                onClick={(e) => { e.preventDefault(); window.location.href = '/#foglalaskezeles'; }}
+                className="px-4 py-3 rounded-xl text-sm font-medium text-[#4A3F35] hover:bg-[#F5E6D8] flex items-center gap-2"
+              >
+                <Calendar className="w-4 h-4 text-[#D4854A]" />
+                Foglalásaim kezelése
+              </a>
             </div>
           </div>
         )}
@@ -2309,6 +2325,343 @@ function FooterSection() {
   );
 }
 
+// ============================================
+// Manage Bookings Page - Self-Service for Customers
+// ============================================
+function ManageBookingsPage() {
+  const [email, setEmail] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [myBookings, setMyBookings] = useState<any[]>([]);
+  const [customerName, setCustomerName] = useState('');
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState<any>(null);
+  const [actionType, setActionType] = useState<'cancel' | 'change' | null>(null);
+  const [cancelReason, setCancelReason] = useState('');
+  const [newDate, setNewDate] = useState('');
+  const [newTime, setNewTime] = useState('');
+  const [changeNotes, setChangeNotes] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const loadBookings = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${SCRIPT_URL}?action=myBookings&email=${encodeURIComponent(email)}`);
+      const data = await response.json();
+      if (data.success) {
+        setMyBookings(data.data.bookings || []);
+        setCustomerName(data.data.customerName || '');
+        setHasLoaded(true);
+      } else {
+        toast.error(data.message || 'Nem találtunk foglalást ezzel az email-lel.');
+      }
+    } catch {
+      toast.error('Hiba a foglalások betöltésekor. Próbáld újra!');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCancel = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedBooking) return;
+    setIsSubmitting(true);
+    try {
+      const response = await fetch(SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'selfCancel', bookingId: selectedBooking.bookingId, email, reason: cancelReason })
+      });
+      const result = await response.json();
+      if (result.success) {
+        toast.success('Foglalásod sikeresen lemondva! Visszaigazolást küldtünk.');
+        setMyBookings(prev => prev.filter((b: any) => b.bookingId !== selectedBooking.bookingId));
+        setSelectedBooking(null);
+        setActionType(null);
+        setCancelReason('');
+      } else {
+        toast.error(result.message || 'Hiba a lemondás során');
+      }
+    } catch {
+      toast.error('Hiba a lemondás során');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleChangeRequest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedBooking || !newDate || !newTime) {
+      toast.error('Kérjük add meg az új időpontot!');
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      const response = await fetch(SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'selfChange',
+          bookingId: selectedBooking.bookingId,
+          email,
+          service: selectedBooking.service,
+          currentDate: selectedBooking.date,
+          currentTime: selectedBooking.time,
+          newDate,
+          newTime,
+          notes: changeNotes
+        })
+      });
+      const result = await response.json();
+      if (result.success) {
+        toast.success('Módosítási kérelem elküldve! Hamarosan értesítünk.');
+        setSelectedBooking(null);
+        setActionType(null);
+        setNewDate('');
+        setNewTime('');
+        setChangeNotes('');
+      } else {
+        toast.error(result.message || 'Hiba a kérelem küldésekor');
+      }
+    } catch {
+      toast.error('Hiba a kérelem küldésekor');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const formatDisplayDate = (dateStr: string) => {
+    try {
+      const d = new Date(dateStr + 'T00:00:00');
+      return d.toLocaleDateString('hu-HU', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' });
+    } catch { return dateStr; }
+  };
+
+  const minDateStr = (() => {
+    const d = new Date(); d.setDate(d.getDate() + 1); return d.toISOString().slice(0, 10);
+  })();
+
+  const closeModal = () => { setSelectedBooking(null); setActionType(null); setCancelReason(''); setNewDate(''); setNewTime(''); setChangeNotes(''); };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-[#F9F1EA] to-[#FFFBF7]">
+      <Toaster richColors position="top-center" />
+
+      {/* Header */}
+      <header className="bg-white shadow-sm py-4 px-4">
+        <div className="max-w-3xl mx-auto flex items-center justify-between">
+          <a href="/" onClick={(e) => { e.preventDefault(); window.location.href = '/'; }} className="flex items-center gap-2">
+            <img src="/images/logo.png" alt="Logo" className="w-10 h-10 rounded-full object-cover" />
+            <div>
+              <p className="font-semibold text-[#4A3F35] text-sm">Dunakeszi Masszázs</p>
+              <p className="text-xs text-[#8B7355]">Angyali Szalon</p>
+            </div>
+          </a>
+          <a href="/" onClick={(e) => { e.preventDefault(); window.location.href = '/'; }} className="text-sm text-[#8B7355] hover:text-[#D4854A] transition-colors">
+            ← Főoldalra
+          </a>
+        </div>
+      </header>
+
+      <main className="max-w-3xl mx-auto px-4 py-10">
+        {/* Title */}
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 bg-[#D4854A]/10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Calendar className="w-8 h-8 text-[#D4854A]" />
+          </div>
+          <h1 className="text-3xl font-bold text-[#4A3F35]">Foglalásaim</h1>
+          <p className="text-[#8B7355] mt-2">Tekintsd meg, módosítsd vagy mond le közelgő foglalásaidat</p>
+        </div>
+
+        {/* Email form */}
+        <div className="bg-white rounded-2xl shadow-warm p-6 mb-6">
+          <form onSubmit={loadBookings}>
+            <Label className="text-[#4A3F35] font-medium">Foglaláshoz használt email-cím</Label>
+            <div className="flex gap-3 mt-2">
+              <Input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="pelda@email.hu"
+                required
+                className="flex-1 border-[#E8D4C0] focus:border-[#D4854A] focus:ring-[#D4854A]"
+              />
+              <Button type="submit" disabled={isLoading} className="bg-[#D4854A] hover:bg-[#B87333] text-white whitespace-nowrap">
+                {isLoading ? 'Betöltés...' : 'Megjelenítés'}
+              </Button>
+            </div>
+          </form>
+        </div>
+
+        {/* Bookings list */}
+        {hasLoaded && (
+          <div className="space-y-4">
+            <p className="text-sm font-medium text-[#8B7355]">
+              {customerName ? `Közelgő foglalások — ${customerName}` : 'Közelgő foglalások'}
+            </p>
+
+            {myBookings.length === 0 ? (
+              <div className="bg-white rounded-2xl shadow-warm p-10 text-center">
+                <Calendar className="w-12 h-12 text-[#E8D4C0] mx-auto mb-4" />
+                <p className="text-[#8B7355] font-medium">Nincs közelgő aktív foglalásod.</p>
+                <a
+                  href="/#idopont"
+                  onClick={(e) => { e.preventDefault(); window.location.href = '/#idopont'; }}
+                  className="inline-block mt-4 text-[#D4854A] hover:underline text-sm font-medium"
+                >
+                  Foglalj új időpontot →
+                </a>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {myBookings.map((booking: any) => (
+                  <div key={booking.bookingId} className="bg-white rounded-2xl shadow-warm p-5">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div>
+                        <p className="font-semibold text-[#4A3F35] text-lg">{booking.service}</p>
+                        <p className="text-[#D4854A] font-medium mt-0.5">
+                          {formatDisplayDate(typeof booking.date === 'string' ? booking.date.slice(0, 10) : new Date(booking.date).toISOString().slice(0, 10))}
+                        </p>
+                        <p className="text-[#8B7355] text-sm mt-0.5">⏰ {typeof booking.time === 'string' ? booking.time.slice(0, 5) : booking.time}</p>
+                      </div>
+                      <div className="flex gap-2 shrink-0">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => { setSelectedBooking(booking); setActionType('change'); }}
+                          className="border-[#8B9A7C] text-[#4A7C59] hover:bg-[#8B9A7C]/10 text-xs font-medium"
+                        >
+                          📅 Időpont módosítás
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => { setSelectedBooking(booking); setActionType('cancel'); }}
+                          className="border-red-200 text-red-500 hover:bg-red-50 text-xs font-medium"
+                        >
+                          ❌ Lemondás
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        <p className="text-center text-sm text-[#8B7355] mt-10">
+          Kérdésed van? Hívj bátran:{' '}
+          <a href="tel:+36304877883" className="text-[#D4854A] font-medium">+36 30 487 7883</a>
+        </p>
+      </main>
+
+      {/* Cancel Modal */}
+      {selectedBooking && actionType === 'cancel' && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full">
+            <h3 className="text-xl font-bold text-[#4A3F35] mb-4">Foglalás lemondása</h3>
+            <div className="bg-[#FFF8F2] border border-[#E8D4C0] rounded-xl p-4 mb-5">
+              <p className="font-semibold text-[#4A3F35]">{selectedBooking.service}</p>
+              <p className="text-[#D4854A] font-medium mt-0.5">
+                {formatDisplayDate(typeof selectedBooking.date === 'string' ? selectedBooking.date.slice(0, 10) : new Date(selectedBooking.date).toISOString().slice(0, 10))}
+              </p>
+              <p className="text-[#8B7355] text-sm">⏰ {typeof selectedBooking.time === 'string' ? selectedBooking.time.slice(0, 5) : selectedBooking.time}</p>
+            </div>
+            <form onSubmit={handleCancel} className="space-y-4">
+              <div>
+                <Label className="text-[#4A3F35] text-sm font-medium">Lemondás oka (opcionális)</Label>
+                <Textarea
+                  value={cancelReason}
+                  onChange={(e) => setCancelReason(e.target.value)}
+                  placeholder="Pl.: Beteg lettem, megváltozott a munkarendem..."
+                  rows={3}
+                  className="mt-1.5 border-[#E8D4C0] focus:border-[#D4854A] text-sm"
+                />
+              </div>
+              <p className="text-xs text-[#8B7355] bg-orange-50 p-3 rounded-lg">
+                ⚠️ Visszaigazolást küldünk emailben. A befizetett foglaló nem kerül visszatérítésre.
+              </p>
+              <div className="flex gap-3">
+                <Button type="button" variant="outline" onClick={closeModal} className="flex-1 border-[#E8D4C0]">
+                  Mégsem
+                </Button>
+                <Button type="submit" disabled={isSubmitting} className="flex-1 bg-red-500 hover:bg-red-600 text-white">
+                  {isSubmitting ? 'Lemondás...' : 'Lemondás megerősítése'}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Change Request Modal */}
+      {selectedBooking && actionType === 'change' && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full">
+            <h3 className="text-xl font-bold text-[#4A3F35] mb-4">Időpont módosítás kérése</h3>
+            <div className="bg-[#FFF8F2] border border-[#E8D4C0] rounded-xl p-4 mb-5">
+              <p className="text-xs text-[#8B7355] mb-1">Jelenlegi időpont:</p>
+              <p className="font-semibold text-[#4A3F35]">{selectedBooking.service}</p>
+              <p className="text-[#D4854A] font-medium mt-0.5">
+                {formatDisplayDate(typeof selectedBooking.date === 'string' ? selectedBooking.date.slice(0, 10) : new Date(selectedBooking.date).toISOString().slice(0, 10))}
+              </p>
+              <p className="text-[#8B7355] text-sm">⏰ {typeof selectedBooking.time === 'string' ? selectedBooking.time.slice(0, 5) : selectedBooking.time}</p>
+            </div>
+            <form onSubmit={handleChangeRequest} className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-[#4A3F35] text-sm font-medium">Kért új dátum *</Label>
+                  <Input
+                    type="date"
+                    value={newDate}
+                    onChange={(e) => setNewDate(e.target.value)}
+                    min={minDateStr}
+                    required
+                    className="mt-1.5 border-[#E8D4C0] focus:border-[#D4854A]"
+                  />
+                </div>
+                <div>
+                  <Label className="text-[#4A3F35] text-sm font-medium">Kért új időpont *</Label>
+                  <Input
+                    type="time"
+                    value={newTime}
+                    onChange={(e) => setNewTime(e.target.value)}
+                    required
+                    className="mt-1.5 border-[#E8D4C0] focus:border-[#D4854A]"
+                  />
+                </div>
+              </div>
+              <div>
+                <Label className="text-[#4A3F35] text-sm font-medium">Megjegyzés</Label>
+                <Textarea
+                  value={changeNotes}
+                  onChange={(e) => setChangeNotes(e.target.value)}
+                  placeholder="Pl.: Csak délelőtt érek rá, vagy hétfő/kedd lenne a legjobb..."
+                  rows={2}
+                  className="mt-1.5 border-[#E8D4C0] focus:border-[#D4854A] text-sm"
+                />
+              </div>
+              <p className="text-xs text-[#8B7355] bg-blue-50 p-3 rounded-lg">
+                ℹ️ Ez egy kérelem — Edina emailben erősíti meg az új időpontot.
+              </p>
+              <div className="flex gap-3">
+                <Button type="button" variant="outline" onClick={closeModal} className="flex-1 border-[#E8D4C0]">
+                  Mégsem
+                </Button>
+                <Button type="submit" disabled={isSubmitting} className="flex-1 bg-[#D4854A] hover:bg-[#B87333] text-white">
+                  {isSubmitting ? 'Küldés...' : 'Kérelem küldése'}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // Admin Page Component - Enhanced with Customer Management & P&L
 function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -3721,9 +4074,14 @@ function App() {
   const isAdminPage = hash === '#admin' || window.location.search.includes('admin');
   const isBookingSuccess = hash === '#booking-success';
   const isBookingCancel = hash === '#booking-cancel';
+  const isManagePage = hash === '#foglalaskezeles';
 
   if (isAdminPage) {
     return <AdminPage />;
+  }
+
+  if (isManagePage) {
+    return <ManageBookingsPage />;
   }
 
   if (isBookingSuccess) {

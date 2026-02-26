@@ -139,6 +139,10 @@ function doPost(e) {
         return handleCancellation(data);
       case 'change':
         return handleChange(data);
+      case 'selfCancel':
+        return selfCancelBooking_(data);
+      case 'selfChange':
+        return selfRequestChange_(data);
       case 'createStripeCheckout':
         return createStripeCheckout(data);
       case 'createStripeCheckoutDebug':
@@ -174,6 +178,8 @@ function doGet(e) {
         return getPendingBookings_();
       case 'allPackages':
         return getAllPackages_();
+      case 'myBookings':
+        return getMyBookings_(e.parameter.email);
       default:
         return createResponse(true, 'API is running', { 
           endpoints: ['dashboard', 'customer', 'pnl'] 
@@ -1010,6 +1016,218 @@ function getAllPackages_() {
 }
 
 // ============================================
+// Self-Service Booking Management
+// ============================================
+// Customers can view, cancel, or request changes to their own bookings
+
+function getMyBookings_(email) {
+  if (!email) return createResponse(false, 'Email cím szükséges');
+
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var customersSheet = ss.getSheetByName(SHEETS.CUSTOMERS);
+  var customerData = customersSheet.getDataRange().getValues();
+
+  var customerId = null;
+  var customerName = '';
+  for (var i = 1; i < customerData.length; i++) {
+    if (customerData[i][2] === email) {
+      customerId = customerData[i][0];
+      customerName = customerData[i][1];
+      break;
+    }
+  }
+
+  if (!customerId) {
+    return createResponse(false, 'Nem találtunk foglalást ezzel az email-lel. Ellenőrizd a foglaláskor használt címet.');
+  }
+
+  var bookingsSheet = ss.getSheetByName(SHEETS.BOOKINGS);
+  var bookingsData = bookingsSheet.getDataRange().getValues();
+  var today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  var bookings = [];
+  for (var j = 1; j < bookingsData.length; j++) {
+    if (bookingsData[j][1] === customerId && bookingsData[j][6] === 'Confirmed') {
+      var bookingDate = new Date(bookingsData[j][4]);
+      if (bookingDate >= today) {
+        bookings.push({
+          bookingId: bookingsData[j][0],
+          service: bookingsData[j][3],
+          date: typeof bookingsData[j][4] === 'string' ? bookingsData[j][4] : formatDate(new Date(bookingsData[j][4])),
+          time: typeof bookingsData[j][5] === 'string' ? String(bookingsData[j][5]).slice(0, 5) : String(bookingsData[j][5])
+        });
+      }
+    }
+  }
+
+  bookings.sort(function(a, b) { return new Date(a.date) - new Date(b.date); });
+
+  return createResponse(true, 'Foglalások betöltve', {
+    bookings: bookings,
+    customerName: customerName
+  });
+}
+
+function selfCancelBooking_(data) {
+  var bookingId = data.bookingId;
+  var email = data.email;
+  var reason = data.reason || '';
+
+  if (!bookingId || !email) return createResponse(false, 'Hiányzó adatok');
+
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  // Find customer by email
+  var customersSheet = ss.getSheetByName(SHEETS.CUSTOMERS);
+  var customerData = customersSheet.getDataRange().getValues();
+  var customerId = null;
+  var customerName = '';
+  for (var i = 1; i < customerData.length; i++) {
+    if (customerData[i][2] === email) {
+      customerId = customerData[i][0];
+      customerName = customerData[i][1];
+      break;
+    }
+  }
+  if (!customerId) return createResponse(false, 'Email cím nem található');
+
+  // Find and verify the booking
+  var bookingsSheet = ss.getSheetByName(SHEETS.BOOKINGS);
+  var bookingsData = bookingsSheet.getDataRange().getValues();
+  var bookingRow = -1;
+  var bookingService = '', bookingDate = '', bookingTime = '';
+
+  for (var j = 1; j < bookingsData.length; j++) {
+    if (bookingsData[j][0] === bookingId && bookingsData[j][1] === customerId) {
+      if (bookingsData[j][6] !== 'Confirmed') {
+        return createResponse(false, 'Ez a foglalás már nem aktív');
+      }
+      bookingRow = j + 1;
+      bookingService = bookingsData[j][3];
+      bookingDate = typeof bookingsData[j][4] === 'string' ? bookingsData[j][4] : formatDate(new Date(bookingsData[j][4]));
+      bookingTime = typeof bookingsData[j][5] === 'string' ? String(bookingsData[j][5]).slice(0, 5) : String(bookingsData[j][5]);
+      break;
+    }
+  }
+
+  if (bookingRow === -1) return createResponse(false, 'Foglalás nem található');
+
+  // Mark as cancelled in sheet
+  bookingsSheet.getRange(bookingRow, 7).setValue('Cancelled');
+
+  // Notify Edina
+  var edinaSubject = '🔴 Ügyfél mondta le – ' + customerName + ' (' + bookingDate + ' ' + bookingTime + ')';
+  var edinaBody = 'Kedves Edina!\n\n';
+  edinaBody += customerName + ' lemondta a foglalását a weboldalon keresztül:\n\n';
+  edinaBody += '═══════════════════════════════════════\n';
+  edinaBody += '👤 Név: ' + customerName + '\n';
+  edinaBody += '📧 Email: ' + email + '\n';
+  edinaBody += '💆 Kezelés: ' + bookingService + '\n';
+  edinaBody += '📅 Dátum: ' + bookingDate + '\n';
+  edinaBody += '⏰ Időpont: ' + bookingTime + '\n';
+  if (reason) edinaBody += '📝 Indoklás: ' + reason + '\n';
+  edinaBody += '═══════════════════════════════════════\n\n';
+  edinaBody += '⚠️ Töröld ki az időpontot a Google Naptárból!';
+
+  MailApp.sendEmail({ to: 'dunakeszimasszor@gmail.com', subject: edinaSubject, body: edinaBody, name: 'Dunakeszi Masszázs - Admin' });
+
+  // Confirm to customer
+  var custSubject = 'Foglalás lemondva – Dunakeszi Masszázs';
+  var custBody = 'Kedves ' + customerName + '!\n\n';
+  custBody += 'Foglalásod sikeresen lemondva:\n\n';
+  custBody += '═══════════════════════════════════════\n';
+  custBody += '💆 Kezelés: ' + bookingService + '\n';
+  custBody += '📅 Dátum: ' + bookingDate + '\n';
+  custBody += '⏰ IdŐpont: ' + bookingTime + '\n';
+  custBody += '═══════════════════════════════════════\n\n';
+  custBody += 'Ha új időpontot szeretnél foglalni:\n';
+  custBody += '🌐 https://dunakeszimasszazs.hu/#idopont\n\n';
+  custBody += 'Üdrözlattel,\nMakra Edina\nDunakeszi Masszázs - Angyali Szalon\n📞 +36 30 487 7883';
+
+  MailApp.sendEmail({ to: email, subject: custSubject, body: custBody, name: 'Dunakeszi Masszázs - Angyali Szalon' });
+
+  return createResponse(true, 'Foglalásod sikeresen lemondva! Visszaigazolást küldünk emailben.');
+}
+
+function selfRequestChange_(data) {
+  var bookingId = data.bookingId;
+  var email = data.email;
+  var newDate = data.newDate;
+  var newTime = data.newTime;
+  var notes = data.notes || '';
+
+  if (!bookingId || !email || !newDate || !newTime) return createResponse(false, 'Hiányzó adatok');
+
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  // Find customer by email
+  var customersSheet = ss.getSheetByName(SHEETS.CUSTOMERS);
+  var customerData = customersSheet.getDataRange().getValues();
+  var customerId = null;
+  var customerName = '';
+  for (var i = 1; i < customerData.length; i++) {
+    if (customerData[i][2] === email) {
+      customerId = customerData[i][0];
+      customerName = customerData[i][1];
+      break;
+    }
+  }
+  if (!customerId) return createResponse(false, 'Email cím nem található');
+
+  // Find the booking
+  var bookingsSheet = ss.getSheetByName(SHEETS.BOOKINGS);
+  var bookingsData = bookingsSheet.getDataRange().getValues();
+  var bookingService = '', bookingDate = '', bookingTime = '';
+
+  for (var j = 1; j < bookingsData.length; j++) {
+    if (bookingsData[j][0] === bookingId && bookingsData[j][1] === customerId) {
+      bookingService = bookingsData[j][3];
+      bookingDate = typeof bookingsData[j][4] === 'string' ? bookingsData[j][4] : formatDate(new Date(bookingsData[j][4]));
+      bookingTime = typeof bookingsData[j][5] === 'string' ? String(bookingsData[j][5]).slice(0, 5) : String(bookingsData[j][5]);
+      break;
+    }
+  }
+
+  if (!bookingDate) return createResponse(false, 'Foglalás nem található');
+
+  // Notify Edina with change request
+  var edinaSubject = '📝 Időpont módosítási kérelem – ' + customerName;
+  var edinaBody = 'Kedves Edina!\n\n';
+  edinaBody += customerName + ' időpont-módosítást kér:\n\n';
+  edinaBody += '═══════════════════════════════════════\n';
+  edinaBody += '👤 Név: ' + customerName + '\n';
+  edinaBody += '📧 Email: ' + email + '\n';
+  edinaBody += '💆 Kezelés: ' + bookingService + '\n\n';
+  edinaBody += '❌ JELENLEGI IDŐPONT:\n';
+  edinaBody += '   📅 ' + bookingDate + ' ' + bookingTime + '\n\n';
+  edinaBody += '✅ KÉRT Új IDŐPONT:\n';
+  edinaBody += '   📅 ' + newDate + ' ' + newTime + '\n';
+  if (notes) edinaBody += '\n📝 Megjegyzés: ' + notes + '\n';
+  edinaBody += '═══════════════════════════════════════\n\n';
+  edinaBody += 'Kérjük, erősítsd meg az ügyfélnek az új időpontot!';
+
+  MailApp.sendEmail({ to: 'dunakeszimasszor@gmail.com', subject: edinaSubject, body: edinaBody, name: 'Dunakeszi Masszázs - Admin' });
+
+  // Pending confirmation to customer
+  var custSubject = 'Időpont módosítási kérelem elküldve – Dunakeszi Masszázs';
+  var custBody = 'Kedves ' + customerName + '!\n\n';
+  custBody += 'Módosítási kérelmed megérkezett.\n\n';
+  custBody += '═══════════════════════════════════════\n';
+  custBody += '💆 Kezelés: ' + bookingService + '\n\n';
+  custBody += '❌ Jelenlegi idŐpont: ' + bookingDate + ' ' + bookingTime + '\n';
+  custBody += '✅ Kért új idŐpont: ' + newDate + ' ' + newTime + '\n';
+  if (notes) custBody += '📝 Megjegyzés: ' + notes + '\n';
+  custBody += '═══════════════════════════════════════\n\n';
+  custBody += 'Hamarosan visszajelzünk a módosítás visszaigazolásával!\n\n';
+  custBody += 'Üdrözlattel,\nMakra Edina\nDunakeszi Masszázs - Angyali Szalon\n📞 +36 30 487 7883';
+
+  MailApp.sendEmail({ to: email, subject: custSubject, body: custBody, name: 'Dunakeszi Masszázs - Angyali Szalon' });
+
+  return createResponse(true, 'Módosítási kérelmed elküldve! Hamarosan értesítünk a visszaigazolással.');
+}
+
+// ============================================
 // P&L Dashboard
 // ============================================
 // Internal helper – returns a plain object (no ContentService wrapping).
@@ -1470,6 +1688,10 @@ function sendBookingConfirmationToCustomer(data, recurringCount, recurringType, 
     customerBody += '\n';
   }
   
+  customerBody += '🔗 FOGLALÁSAID KEZELÉSE:\n';
+  customerBody += 'Megtekintheted, módosíthatod vagy lemondhatod az időpontjaidat:\n';
+  customerBody += '➡️ https://dunakeszimasszazs.hu/#foglalaskezeles\n\n';
+
   customerBody += 'Ha bármilyen kérdésed van, hívj bátran:\n';
   customerBody += '📞 +36 30 487 7883\n\n';
   customerBody += 'Várlak szeretettel az Angyali Szalonban!\n\n';
@@ -1717,6 +1939,12 @@ function buildCustomerConfirmationHtml(data, recurringCount, recurringType, recu
   html += '<p style="margin:0 0 6px;"><b>&#128205; Cím és megközelítés:</b></p>';
   html += '<p style="margin:4px 0;">Dunakeszi, Kolonics György utca 2/B, 2120</p>';
   html += '<p style="margin:4px 0;">Kapucsengő: <b>1/43</b></p>';
+  html += '</div>';
+
+  html += '<div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;padding:14px;margin:14px 0;text-align:center;">';
+  html += '<p style="margin:0 0 10px;font-size:13px;color:#1D4ED8;font-weight:500;">&#128197; Szükséged van módosításra vagy le szeretned mondani?</p>';
+  html += '<a href="https://dunakeszimasszazs.hu/#foglalaskezeles" style="display:inline-block;background:#D4854A;color:white;text-decoration:none;padding:10px 24px;border-radius:20px;font-size:13px;font-weight:bold;">Foglalásaim kezelése &rarr;</a>';
+  html += '<p style="margin:8px 0 0;font-size:11px;color:#6B7280;">Lemondható vagy módosítás kérhető 24 órával előre</p>';
   html += '</div>';
 
   html += '<p style="font-size:13px;color:#666;">Ha kérdésed van, hívj bátran: <b>+36 30 487 7883</b></p>';
