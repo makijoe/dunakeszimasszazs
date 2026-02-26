@@ -75,7 +75,7 @@ function Navigation() {
             onClick={(e) => { e.preventDefault(); scrollToSection('#fooldal'); }}
             className="flex items-center gap-2 group"
           >
-            <img src="/images/logo.png" alt="Dunakeszi Masszázs Logo" className="w-10 h-10 rounded-full object-cover" />
+            <img src="/images/logo.png" alt="Dunakeszi Masszázs Logo" className="w-14 h-14 rounded-full object-cover" />
             <div className="hidden sm:block">
               <p className={`font-semibold text-lg leading-tight transition-colors ${isScrolled ? 'text-[#4A3F35]' : 'text-[#4A3F35]'}`}>
                 Dunakeszi Masszázs
@@ -3338,6 +3338,9 @@ function App() {
 
   if (isBookingCancel) {
     return <BookingCancelPage />;
+  }
+
+  return (
     <div className="min-h-screen bg-[#FFFBF7]">
       <Navigation />
       <main>
