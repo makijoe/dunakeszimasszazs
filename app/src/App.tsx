@@ -3259,16 +3259,85 @@ function AdminPage() {
   );
 }
 
+// Booking Success Page
+function BookingSuccessPage() {
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-[#FFFBF7] to-[#F5E6D8] flex items-center justify-center p-4">
+      <div className="bg-white rounded-3xl shadow-warm-lg p-8 sm:p-12 max-w-lg w-full text-center">
+        <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <svg className="w-10 h-10 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <h1 className="text-3xl font-bold text-[#4A3F35] mb-3">Sikeres fizetés! 🎉</h1>
+        <p className="text-[#8B7355] text-lg mb-6">
+          Köszönjük a foglalást! A fizetés sikeresen megtörtént.
+          Hamarosan küldünk egy visszaigazoló emailt a foglalás részleteivel.
+        </p>
+        <div className="bg-[#F9F1EA] rounded-2xl p-5 mb-8 text-left space-y-2">
+          <p className="text-[#4A3F35] font-semibold">📅 Mi a következő lépés?</p>
+          <p className="text-[#8B7355] text-sm">• Ellenőrizd az emailed a visszaigazoláshoz</p>
+          <p className="text-[#8B7355] text-sm">• A fennmaradó összeget a kezelésnél kell kifizetni</p>
+          <p className="text-[#8B7355] text-sm">• 📍 Dunakeszi, Kolonics György utca 2/B — Kapucsengő: 1/43</p>
+          <p className="text-[#8B7355] text-sm">• 📞 +36 30 487 7883</p>
+        </div>
+        <a
+          href="/"
+          onClick={() => { window.location.hash = ''; window.location.href = '/'; }}
+          className="inline-block bg-[#D4854A] hover:bg-[#B87333] text-white font-semibold px-8 py-3 rounded-xl transition-colors duration-200"
+        >
+          Vissza a főoldalra
+        </a>
+      </div>
+    </div>
+  );
+}
+
+// Booking Cancel Page
+function BookingCancelPage() {
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-[#FFFBF7] to-[#F5E6D8] flex items-center justify-center p-4">
+      <div className="bg-white rounded-3xl shadow-warm-lg p-8 sm:p-12 max-w-lg w-full text-center">
+        <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <svg className="w-10 h-10 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </div>
+        <h1 className="text-3xl font-bold text-[#4A3F35] mb-3">Fizetés megszakítva</h1>
+        <p className="text-[#8B7355] text-lg mb-8">
+          A fizetési folyamat megszakadt. A foglalásod nem véglegesedett.
+          Próbáld újra, ha szeretnél időpontot foglalni!
+        </p>
+        <a
+          href="/#idopont"
+          onClick={() => { window.location.href = '/#idopont'; }}
+          className="inline-block bg-[#D4854A] hover:bg-[#B87333] text-white font-semibold px-8 py-3 rounded-xl transition-colors duration-200"
+        >
+          Vissza a foglaláshoz
+        </a>
+      </div>
+    </div>
+  );
+}
+
 // Main App Component
 function App() {
   // Check if we're on the admin page using hash routing for static deployment
-  const isAdminPage = window.location.hash === '#admin' || window.location.search.includes('admin');
+  const hash = window.location.hash;
+  const isAdminPage = hash === '#admin' || window.location.search.includes('admin');
+  const isBookingSuccess = hash === '#booking-success';
+  const isBookingCancel = hash === '#booking-cancel';
 
   if (isAdminPage) {
     return <AdminPage />;
   }
 
-  return (
+  if (isBookingSuccess) {
+    return <BookingSuccessPage />;
+  }
+
+  if (isBookingCancel) {
+    return <BookingCancelPage />;
     <div className="min-h-screen bg-[#FFFBF7]">
       <Navigation />
       <main>

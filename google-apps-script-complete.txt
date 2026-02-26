@@ -108,6 +108,11 @@ function doPost(e) {
       }
     }
     
+    // Stripe sends webhook events as JSON with a 'type' field but no 'action' field
+    if (!data.action && data.type) {
+      return handleStripeWebhook(data);
+    }
+
     if (!data.action) {
       return createHtmlResponse('<h1>Hiba</h1><p>Hiányzó művelet</p>');
     }
@@ -1310,6 +1315,80 @@ function sendPackagePurchaseConfirmation(customer, pkg) {
     body: body,
     name: 'Dunakeszi Masszázs - Angyali Szalon'
   });
+}
+
+// ============================================
+// Stripe Webhook Handler
+// ============================================
+// Configure in Stripe Dashboard → Developers → Webhooks → Add endpoint
+// Endpoint URL: your Google Apps Script web app URL
+// Events to listen for: checkout.session.completed
+function handleStripeWebhook(event) {
+  try {
+    Logger.log('Stripe webhook received: ' + event.type);
+
+    if (event.type === 'checkout.session.completed') {
+      var session = event.data.object;
+      var metadata = session.metadata || {};
+
+      // Build booking data from Stripe session metadata
+      var bookingData = {
+        name: metadata.customer_name || '',
+        email: metadata.customer_email || session.customer_email || '',
+        phone: metadata.customer_phone || '',
+        service: metadata.service || '',
+        date: metadata.date || '',
+        time: metadata.time || '',
+        notes: metadata.notes || '',
+        recurring: metadata.recurring || 'no',
+        recurringType: metadata.recurring_type || 'weekly',
+        recurringCount: metadata.recurring_count || '1',
+        usePackage: 'false'
+      };
+
+      Logger.log('Creating booking from webhook: ' + JSON.stringify(bookingData));
+
+      // Create the actual booking: calendar event, spreadsheet record, emails
+      createBooking(bookingData);
+
+      // Mark the pending booking row as paid
+      updatePendingBookingStatus(bookingData.email, 'paid');
+
+      // Record the payment in the Financial sheet
+      recordTransaction(
+        new Date(),
+        'Payment',
+        '',
+        bookingData.name,
+        'Stripe foglalási díj - ' + bookingData.service,
+        Math.round(session.amount_total / 100), // fillér → Ft
+        'Stripe',
+        session.id
+      );
+    }
+
+    // Stripe expects a 200 response
+    return createResponse(true, 'Webhook feldolgozva: ' + event.type);
+  } catch (error) {
+    Logger.log('Webhook error: ' + error);
+    return createResponse(false, 'Webhook hiba: ' + error.message);
+  }
+}
+
+function updatePendingBookingStatus(email, status) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var pendingSheet = ss.getSheetByName('PendingBookings');
+  if (!pendingSheet) return;
+
+  var data = pendingSheet.getDataRange().getValues();
+  // Search from the bottom so we update the most recent pending entry
+  for (var i = data.length - 1; i >= 1; i--) {
+    if (data[i][2] === email && data[i][12] === 'pending') {
+      pendingSheet.getRange(i + 1, 13).setValue(status);
+      Logger.log('Updated pending booking for ' + email + ' to ' + status);
+      break;
+    }
+  }
 }
 
 // ============================================
