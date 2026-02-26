@@ -1538,7 +1538,10 @@ function BookingSection() {
 
   const getFinalDepositAmount = () => {
     // Deposit is 20% of the discounted total price
-    return Math.round(getTotalPriceWithDiscount() * 0.2);
+    const deposit = Math.round(getTotalPriceWithDiscount() * 0.2);
+    // STAGE 0 SAFETY: Never return 0 or low value
+    if (deposit < 175) return 3000;
+    return deposit;
   };
 
   const handleContinueToPayment = (e: React.FormEvent) => {
@@ -1746,7 +1749,7 @@ function BookingSection() {
                   {isSubmitting ? (
                     <>
                       <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin mr-3" />
-                      Átirányítás a Stripe-hoz...
+                      Átirányítás a Stripe-hoz... v1.2
                     </>
                   ) : (
                     <>

@@ -651,11 +651,19 @@ const STRIPE_WEBHOOK_SECRET = PropertiesService.getScriptProperties().getPropert
 function createStripeCheckout(data) {
   try {
     // Validate required fields
-    if (!data.name || !data.email || !data.amount) {
+    if (!data.name || !data.email || (data.amount === undefined || data.amount === null)) {
       return createHtmlResponse('<h1>Hiba</h1><p>Hiányzó kötelező mezők (név, email, összeg)</p>');
     }
     
     var amount = parseInt(data.amount);
+    
+    // Safety check: Stripe minimum for HUF is 175 Ft.
+    // If amount is 0, NaN, or too low, use a default 3000 Ft deposit.
+    if (!amount || amount < 175 || isNaN(amount)) {
+      amount = 3000;
+      Logger.log('Backend warning: Amount was too low (' + data.amount + '), forcing 3000 Ft');
+    }
+    
     var serviceName = data.service || 'Masszázs kezelés';
     var recurringText = data.recurring === 'yes' ? ' (' + data.recurringCount + ' alkalom)' : '';
     
@@ -718,11 +726,18 @@ function createStripeCheckout(data) {
  */
 function createStripeCheckoutDebug(data) {
   try {
-    if (!data.email || !data.amount) {
+    if (!data.email || (data.amount === undefined || data.amount === null)) {
       return createResponse(false, 'Missing required fields: email and amount');
     }
 
     var amount = parseInt(data.amount);
+    
+    // Safety check: Stripe minimum for HUF is 175 Ft.
+    if (!amount || amount < 175 || isNaN(amount)) {
+      amount = 3000;
+      Logger.log('Debug backend warning: Amount too low (' + data.amount + '), using 3000 Ft');
+    }
+    
     var serviceName = data.service || 'Masszázs kezelés';
     var recurringText = data.recurring === 'yes' ? ' (' + data.recurringCount + ' alkalom)' : '';
 
