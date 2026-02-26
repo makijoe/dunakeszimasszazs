@@ -1,12 +1,12 @@
 import { useEffect, useState, useRef } from 'react';
-import { 
-  Menu, 
-  X, 
-  Phone, 
-  Mail, 
-  MapPin, 
-  Calendar, 
-  Clock, 
+import {
+  Menu,
+  X,
+  Phone,
+  Mail,
+  MapPin,
+  Calendar,
+  Clock,
   Star,
   Heart,
   Sparkles,
@@ -28,7 +28,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 
 // Google Apps Script URL
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxXPWElzduW1NXViuHTf7CzB5sb_NK3bXy20HWLSMbS3EdXmAk_YedUmMgy0rJBm1yg/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyNNnfTYIlEcuJFD2DaHJcPkv-ErX34TRaxmuc3mFxLVksuoYqs4_GLhilMxHmS3Eg/exec';
 
 // Navigation Component
 function Navigation() {
@@ -61,24 +61,21 @@ function Navigation() {
   };
 
   return (
-    <nav 
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        isScrolled 
-          ? 'bg-white/95 backdrop-blur-md shadow-warm py-3' 
+    <nav
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${isScrolled
+          ? 'bg-white/95 backdrop-blur-md shadow-warm py-3'
           : 'bg-transparent py-5'
-      }`}
+        }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <a 
-            href="#fooldal" 
+          <a
+            href="#fooldal"
             onClick={(e) => { e.preventDefault(); scrollToSection('#fooldal'); }}
             className="flex items-center gap-2 group"
           >
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#D4854A] to-[#B87333] flex items-center justify-center">
-              <Heart className="w-5 h-5 text-white" />
-            </div>
+            <img src="/images/logo.png" alt="Dunakeszi Masszázs Logo" className="w-10 h-10 rounded-full object-cover" />
             <div className="hidden sm:block">
               <p className={`font-semibold text-lg leading-tight transition-colors ${isScrolled ? 'text-[#4A3F35]' : 'text-[#4A3F35]'}`}>
                 Dunakeszi Masszázs
@@ -96,11 +93,10 @@ function Navigation() {
                 key={link.href}
                 href={link.href}
                 onClick={(e) => { e.preventDefault(); scrollToSection(link.href); }}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
-                  link.href === '#idopont'
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${link.href === '#idopont'
                     ? 'bg-[#D4854A] text-white hover:bg-[#B87333]'
                     : 'text-[#4A3F35] hover:bg-[#F5E6D8] hover:text-[#D4854A]'
-                }`}
+                  }`}
               >
                 {link.label}
               </a>
@@ -129,11 +125,10 @@ function Navigation() {
                   key={link.href}
                   href={link.href}
                   onClick={(e) => { e.preventDefault(); scrollToSection(link.href); }}
-                  className={`px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-                    link.href === '#idopont'
+                  className={`px-4 py-3 rounded-xl text-sm font-medium transition-all ${link.href === '#idopont'
                       ? 'bg-[#D4854A] text-white'
                       : 'text-[#4A3F35] hover:bg-[#F5E6D8]'
-                  }`}
+                    }`}
                 >
                   {link.label}
                 </a>
@@ -173,31 +168,28 @@ function HeroSection() {
       {/* Decorative Elements */}
       <div className="absolute top-20 right-10 w-72 h-72 bg-[#D4854A]/10 rounded-full blur-3xl" />
       <div className="absolute bottom-20 left-10 w-96 h-96 bg-[#E8D4C0]/30 rounded-full blur-3xl" />
-      
+
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-20">
         <div className="grid lg:grid-cols-2 gap-12 items-center min-h-[calc(100vh-200px)]">
           {/* Left Content */}
-          <div className={`space-y-8 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+          <div className={`space-y-8 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
+            style={{ paddingTop: '2rem', paddingBottom: '2rem' }}>
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full shadow-sm">
               <Sparkles className="w-4 h-4 text-[#D4854A]" />
-              <span className="text-sm font-medium text-[#8B7355]">
-                RTL & TV2 szereplések
-              </span>
+              <span className="text-sm font-medium text-[#8B7355]">RTL & TV2 szereplések</span>
             </div>
 
             <div className="space-y-4">
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-[#4A3F35] leading-tight">
+              <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold text-[#4A3F35] leading-tight">
                 Masszázs <span className="text-gradient">Dunakeszin</span>
                 <br />
-                <span className="text-3xl sm:text-4xl lg:text-5xl font-medium">
-                  Testi-Lelki Feltöltődés
-                </span>
+                <span className="text-xl sm:text-2xl lg:text-5xl font-medium">Testi-Lelki Feltöltődés</span>
               </h1>
-              
-              <p className="text-lg text-[#8B7355] max-w-lg leading-relaxed">
-                Nyugtató, harmonizáló kezelések egy békés, biztonságos környezetben az 
-                <span className="font-semibold text-[#D4854A]"> Angyali Szalonban</span>. 
+
+              <p className="text-base sm:text-lg text-[#8B7355] max-w-lg leading-relaxed mt-2">
+                Nyugtató, harmonizáló kezelések egy békés, biztonságos környezetben az
+                <span className="font-semibold text-[#D4854A]"> Angyali Szalonban</span>.
                 Személyre szabott masszázskezelésekkel várlak szeretettel.
               </p>
             </div>
@@ -209,7 +201,7 @@ function HeroSection() {
                 'Kíméletes technikák',
                 'Nyugodt légkör'
               ].map((feature, index) => (
-                <div 
+                <div
                   key={index}
                   className="flex items-center gap-2 px-4 py-2 bg-white/60 rounded-full"
                 >
@@ -221,14 +213,14 @@ function HeroSection() {
 
             {/* CTA Buttons */}
             <div className="flex flex-wrap gap-4">
-              <Button 
+              <Button
                 onClick={scrollToBooking}
                 className="bg-[#D4854A] hover:bg-[#B87333] text-white px-8 py-6 rounded-full text-base font-medium shadow-warm hover:shadow-warm-lg transition-all duration-300 hover:-translate-y-1"
               >
                 <Calendar className="w-5 h-5 mr-2" />
                 Időpontot szeretnék
               </Button>
-              <Button 
+              <Button
                 onClick={scrollToServices}
                 variant="outline"
                 className="border-[#D4854A] text-[#D4854A] hover:bg-[#D4854A] hover:text-white px-8 py-6 rounded-full text-base font-medium transition-all duration-300"
@@ -240,8 +232,8 @@ function HeroSection() {
 
             {/* Contact Quick Info */}
             <div className="flex flex-wrap items-center gap-6 pt-4">
-              <a 
-                href="tel:+36304877883" 
+              <a
+                href="tel:+36304877883"
                 className="flex items-center gap-2 text-[#8B7355] hover:text-[#D4854A] transition-colors"
               >
                 <Phone className="w-4 h-4" />
@@ -259,7 +251,7 @@ function HeroSection() {
             <div className="relative">
               {/* Main Image Container */}
               <div className="relative rounded-3xl overflow-hidden shadow-warm-lg">
-                <img 
+                <img
                   src="https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=800&h=1000&fit=crop"
                   alt="Relaxáló masszázs környezet az Angyali Szalonban"
                   className="w-full h-[500px] lg:h-[600px] object-cover"
@@ -354,18 +346,17 @@ function BenefitsSection() {
             Miért jó a masszázs a testednek és a lelkednek?
           </h2>
           <p className="text-lg text-[#8B7355]">
-            A rendszeres masszázs segíthet enyhíteni a fájdalmat, csökkenteni a stresszt, 
+            A rendszeres masszázs segíthet enyhíteni a fájdalmat, csökkenteni a stresszt,
             javítani a keringést és támogatni a mélyebb alvást.
           </p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-8">
           {benefits.map((benefit, index) => (
-            <div 
+            <div
               key={index}
-              className={`group bg-white rounded-3xl p-8 shadow-warm hover:shadow-warm-lg transition-all duration-500 hover:-translate-y-2 ${
-                isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-              }`}
+              className={`group bg-white rounded-3xl p-8 shadow-warm hover:shadow-warm-lg transition-all duration-500 hover:-translate-y-2 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+                }`}
               style={{ transitionDelay: `${index * 150}ms` }}
             >
               <div className="w-16 h-16 bg-gradient-to-br from-[#D4854A]/20 to-[#E8D4C0] rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
@@ -402,11 +393,11 @@ function ServiceModal({ service, isOpen, onClose }: { service: typeof services[0
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       {/* Backdrop */}
-      <div 
+      <div
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={onClose}
       />
-      
+
       {/* Modal Content */}
       <div className="relative bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in duration-300">
         {/* Close Button */}
@@ -419,7 +410,7 @@ function ServiceModal({ service, isOpen, onClose }: { service: typeof services[0
 
         {/* Image */}
         <div className="relative h-64 sm:h-80">
-          <img 
+          <img
             src={service.image}
             alt={service.name}
             className="w-full h-full object-cover"
@@ -441,12 +432,12 @@ function ServiceModal({ service, isOpen, onClose }: { service: typeof services[0
           <p className="text-[#4A3F35] leading-relaxed mb-6 text-base sm:text-lg">
             {service.description}
           </p>
-          
+
           <div className="mb-6">
             <h4 className="font-semibold text-[#4A3F35] mb-3 text-lg">Előnyök:</h4>
             <div className="flex flex-wrap gap-2">
               {service.benefits.map((benefit, idx) => (
-                <span 
+                <span
                   key={idx}
                   className="px-4 py-2 bg-[#F5E6D8] text-[#4A3F35] rounded-full text-sm font-medium"
                 >
@@ -455,7 +446,7 @@ function ServiceModal({ service, isOpen, onClose }: { service: typeof services[0
               ))}
             </div>
           </div>
-          
+
           {/* Before/After Photos */}
           {service.beforeAfter && service.beforeAfter.length > 0 && (
             <div className="mb-6">
@@ -465,17 +456,17 @@ function ServiceModal({ service, isOpen, onClose }: { service: typeof services[0
                   <div key={idx} className="space-y-2">
                     <div className="grid grid-cols-2 gap-2">
                       <div className="relative">
-                        <img 
-                          src={pair.before} 
-                          alt="Előtte" 
+                        <img
+                          src={pair.before}
+                          alt="Előtte"
                           className="w-full h-32 object-cover rounded-lg"
                         />
                         <span className="absolute bottom-2 left-2 bg-[#8B9A7C]/80 text-white text-xs px-2 py-1 rounded">Utána</span>
                       </div>
                       <div className="relative">
-                        <img 
-                          src={pair.after} 
-                          alt="Utána" 
+                        <img
+                          src={pair.after}
+                          alt="Utána"
                           className="w-full h-32 object-cover rounded-lg"
                         />
                         <span className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded">Előtte</span>
@@ -486,8 +477,8 @@ function ServiceModal({ service, isOpen, onClose }: { service: typeof services[0
               </div>
             </div>
           )}
-          
-          <Button 
+
+          <Button
             onClick={scrollToBooking}
             className="w-full bg-[#D4854A] hover:bg-[#B87333] text-white py-4 rounded-xl text-lg font-medium shadow-warm hover:shadow-warm-lg transition-all duration-300"
           >
@@ -554,16 +545,15 @@ function ServicesSection() {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {services.map((service, index) => (
-            <div 
+            <div
               key={service.id}
-              className={`group bg-white rounded-2xl overflow-hidden shadow-warm hover:shadow-warm-lg transition-all duration-500 hover:-translate-y-2 cursor-pointer ${
-                isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-              }`}
+              className={`group bg-white rounded-2xl overflow-hidden shadow-warm hover:shadow-warm-lg transition-all duration-500 hover:-translate-y-2 cursor-pointer ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+                }`}
               style={{ transitionDelay: `${index * 100}ms` }}
               onClick={() => openModal(service)}
             >
               <div className="relative h-48 overflow-hidden">
-                <img 
+                <img
                   src={service.image}
                   alt={service.name}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
@@ -576,7 +566,7 @@ function ServicesSection() {
                   </div>
                 </div>
               </div>
-              
+
               <div className="p-6">
                 <h3 className="text-xl font-semibold text-[#4A3F35] mb-2 group-hover:text-[#D4854A] transition-colors">
                   {service.name}
@@ -595,10 +585,10 @@ function ServicesSection() {
       </div>
 
       {/* Service Modal */}
-      <ServiceModal 
-        service={selectedService} 
-        isOpen={isModalOpen} 
-        onClose={closeModal} 
+      <ServiceModal
+        service={selectedService}
+        isOpen={isModalOpen}
+        onClose={closeModal}
       />
     </section>
   );
@@ -768,7 +758,7 @@ function PricingSection() {
         <div className={`bg-white rounded-3xl shadow-warm overflow-hidden transition-all duration-700 delay-200 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           <div className="divide-y divide-[#E8D4C0]">
             {prices.map((item, index) => (
-              <div 
+              <div
                 key={index}
                 className="flex items-center justify-between p-6 hover:bg-[#F9F1EA] transition-colors"
               >
@@ -783,17 +773,17 @@ function PricingSection() {
               </div>
             ))}
           </div>
-          
+
           <div className="p-6 bg-[#F9F1EA]">
             <p className="text-sm text-[#8B7355] text-center">
-              Az árak tájékoztató jellegűek, a változtatás jogát fenntartom. 
+              Az árak tájékoztató jellegűek, a változtatás jogát fenntartom.
               Több kezelés kombinálásáról vagy egyéni igényről szívesen egyeztetek személyesen vagy telefonon.
             </p>
           </div>
         </div>
 
         <div className={`mt-8 text-center transition-all duration-700 delay-400 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-          <Button 
+          <Button
             onClick={() => {
               const element = document.querySelector('#idopont');
               if (element) {
@@ -851,10 +841,9 @@ function TVSection() {
 
         <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
           {/* TV2 Video */}
-          <div 
-            className={`bg-white rounded-3xl overflow-hidden shadow-warm hover:shadow-warm-lg transition-all duration-500 ${
-              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-            }`}
+          <div
+            className={`bg-white rounded-3xl overflow-hidden shadow-warm hover:shadow-warm-lg transition-all duration-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+              }`}
           >
             <div className="relative aspect-video">
               <iframe
@@ -882,11 +871,10 @@ function TVSection() {
           </div>
 
           {/* RTL Video */}
-          <div 
-            className={`bg-white rounded-3xl overflow-hidden shadow-warm hover:shadow-warm-lg transition-all duration-500 ${
-              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-            }`}
-            style={{ transitionDelay: '150ms' }}
+          <div
+            className={`bg-white rounded-3xl overflow-hidden shadow-warm hover:shadow-warm-lg transition-all duration-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+              }`}
+            style={{ transitionDelay: '1s' }}
           >
             <div className="relative aspect-video">
               <iframe
@@ -984,10 +972,10 @@ function TestimonialsSection() {
           <h2 className="text-3xl sm:text-4xl font-bold text-[#4A3F35] mb-4">
             Mit mondanak a vendégek?
           </h2>
-          
+
           {/* Google Rating Badge */}
           <div className={`flex flex-col items-center gap-4 mb-8 transition-all duration-700 delay-100 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-            <a 
+            <a
               href="https://share.google/bUlkHfnNUJpZeq2Tw"
               target="_blank"
               rel="noopener noreferrer"
@@ -1007,10 +995,10 @@ function TestimonialsSection() {
                 <p className="text-sm font-medium text-[#4A3F35]">21 vélemény alapján</p>
               </div>
               <svg className="w-6 h-6 text-[#4285F4]" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
               </svg>
             </a>
             <p className="text-sm text-[#8B7355]">
@@ -1021,18 +1009,17 @@ function TestimonialsSection() {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {testimonials.map((testimonial, index) => (
-            <div 
+            <div
               key={index}
-              className={`relative bg-white rounded-2xl p-6 shadow-warm hover:shadow-warm-lg transition-all duration-500 ${
-                isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-              }`}
+              className={`relative bg-white rounded-2xl p-6 shadow-warm hover:shadow-warm-lg transition-all duration-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+                }`}
               style={{ transitionDelay: `${index * 100}ms` }}
             >
               {/* Quote Icon */}
               <div className="absolute -top-3 left-6 w-6 h-6 bg-[#D4854A] rounded-full flex items-center justify-center">
                 <span className="text-white text-sm font-serif">"</span>
               </div>
-              
+
               <div className="flex items-center justify-between mb-3">
                 <div className="flex gap-0.5">
                   {[1, 2, 3, 4, 5].map((star) => (
@@ -1043,11 +1030,11 @@ function TestimonialsSection() {
                   {testimonial.source}
                 </span>
               </div>
-              
+
               <p className="text-[#4A3F35] leading-relaxed mb-4 text-sm line-clamp-4">
                 "{testimonial.text}"
               </p>
-              
+
               <p className="text-sm font-medium text-[#4A3F35]">
                 — {testimonial.author}
               </p>
@@ -1057,7 +1044,7 @@ function TestimonialsSection() {
 
         {/* View All Reviews CTA */}
         <div className={`text-center mt-10 transition-all duration-700 delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-          <a 
+          <a
             href="https://share.google/bUlkHfnNUJpZeq2Tw"
             target="_blank"
             rel="noopener noreferrer"
@@ -1114,7 +1101,7 @@ function OrganoCoffeeSection() {
               <p className="text-[#4A3F35] leading-relaxed text-lg">
                 Az általam végzett kezelések során minden kedves vendégemet szeretettel kínálom a prémium minőségű <span className="font-semibold text-[#8B4513]">Organo kávéval és zöld teával</span>, amelyek ganoderma spórát és oroszlánsörény gombát (Hericium erinaceus) tartalmaznak.
               </p>
-              
+
               <p className="text-[#8B7355] leading-relaxed">
                 Ez a különleges összetétel hozzájárulhat a kiegyensúlyozott közérzethez és a szervezet harmonikus működéséhez.
               </p>
@@ -1162,8 +1149,8 @@ function OrganoCoffeeSection() {
             <div className="space-y-6">
               {/* Coffee Image */}
               <div className="relative rounded-2xl overflow-hidden shadow-warm">
-                <img 
-                  src="/images/organo-kave.jpeg" 
+                <img
+                  src="/images/organo-kave.jpeg"
                   alt="Organo kávé választék - Fekete kávé, Gourmet Latte, Mocha Cappuccino, Forró csokoládé"
                   className="w-full h-64 object-cover"
                 />
@@ -1174,8 +1161,8 @@ function OrganoCoffeeSection() {
 
               {/* Green Tea Image */}
               <div className="relative rounded-2xl overflow-hidden shadow-warm">
-                <img 
-                  src="/images/organo-zoldtea.jpeg" 
+                <img
+                  src="/images/organo-zoldtea.jpeg"
                   alt="Organo Reishi Ganoderma zöld tea"
                   className="w-full h-64 object-cover"
                 />
@@ -1221,13 +1208,13 @@ function AboutSection() {
           {/* Image */}
           <div className={`relative transition-all duration-700 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-10'}`}>
             <div className="relative rounded-3xl overflow-hidden shadow-warm-lg">
-              <img 
+              <img
                 src="/images/edina.jpeg"
                 alt="Makra Edina - Masszőr, kineziológus"
                 className="w-full h-[400px] lg:h-[500px] object-cover"
               />
             </div>
-            
+
             {/* Decorative Element */}
             <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-[#D4854A]/20 rounded-full blur-2xl" />
           </div>
@@ -1237,25 +1224,25 @@ function AboutSection() {
             <span className="inline-block px-4 py-2 bg-[#D4854A]/10 rounded-full text-sm font-medium text-[#D4854A]">
               Rólam
             </span>
-            
+
             <h2 className="text-3xl sm:text-4xl font-bold text-[#4A3F35]">
               Figyelem, törődés, nyugalom
             </h2>
-            
+
             <div className="space-y-4 text-[#4A3F35] leading-relaxed">
               <p>
-                Számomra a masszázs több, mint egy kezelés. Lehetőség arra, hogy a vendég 
-                végre megálljon egy kicsit, letegye a mindennapi terheket, és biztonságos, 
+                Számomra a masszázs több, mint egy kezelés. Lehetőség arra, hogy a vendég
+                végre megálljon egy kicsit, letegye a mindennapi terheket, és biztonságos,
                 nyugodt környezetben töltődjön fel az <span className="font-semibold text-[#D4854A]">Angyali Szalonban</span>.
               </p>
               <p>
-                Minden alkalommal röviden átbeszéljük, milyen panaszaid, igényeid vannak, 
-                majd ehhez igazítom a fogásokat és az érintés erősségét. Fontosnak tartom, 
-                hogy a masszázs ne legyen fájdalmas, mégis hatékonyan segítsen a feszültség 
+                Minden alkalommal röviden átbeszéljük, milyen panaszaid, igényeid vannak,
+                majd ehhez igazítom a fogásokat és az érintés erősségét. Fontosnak tartom,
+                hogy a masszázs ne legyen fájdalmas, mégis hatékonyan segítsen a feszültség
                 oldásában és a testi-lelki egyensúly megtalálásában.
               </p>
               <p>
-                A kezelések célja mindig az, hogy úgy állj fel a masszázs végén, 
+                A kezelések célja mindig az, hogy úgy állj fel a masszázs végén,
                 hogy könnyebbnek, nyugodtabbnak és energikusabbnak érezd magad.
               </p>
             </div>
@@ -1323,15 +1310,14 @@ function GallerySection() {
 
         <div className="grid md:grid-cols-2 gap-6">
           {images.map((image, index) => (
-            <div 
+            <div
               key={index}
-              className={`relative group overflow-hidden rounded-2xl shadow-warm transition-all duration-700 ${
-                isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-              }`}
+              className={`relative group overflow-hidden rounded-2xl shadow-warm transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+                }`}
               style={{ transitionDelay: `${index * 100}ms` }}
             >
               <div className="aspect-[4/3] overflow-hidden">
-                <img 
+                <img
                   src={image.src}
                   alt={image.alt}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
@@ -1387,7 +1373,7 @@ function ProductsSection() {
         <div className={`grid lg:grid-cols-2 gap-8 items-center transition-all duration-700 delay-200 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           {/* Product Image */}
           <div className="relative rounded-2xl overflow-hidden shadow-warm-lg">
-            <img 
+            <img
               src="/images/professional-products.jpeg"
               alt="Professzionális kozmetikai termékek - Magic brand"
               className="w-full h-auto object-cover"
@@ -1537,11 +1523,11 @@ function BookingSection() {
 
   const handlePayment = async () => {
     setIsSubmitting(true);
-    
+
     try {
       const depositAmount = getFinalDepositAmount();
       const serviceName = formData.service || 'Masszázs kezelés';
-      
+
       // Create a hidden form to submit to Google Apps Script
       // This avoids CORS issues
       const form = document.createElement('form');
@@ -1549,7 +1535,7 @@ function BookingSection() {
       form.action = SCRIPT_URL;
       form.target = '_blank';
       form.style.display = 'none';
-      
+
       const addField = (name: string, value: string) => {
         const input = document.createElement('input');
         input.type = 'hidden';
@@ -1557,7 +1543,7 @@ function BookingSection() {
         input.value = value;
         form.appendChild(input);
       };
-      
+
       addField('action', 'createStripeCheckout');
       addField('name', formData.name);
       addField('email', formData.email);
@@ -1572,14 +1558,14 @@ function BookingSection() {
       addField('amount', String(depositAmount));
       addField('successUrl', window.location.origin + '/#booking-success');
       addField('cancelUrl', window.location.origin + '/#booking-cancel');
-      
+
       document.body.appendChild(form);
       form.submit();
       document.body.removeChild(form);
-      
+
       // Show message to user
       toast.success('Fizetési oldal megnyitva új ablakban. A foglalás a fizetés után válik véglegessé.');
-      
+
     } catch (error) {
       console.error('Payment error:', error);
       toast.error('Hiba történt a fizetés során: ' + (error instanceof Error ? error.message : 'Ismeretlen hiba'));
@@ -1666,7 +1652,7 @@ function BookingSection() {
                         <span className="text-[#8B7355] text-base">Kezelés ára:</span>
                         <span className="text-[#4A3F35] text-lg font-medium">{getSelectedServicePrice().toLocaleString()} Ft / alkalom</span>
                       </div>
-                      
+
                       {formData.recurring && (
                         <>
                           {/* Quantity */}
@@ -1674,13 +1660,13 @@ function BookingSection() {
                             <span className="text-[#8B7355] text-base">Alkalom száma:</span>
                             <span className="text-[#4A3F35] text-lg font-medium">{formData.recurringCount} × {getSelectedServicePrice().toLocaleString()} Ft</span>
                           </div>
-                          
+
                           {/* Total Before Discount - BIG */}
                           <div className="flex justify-between items-center bg-[#F9F1EA] rounded-lg px-4 py-3">
                             <span className="text-[#4A3F35] text-lg font-semibold">Teljes ár kedvezmény előtt:</span>
                             <span className="text-[#4A3F35] text-2xl font-bold">{(getSelectedServicePrice() * formData.recurringCount).toLocaleString()} Ft</span>
                           </div>
-                          
+
                           {/* Discount */}
                           {getDiscountPercent() > 0 && (
                             <div className="flex justify-between items-center bg-[#8B9A7C]/10 rounded-lg px-4 py-2">
@@ -1688,7 +1674,7 @@ function BookingSection() {
                               <span className="text-[#8B9A7C] text-xl font-bold">-{getDiscountAmount().toLocaleString()} Ft</span>
                             </div>
                           )}
-                          
+
                           {/* Discounted Price */}
                           <div className="flex justify-between items-center">
                             <span className="text-[#4A3F35] text-base font-medium">Kedvezményes ár:</span>
@@ -1696,7 +1682,7 @@ function BookingSection() {
                           </div>
                         </>
                       )}
-                      
+
                       {/* Deposit - BIGGEST */}
                       <div className="flex justify-between items-center bg-[#D4854A]/10 rounded-xl px-4 py-4 mt-4 border-2 border-[#D4854A]/30">
                         <div>
@@ -1713,9 +1699,9 @@ function BookingSection() {
               {/* Payment Methods */}
               <div className="space-y-4">
                 <p className="text-sm text-[#8B7355] text-center">Válassz fizetési módot:</p>
-                
+
                 {/* Stripe Payment Button - PRIMARY */}
-                <Button 
+                <Button
                   onClick={handlePayment}
                   disabled={isSubmitting}
                   className="w-full bg-gradient-to-r from-[#D4854A] to-[#B87333] hover:from-[#B87333] hover:to-[#D4854A] text-white py-5 rounded-xl text-xl font-bold shadow-warm-lg hover:shadow-warm-xl transition-all duration-300 disabled:opacity-50 border-2 border-[#D4854A]"
@@ -1732,7 +1718,7 @@ function BookingSection() {
                     </>
                   )}
                 </Button>
-                
+
                 <p className="text-xs text-center text-[#8B7355] flex items-center justify-center gap-1">
                   <Lock className="w-3 h-3" />
                   256-bit SSL titkosítás - Stripe biztonságos fizetés
@@ -1770,7 +1756,7 @@ function BookingSection() {
                   </p>
                 </div>
 
-                <Button 
+                <Button
                   onClick={() => setStep('form')}
                   variant="outline"
                   className="w-full border-[#E8D4C0] text-[#8B7355] hover:bg-[#F9F1EA]"
@@ -2021,13 +2007,13 @@ function BookingSection() {
                     </div>
                   )}
                   <p className="text-base text-[#8B7355] mb-1">
-                    {formData.recurring 
-                      ? `Foglalási díj (${formData.recurringCount} alkalom × 20%)` 
+                    {formData.recurring
+                      ? `Foglalási díj (${formData.recurringCount} alkalom × 20%)`
                       : 'Foglalási díj (20%)'}
                   </p>
                   <p className="text-4xl font-black text-[#D4854A] my-2">{getFinalDepositAmount().toLocaleString()} Ft</p>
                   <p className="text-sm text-[#8B7355]">
-                    {formData.recurring 
+                    {formData.recurring
                       ? `Kedvezményes ár összesen: ${getTotalPriceWithDiscount().toLocaleString()} Ft`
                       : `Kezelés ára: ${getSelectedServicePrice().toLocaleString()} Ft`}
                   </p>
@@ -2035,7 +2021,7 @@ function BookingSection() {
               )}
 
               {/* Submit Button */}
-              <Button 
+              <Button
                 type="submit"
                 disabled={isSubmitting || !acceptedTerms}
                 className="w-full bg-[#D4854A] hover:bg-[#B87333] text-white py-6 rounded-xl text-lg font-medium shadow-warm hover:shadow-warm-lg transition-all duration-300 disabled:opacity-50"
@@ -2067,7 +2053,7 @@ function BookingSection() {
               >
                 <X className="w-5 h-5 text-[#4A3F35]" />
               </button>
-              <h3 className="text-xl font-bold text-[#4A3F35] mb-4">Általános Szerződési Feltételek</h3>
+              <h3 className="text-xl font-bold text-[#4A3F35] mb-4">Általános Szerződési Feltételek</h2>
               <div className="space-y-4 text-sm text-[#4A3F35]">
                 <p><strong>1. Foglalási díj:</strong> A kezelés árának 20%-a, amely online fizetéssel vagy banki átutalással esedékes a foglaláskor.</p>
                 <p><strong>2. Lemondási feltételek:</strong></p>
@@ -2097,7 +2083,7 @@ function BookingSection() {
               </div>
               <div>
                 <p className="text-sm text-[#8B7355]">Telefonon</p>
-                <a 
+                <a
                   href="tel:+36304877883"
                   className="text-lg font-semibold text-[#4A3F35] hover:text-[#D4854A] transition-colors"
                 >
@@ -2114,7 +2100,7 @@ function BookingSection() {
               </div>
               <div>
                 <p className="text-sm text-[#8B7355]">Emailben</p>
-                <a 
+                <a
                   href="mailto:dunakeszimasszor@gmail.com"
                   className="text-lg font-semibold text-[#4A3F35] hover:text-[#8B9A7C] transition-colors break-all"
                 >
@@ -2151,7 +2137,7 @@ function FooterSection() {
               </div>
             </div>
             <p className="text-white/70 leading-relaxed">
-              Nyugtató, harmonizáló kezelések egy békés, biztonságos környezetben az Angyali Szalonban. 
+              Nyugtató, harmonizáló kezelések egy békés, biztonságos környezetben az Angyali Szalonban.
               Személyre szabott masszázskezelésekkel várlak szeretettel Dunakeszin.
             </p>
           </div>
@@ -2167,7 +2153,7 @@ function FooterSection() {
                 { href: '#idopont', label: 'Időpontfoglalás' },
               ].map((link) => (
                 <li key={link.href}>
-                  <a 
+                  <a
                     href={link.href}
                     onClick={(e) => {
                       e.preventDefault();
@@ -2190,7 +2176,7 @@ function FooterSection() {
             <h4 className="font-semibold text-lg mb-4">Kapcsolat</h4>
             <ul className="space-y-4">
               <li>
-                <a 
+                <a
                   href="tel:+36304877883"
                   className="flex items-center gap-3 text-white/70 hover:text-[#D4854A] transition-colors"
                 >
@@ -2199,7 +2185,7 @@ function FooterSection() {
                 </a>
               </li>
               <li>
-                <a 
+                <a
                   href="mailto:dunakeszimasszor@gmail.com"
                   className="flex items-center gap-3 text-white/70 hover:text-[#D4854A] transition-colors break-all"
                 >
@@ -2209,21 +2195,21 @@ function FooterSection() {
               </li>
               <li className="flex items-center gap-3 text-white/70">
                 <MapPin className="w-5 h-5" />
-                <span>Dunakeszi, Kolonics György utca 2/B, 2120<br/><small>Kapucsengő: 1/43</small></span>
+                <span>Dunakeszi, Kolonics György utca 2/B, 2120<br /><small>Kapucsengő: 1/43</small></span>
               </li>
               <li className="flex items-start gap-3 text-white/70">
                 <svg className="w-5 h-5 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span>Bankszámla:<br/>10700581-730554012-511100005</span>
+                <span>Bankszámla:<br />10700581-730554012-511100005</span>
               </li>
             </ul>
-            
+
             {/* Social Media Links */}
             <div className="mt-6">
               <h5 className="text-sm font-medium text-white/50 mb-3">Kövess minket</h5>
               <div className="flex gap-3">
-                <a 
+                <a
                   href="https://www.facebook.com/61577273747405"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -2232,18 +2218,18 @@ function FooterSection() {
                 >
                   <Facebook className="w-5 h-5" />
                 </a>
-                <a 
-                  href="https://share.google/bUlkHfnNUJpZeq2Tw" 
+                <a
+                  href="https://share.google/bUlkHfnNUJpZeq2Tw"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-[#D4854A] transition-colors"
                   aria-label="Google Business"
                 >
                   <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                   </svg>
                 </a>
               </div>
@@ -2258,8 +2244,8 @@ function FooterSection() {
               © {new Date().getFullYear()} Dunakeszi Masszázs - Angyali Szalon – Makra Edina | Minden jog fenntartva
             </p>
             <div className="flex items-center gap-6">
-              <a 
-                href="/#admin" 
+              <a
+                href="/#admin"
                 className="text-white/50 hover:text-[#D4854A] transition-colors text-sm"
               >
                 Admin
@@ -2367,7 +2353,7 @@ function AdminPage() {
   const handleCreatePackage = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
+
     try {
       const response = await fetch(SCRIPT_URL, {
         method: 'POST',
@@ -2412,7 +2398,7 @@ function AdminPage() {
   const handleCancelAppointment = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
+
     try {
       await fetch(SCRIPT_URL, {
         method: 'POST',
@@ -2449,7 +2435,7 @@ function AdminPage() {
   const handleNotifyChange = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
+
     try {
       await fetch(SCRIPT_URL, {
         method: 'POST',
@@ -2505,13 +2491,14 @@ function AdminPage() {
           <div className="text-center mb-8">
             <div className="w-16 h-16 bg-[#D4854A]/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg className="w-8 h-8 text-[#D4854A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
             </div>
             <h1 className="text-2xl font-bold text-[#4A3F35]">Admin Bejelentkezés</h1>
             <p className="text-[#8B7355] mt-2">Dunakeszi Masszázs - Angyali Szalon</p>
           </div>
-          
+
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <Label htmlFor="admin-password" className="text-[#4A3F35]">Jelszó</Label>
@@ -2524,14 +2511,14 @@ function AdminPage() {
                 className="border-[#E8D4C0] focus:border-[#D4854A] focus:ring-[#D4854A]"
               />
             </div>
-            <Button 
+            <Button
               type="submit"
               className="w-full bg-[#D4854A] hover:bg-[#B87333] text-white py-3 rounded-xl font-medium"
             >
               Bejelentkezés
             </Button>
           </form>
-          
+
           <div className="mt-6 text-center">
             <a href="/" onClick={() => window.location.hash = ''} className="text-[#8B7355] hover:text-[#D4854A] text-sm">
               ← Vissza a főoldalra
@@ -2560,16 +2547,16 @@ function AdminPage() {
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <a 
-              href="https://calendar.google.com" 
-              target="_blank" 
+            <a
+              href="https://calendar.google.com"
+              target="_blank"
               rel="noopener noreferrer"
               className="hidden sm:flex items-center gap-2 px-4 py-2 bg-[#8B9A7C]/10 text-[#8B9A7C] rounded-lg hover:bg-[#8B9A7C]/20 transition-colors"
             >
               <Calendar className="w-4 h-4" />
               <span>Google Naptár</span>
             </a>
-            <button 
+            <button
               onClick={() => setIsAuthenticated(false)}
               className="text-[#8B7355] hover:text-[#D4854A]"
             >
@@ -2594,11 +2581,10 @@ function AdminPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center gap-2 px-6 py-4 font-medium whitespace-nowrap transition-colors ${
-                  activeTab === tab.id 
-                    ? 'text-[#D4854A] border-b-2 border-[#D4854A]' 
+                className={`flex items-center gap-2 px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === tab.id
+                    ? 'text-[#D4854A] border-b-2 border-[#D4854A]'
                     : 'text-[#8B7355] hover:text-[#4A3F35]'
-                }`}
+                  }`}
               >
                 <span>{tab.icon}</span>
                 <span>{tab.label}</span>
@@ -2614,7 +2600,7 @@ function AdminPage() {
         {activeTab === 'dashboard' && (
           <div className="space-y-6">
             <h2 className="text-2xl font-bold text-[#4A3F35]">Áttekintés</h2>
-            
+
             {/* Stats Cards */}
             <div className="grid md:grid-cols-4 gap-4">
               <div className="bg-white rounded-2xl p-6 shadow-warm">
@@ -2624,7 +2610,7 @@ function AdminPage() {
                 <p className="text-[#8B7355] text-sm">Összes vásárló</p>
                 <p className="text-3xl font-bold text-[#4A3F35]">{dashboardData?.customerCount || 0}</p>
               </div>
-              
+
               <div className="bg-white rounded-2xl p-6 shadow-warm">
                 <div className="w-12 h-12 bg-[#D4854A]/10 rounded-xl flex items-center justify-center mb-4">
                   <svg className="w-6 h-6 text-[#D4854A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -2634,7 +2620,7 @@ function AdminPage() {
                 <p className="text-[#8B7355] text-sm">Aktív bérletek</p>
                 <p className="text-3xl font-bold text-[#4A3F35]">{dashboardData?.activePackages || 0}</p>
               </div>
-              
+
               <div className="bg-white rounded-2xl p-6 shadow-warm">
                 <div className="w-12 h-12 bg-[#4A7C59]/10 rounded-xl flex items-center justify-center mb-4">
                   <Calendar className="w-6 h-6 text-[#4A7C59]" />
@@ -2642,7 +2628,7 @@ function AdminPage() {
                 <p className="text-[#8B7355] text-sm">Hátralévő alkalmak</p>
                 <p className="text-3xl font-bold text-[#4A3F35]">{dashboardData?.totalSessionsRemaining || 0}</p>
               </div>
-              
+
               <div className="bg-white rounded-2xl p-6 shadow-warm">
                 <div className="w-12 h-12 bg-[#8B4513]/10 rounded-xl flex items-center justify-center mb-4">
                   <svg className="w-6 h-6 text-[#8B4513]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -2676,9 +2662,9 @@ function AdminPage() {
 
             {/* Quick Links */}
             <div className="grid md:grid-cols-3 gap-4">
-              <a 
-                href="https://calendar.google.com" 
-                target="_blank" 
+              <a
+                href="https://calendar.google.com"
+                target="_blank"
                 rel="noopener noreferrer"
                 className="bg-white rounded-2xl p-6 shadow-warm hover:shadow-warm-lg transition-shadow"
               >
@@ -2688,8 +2674,8 @@ function AdminPage() {
                 <h3 className="font-semibold text-[#4A3F35]">Google Naptár</h3>
                 <p className="text-sm text-[#8B7355]">Foglalások kezelése</p>
               </a>
-              
-              <a 
+
+              <a
                 href="mailto:dunakeszimasszor@gmail.com"
                 className="bg-white rounded-2xl p-6 shadow-warm hover:shadow-warm-lg transition-shadow"
               >
@@ -2699,8 +2685,8 @@ function AdminPage() {
                 <h3 className="font-semibold text-[#4A3F35]">Gmail</h3>
                 <p className="text-sm text-[#8B7355]">Emailek kezelése</p>
               </a>
-              
-              <a 
+
+              <a
                 href="/"
                 onClick={() => window.location.hash = ''}
                 className="bg-white rounded-2xl p-6 shadow-warm hover:shadow-warm-lg transition-shadow"
@@ -2721,7 +2707,7 @@ function AdminPage() {
         {activeTab === 'customers' && (
           <div className="space-y-6">
             <h2 className="text-2xl font-bold text-[#4A3F35]">Vásárló keresése</h2>
-            
+
             <div className="bg-white rounded-2xl shadow-warm p-6">
               <div className="flex gap-4">
                 <Input
@@ -2731,7 +2717,7 @@ function AdminPage() {
                   onChange={(e) => setSearchEmail(e.target.value)}
                   className="flex-1 border-[#E8D4C0] focus:border-[#D4854A] focus:ring-[#D4854A]"
                 />
-                <Button 
+                <Button
                   onClick={searchCustomer}
                   className="bg-[#D4854A] hover:bg-[#B87333] text-white"
                 >
@@ -2795,11 +2781,10 @@ function AdminPage() {
                             <p className="font-medium text-[#4A3F35]">{booking.service}</p>
                             <p className="text-sm text-[#8B7355]">{booking.date} {booking.time}</p>
                           </div>
-                          <span className={`px-2 py-1 rounded text-xs ${
-                            booking.status === 'Confirmed' 
-                              ? 'bg-[#8B9A7C]/20 text-[#8B9A7C]' 
+                          <span className={`px-2 py-1 rounded text-xs ${booking.status === 'Confirmed'
+                              ? 'bg-[#8B9A7C]/20 text-[#8B9A7C]'
                               : 'bg-red-100 text-red-600'
-                          }`}>
+                            }`}>
                             {booking.status === 'Confirmed' ? 'Megerősítve' : 'Lemondva'}
                           </span>
                         </div>
@@ -2816,7 +2801,7 @@ function AdminPage() {
         {activeTab === 'packages' && (
           <div className="space-y-6">
             <h2 className="text-2xl font-bold text-[#4A3F35]">Új bérlet létrehozása</h2>
-            
+
             <div className="bg-white rounded-2xl shadow-warm p-6">
               <form onSubmit={handleCreatePackage} className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-6">
@@ -2824,7 +2809,7 @@ function AdminPage() {
                     <Label className="text-[#4A3F35]">Vásárló neve *</Label>
                     <Input
                       value={packageForm.customerName}
-                      onChange={(e) => setPackageForm({...packageForm, customerName: e.target.value})}
+                      onChange={(e) => setPackageForm({ ...packageForm, customerName: e.target.value })}
                       placeholder="Pl.: Kovács Anna"
                       required
                       className="border-[#E8D4C0] focus:border-[#D4854A] focus:ring-[#D4854A]"
@@ -2835,7 +2820,7 @@ function AdminPage() {
                     <Input
                       type="email"
                       value={packageForm.customerEmail}
-                      onChange={(e) => setPackageForm({...packageForm, customerEmail: e.target.value})}
+                      onChange={(e) => setPackageForm({ ...packageForm, customerEmail: e.target.value })}
                       placeholder="anna@pelda.hu"
                       required
                       className="border-[#E8D4C0] focus:border-[#D4854A] focus:ring-[#D4854A]"
@@ -2845,7 +2830,7 @@ function AdminPage() {
                     <Label className="text-[#4A3F35]">Telefonszám</Label>
                     <Input
                       value={packageForm.customerPhone}
-                      onChange={(e) => setPackageForm({...packageForm, customerPhone: e.target.value})}
+                      onChange={(e) => setPackageForm({ ...packageForm, customerPhone: e.target.value })}
                       placeholder="+36 30 123 4567"
                       className="border-[#E8D4C0] focus:border-[#D4854A] focus:ring-[#D4854A]"
                     />
@@ -2854,7 +2839,7 @@ function AdminPage() {
                     <Label className="text-[#4A3F35]">Kezelés típusa</Label>
                     <select
                       value={packageForm.service}
-                      onChange={(e) => setPackageForm({...packageForm, service: e.target.value})}
+                      onChange={(e) => setPackageForm({ ...packageForm, service: e.target.value })}
                       className="w-full h-10 pl-3 pr-10 border border-[#E8D4C0] rounded-md focus:border-[#D4854A] focus:ring-1 focus:ring-[#D4854A] bg-white text-[#4A3F35] appearance-none cursor-pointer"
                     >
                       <option value="">Bármely kezelés</option>
@@ -2870,7 +2855,7 @@ function AdminPage() {
                     <Label className="text-[#4A3F35]">Alkalmak száma *</Label>
                     <select
                       value={packageForm.sessions}
-                      onChange={(e) => setPackageForm({...packageForm, sessions: parseInt(e.target.value)})}
+                      onChange={(e) => setPackageForm({ ...packageForm, sessions: parseInt(e.target.value) })}
                       className="w-full h-10 pl-3 pr-10 border border-[#E8D4C0] rounded-md focus:border-[#D4854A] focus:ring-1 focus:ring-[#D4854A] bg-white text-[#4A3F35] appearance-none cursor-pointer"
                     >
                       {[2, 3, 4, 5, 6, 8, 10, 12].map((num) => (
@@ -2883,7 +2868,7 @@ function AdminPage() {
                     <Input
                       type="number"
                       value={packageForm.originalPrice}
-                      onChange={(e) => setPackageForm({...packageForm, originalPrice: parseInt(e.target.value)})}
+                      onChange={(e) => setPackageForm({ ...packageForm, originalPrice: parseInt(e.target.value) })}
                       className="border-[#E8D4C0] focus:border-[#D4854A] focus:ring-[#D4854A]"
                     />
                   </div>
@@ -2892,7 +2877,7 @@ function AdminPage() {
                     <Input
                       type="number"
                       value={packageForm.depositPaid}
-                      onChange={(e) => setPackageForm({...packageForm, depositPaid: parseInt(e.target.value)})}
+                      onChange={(e) => setPackageForm({ ...packageForm, depositPaid: parseInt(e.target.value) })}
                       className="border-[#E8D4C0] focus:border-[#D4854A] focus:ring-[#D4854A]"
                     />
                   </div>
@@ -2900,7 +2885,7 @@ function AdminPage() {
                     <Label className="text-[#4A3F35]">Megjegyzés</Label>
                     <Textarea
                       value={packageForm.notes}
-                      onChange={(e) => setPackageForm({...packageForm, notes: e.target.value})}
+                      onChange={(e) => setPackageForm({ ...packageForm, notes: e.target.value })}
                       placeholder="Opcionális megjegyzés..."
                       className="border-[#E8D4C0] focus:border-[#D4854A] focus:ring-[#D4854A]"
                     />
@@ -2936,7 +2921,7 @@ function AdminPage() {
                   </div>
                 </div>
 
-                <Button 
+                <Button
                   type="submit"
                   disabled={isSubmitting}
                   className="w-full bg-[#D4854A] hover:bg-[#B87333] text-white py-4 rounded-xl font-medium"
@@ -2959,8 +2944,8 @@ function AdminPage() {
                   onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
                   className="h-10 pl-3 pr-10 border border-[#E8D4C0] rounded-md focus:border-[#D4854A] bg-white text-[#4A3F35]"
                 >
-                  {Array.from({length: 12}, (_, i) => (
-                    <option key={i+1} value={i+1}>{i+1}. hónap</option>
+                  {Array.from({ length: 12 }, (_, i) => (
+                    <option key={i + 1} value={i + 1}>{i + 1}. hónap</option>
                   ))}
                 </select>
                 <select
@@ -2972,7 +2957,7 @@ function AdminPage() {
                     <option key={year} value={year}>{year}</option>
                   ))}
                 </select>
-                <Button 
+                <Button
                   onClick={loadPnLData}
                   className="bg-[#D4854A] hover:bg-[#B87333] text-white"
                 >
@@ -3023,11 +3008,10 @@ function AdminPage() {
                             <tr key={i} className="border-b border-[#F9F1EA]">
                               <td className="py-3 text-[#4A3F35]">{txn.date}</td>
                               <td className="py-3">
-                                <span className={`px-2 py-1 rounded text-xs ${
-                                  txn.type === 'Income' || txn.type === 'Payment'
+                                <span className={`px-2 py-1 rounded text-xs ${txn.type === 'Income' || txn.type === 'Payment'
                                     ? 'bg-[#8B9A7C]/20 text-[#8B9A7C]'
                                     : 'bg-[#D4854A]/20 text-[#D4854A]'
-                                }`}>
+                                  }`}>
                                   {txn.type === 'Income' ? 'Bevétel' : txn.type === 'Payment' ? 'Fizetés' : 'Foglaló'}
                                 </span>
                               </td>
@@ -3056,7 +3040,7 @@ function AdminPage() {
                   <Label className="text-[#4A3F35]">Vendég neve *</Label>
                   <Input
                     value={formData.clientName}
-                    onChange={(e) => setFormData({...formData, clientName: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, clientName: e.target.value })}
                     placeholder="Pl.: Kovács Anna"
                     required
                     className="border-[#E8D4C0] focus:border-[#D4854A] focus:ring-[#D4854A]"
@@ -3067,7 +3051,7 @@ function AdminPage() {
                   <Input
                     type="email"
                     value={formData.clientEmail}
-                    onChange={(e) => setFormData({...formData, clientEmail: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, clientEmail: e.target.value })}
                     placeholder="anna@pelda.hu"
                     required
                     className="border-[#E8D4C0] focus:border-[#D4854A] focus:ring-[#D4854A]"
@@ -3078,7 +3062,7 @@ function AdminPage() {
                   <Input
                     type="date"
                     value={formData.appointmentDate}
-                    onChange={(e) => setFormData({...formData, appointmentDate: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, appointmentDate: e.target.value })}
                     required
                     className="border-[#E8D4C0] focus:border-[#D4854A] focus:ring-[#D4854A]"
                   />
@@ -3088,7 +3072,7 @@ function AdminPage() {
                   <Input
                     type="time"
                     value={formData.appointmentTime}
-                    onChange={(e) => setFormData({...formData, appointmentTime: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, appointmentTime: e.target.value })}
                     required
                     className="border-[#E8D4C0] focus:border-[#D4854A] focus:ring-[#D4854A]"
                   />
@@ -3097,7 +3081,7 @@ function AdminPage() {
                   <Label className="text-[#4A3F35]">Kezelés *</Label>
                   <Input
                     value={formData.service}
-                    onChange={(e) => setFormData({...formData, service: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, service: e.target.value })}
                     placeholder="Pl.: Frissítő masszázs"
                     required
                     className="border-[#E8D4C0] focus:border-[#D4854A] focus:ring-[#D4854A]"
@@ -3107,20 +3091,20 @@ function AdminPage() {
                   <Label className="text-[#4A3F35]">Lemondás oka</Label>
                   <Textarea
                     value={formData.reason}
-                    onChange={(e) => setFormData({...formData, reason: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
                     placeholder="Opcionális: lemondás oka..."
                     className="border-[#E8D4C0] focus:border-[#D4854A] focus:ring-[#D4854A]"
                   />
                 </div>
               </div>
-              
+
               <div className="bg-[#F9F1EA] rounded-xl p-4">
                 <p className="text-sm text-[#8B7355]">
                   <strong className="text-[#4A3F35]">Fontos:</strong> A lemondás után ne felejtsd el törölni az időpontot a Google Naptárból is!
                 </p>
               </div>
 
-              <Button 
+              <Button
                 type="submit"
                 disabled={isSubmitting}
                 className="w-full bg-red-500 hover:bg-red-600 text-white py-4 rounded-xl font-medium"
@@ -3141,7 +3125,7 @@ function AdminPage() {
                   <Label className="text-[#4A3F35]">Vendég neve *</Label>
                   <Input
                     value={formData.clientName}
-                    onChange={(e) => setFormData({...formData, clientName: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, clientName: e.target.value })}
                     placeholder="Pl.: Kovács Anna"
                     required
                     className="border-[#E8D4C0] focus:border-[#D4854A] focus:ring-[#D4854A]"
@@ -3152,7 +3136,7 @@ function AdminPage() {
                   <Input
                     type="email"
                     value={formData.clientEmail}
-                    onChange={(e) => setFormData({...formData, clientEmail: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, clientEmail: e.target.value })}
                     placeholder="anna@pelda.hu"
                     required
                     className="border-[#E8D4C0] focus:border-[#D4854A] focus:ring-[#D4854A]"
@@ -3163,7 +3147,7 @@ function AdminPage() {
                   <Input
                     type="date"
                     value={formData.appointmentDate}
-                    onChange={(e) => setFormData({...formData, appointmentDate: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, appointmentDate: e.target.value })}
                     required
                     className="border-[#E8D4C0] focus:border-[#D4854A] focus:ring-[#D4854A]"
                   />
@@ -3173,7 +3157,7 @@ function AdminPage() {
                   <Input
                     type="time"
                     value={formData.appointmentTime}
-                    onChange={(e) => setFormData({...formData, appointmentTime: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, appointmentTime: e.target.value })}
                     required
                     className="border-[#E8D4C0] focus:border-[#D4854A] focus:ring-[#D4854A]"
                   />
@@ -3182,7 +3166,7 @@ function AdminPage() {
                   <Label className="text-[#4A3F35]">Kezelés *</Label>
                   <Input
                     value={formData.service}
-                    onChange={(e) => setFormData({...formData, service: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, service: e.target.value })}
                     placeholder="Pl.: Frissítő masszázs"
                     required
                     className="border-[#E8D4C0] focus:border-[#D4854A] focus:ring-[#D4854A]"
@@ -3193,7 +3177,7 @@ function AdminPage() {
                   <Input
                     type="date"
                     value={formData.newDate}
-                    onChange={(e) => setFormData({...formData, newDate: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, newDate: e.target.value })}
                     required
                     className="border-[#E8D4C0] focus:border-[#D4854A] focus:ring-[#D4854A]"
                   />
@@ -3203,20 +3187,20 @@ function AdminPage() {
                   <Input
                     type="time"
                     value={formData.newTime}
-                    onChange={(e) => setFormData({...formData, newTime: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, newTime: e.target.value })}
                     required
                     className="border-[#E8D4C0] focus:border-[#D4854A] focus:ring-[#D4854A]"
                   />
                 </div>
               </div>
-              
+
               <div className="bg-[#F9F1EA] rounded-xl p-4">
                 <p className="text-sm text-[#8B7355]">
                   <strong className="text-[#4A3F35]">Fontos:</strong> A módosítás után ne felejtsd el frissíteni az időpontot a Google Naptárból is!
                 </p>
               </div>
 
-              <Button 
+              <Button
                 type="submit"
                 disabled={isSubmitting}
                 className="w-full bg-[#8B9A7C] hover:bg-[#7A8B6B] text-white py-4 rounded-xl font-medium"
@@ -3235,11 +3219,11 @@ function AdminPage() {
 function App() {
   // Check if we're on the admin page using hash routing for static deployment
   const isAdminPage = window.location.hash === '#admin' || window.location.search.includes('admin');
-  
+
   if (isAdminPage) {
     return <AdminPage />;
   }
-  
+
   return (
     <div className="min-h-screen bg-[#FFFBF7]">
       <Navigation />
