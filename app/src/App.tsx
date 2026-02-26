@@ -1560,51 +1560,55 @@ function BookingSection() {
       let depositAmount = Number(getFinalDepositAmount());
       
       // Safety check: Stripe minimum for HUF is 175 Fortint.
-      // If calculation fails or is too low, use a default deposit of 3000 Ft.
+      // Force minimum 3000 Ft (20% of cheapest service 15000 Ft)
       if (!depositAmount || depositAmount < 175 || isNaN(depositAmount)) {
         depositAmount = 3000;
         console.warn('Calculating deposit failed or was too low, using fallback of 3000 Ft');
       }
+      
+      // Double-check: ensure minimum 3000 Ft
+      if (depositAmount < 3000) {
+        depositAmount = 3000;
+      }
 
       const serviceName = formData.service || 'Masszázs kezelés';
+      
+      console.log('Sending payment amount:', depositAmount, 'Ft');
 
-      // Create a hidden form to submit to Google Apps Script
-      // This avoids CORS issues
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = SCRIPT_URL;
-      form.target = '_blank';
-      form.style.display = 'none';
+      // Use fetch to call Google Apps Script, read the Stripe URL from the
+      // JSON response, then redirect the user to Stripe Checkout.
+      const params = new URLSearchParams();
+      params.append('action', 'createStripeCheckout');
+      params.append('name', formData.name);
+      params.append('email', formData.email);
+      params.append('phone', formData.phone || '');
+      params.append('service', serviceName);
+      params.append('date', formData.date);
+      params.append('time', formData.time);
+      params.append('notes', formData.notes || '');
+      params.append('recurring', formData.recurring ? 'yes' : 'no');
+      params.append('recurringType', formData.recurringType);
+      params.append('recurringCount', String(formData.recurringCount));
+      params.append('amount', String(depositAmount));
+      params.append('successUrl', window.location.origin + '/#booking-success');
+      params.append('cancelUrl', window.location.origin + '/#booking-cancel');
 
-      const addField = (name: string, value: string) => {
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = name;
-        input.value = value;
-        form.appendChild(input);
-      };
+      const response = await fetch(SCRIPT_URL, {
+        method: 'POST',
+        body: params,
+        redirect: 'follow',
+      });
 
-      addField('action', 'createStripeCheckout');
-      addField('name', formData.name);
-      addField('email', formData.email);
-      addField('phone', formData.phone || '');
-      addField('service', serviceName);
-      addField('date', formData.date);
-      addField('time', formData.time);
-      addField('notes', formData.notes || '');
-      addField('recurring', formData.recurring ? 'yes' : 'no');
-      addField('recurringType', formData.recurringType);
-      addField('recurringCount', String(formData.recurringCount));
-      addField('amount', String(depositAmount));
-      addField('successUrl', window.location.origin + '/#booking-success');
-      addField('cancelUrl', window.location.origin + '/#booking-cancel');
+      const result = await response.json();
 
-      document.body.appendChild(form);
-      form.submit();
-      document.body.removeChild(form);
-
-      // Show message to user
-      toast.success('Fizetési oldal megnyitva új ablakban. A foglalás a fizetés után válik véglegessé.');
+      if (result.success && result.data?.url) {
+        // Redirect the current tab to Stripe Checkout
+        window.location.href = result.data.url;
+        // No need to reset isSubmitting – the page navigates away
+        return;
+      } else {
+        throw new Error(result.message || 'Ismeretlen hiba a fizetési folyamatban');
+      }
 
     } catch (error) {
       console.error('Payment error:', error);
