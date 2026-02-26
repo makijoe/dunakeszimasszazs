@@ -1554,7 +1554,15 @@ function BookingSection() {
     setIsSubmitting(true);
 
     try {
-      const depositAmount = getFinalDepositAmount();
+      let depositAmount = Number(getFinalDepositAmount());
+      
+      // Safety check: Stripe minimum for HUF is 175 Fortint.
+      // If calculation fails or is too low, use a default deposit of 3000 Ft.
+      if (!depositAmount || depositAmount < 175 || isNaN(depositAmount)) {
+        depositAmount = 3000;
+        console.warn('Calculating deposit failed or was too low, using fallback of 3000 Ft');
+      }
+
       const serviceName = formData.service || 'Masszázs kezelés';
 
       // Create a hidden form to submit to Google Apps Script
