@@ -2339,6 +2339,16 @@ function AdminPage() {
   const [pnlData, setPnlData] = useState<any>(null);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [pnlView, setPnlView] = useState<'day' | 'week' | 'month'>('month');
+  const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [selectedWeekStart, setSelectedWeekStart] = useState(() => {
+    const d = new Date();
+    const dow = d.getDay();
+    const diff = dow === 0 ? -6 : 1 - dow;
+    d.setDate(d.getDate() + diff);
+    return d.toISOString().slice(0, 10);
+  });
+  const [cancelSearch, setCancelSearch] = useState('');
   const [searchEmail, setSearchEmail] = useState('');
   const [customerProfile, setCustomerProfile] = useState<any>(null);
   const [allBookings, setAllBookings] = useState<any[]>([]);
@@ -2369,13 +2379,19 @@ function AdminPage() {
     }
   };
 
-  const loadPnLData = async () => {
+  const loadPnLData = async (view = pnlView, date = selectedDate, weekStart = selectedWeekStart, month = selectedMonth, year = selectedYear) => {
     try {
-      const response = await fetch(`${SCRIPT_URL}?action=pnl&month=${selectedMonth}&year=${selectedYear}`);
-      const data = await response.json();
-      if (data.success) {
-        setPnlData(data.data);
+      let url = `${SCRIPT_URL}?action=pnl`;
+      if (view === 'day') {
+        url += `&mode=day&date=${date}`;
+      } else if (view === 'week') {
+        url += `&mode=week&weekStart=${weekStart}`;
+      } else {
+        url += `&mode=month&month=${month}&year=${year}`;
       }
+      const response = await fetch(url);
+      const data = await response.json();
+      if (data.success) setPnlData(data.data);
     } catch (error) {
       console.error('Error loading P&L:', error);
     }
@@ -2653,6 +2669,7 @@ function AdminPage() {
                   if (tab.id === 'bookings') loadAllBookings();
                   if (tab.id === 'pending') loadPendingBookings();
                   if (tab.id === 'pnl') loadPnLData();
+                  if (tab.id === 'cancel' && allBookings.length === 0) loadAllBookings();
                 }}
                 className={`flex items-center gap-2 px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === tab.id
                   ? 'text-[#D4854A] border-b-2 border-[#D4854A]'
@@ -3094,64 +3111,123 @@ function AdminPage() {
         {/* P&L TAB */}
         {activeTab === 'pnl' && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
               <h2 className="text-2xl font-bold text-[#4A3F35]">P&L Kimutatás</h2>
-              <div className="flex gap-4">
-                <select
-                  value={selectedMonth}
-                  onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-                  className="h-10 pl-3 pr-10 border border-[#E8D4C0] rounded-md focus:border-[#D4854A] bg-white text-[#4A3F35]"
-                >
-                  {Array.from({ length: 12 }, (_, i) => (
-                    <option key={i + 1} value={i + 1}>{i + 1}. hónap</option>
-                  ))}
-                </select>
-                <select
-                  value={selectedYear}
-                  onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                  className="h-10 pl-3 pr-10 border border-[#E8D4C0] rounded-md focus:border-[#D4854A] bg-white text-[#4A3F35]"
-                >
-                  {[2024, 2025, 2026].map((year) => (
-                    <option key={year} value={year}>{year}</option>
-                  ))}
-                </select>
-                <Button
-                  onClick={loadPnLData}
-                  className="bg-[#D4854A] hover:bg-[#B87333] text-white"
-                >
-                  Betöltés
-                </Button>
+              {/* View toggle */}
+              <div className="flex rounded-xl border border-[#E8D4C0] overflow-hidden self-start">
+                {(['day', 'week', 'month'] as const).map((v) => (
+                  <button
+                    key={v}
+                    onClick={() => { setPnlView(v); setPnlData(null); loadPnLData(v); }}
+                    className={`px-4 py-2 text-sm font-medium transition-colors ${pnlView === v ? 'bg-[#D4854A] text-white' : 'bg-white text-[#8B7355] hover:bg-[#F9F1EA]'}`}
+                  >
+                    {v === 'day' ? 'Nap' : v === 'week' ? 'Hét' : 'Hónap'}
+                  </button>
+                ))}
               </div>
+            </div>
+
+            {/* Filter row */}
+            <div className="bg-white rounded-2xl shadow-warm p-4 flex flex-wrap gap-3 items-center">
+              {pnlView === 'day' && (
+                <>
+                  <Input
+                    type="date"
+                    value={selectedDate}
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                    className="h-10 border-[#E8D4C0] focus:border-[#D4854A] w-44"
+                  />
+                  <Button onClick={() => loadPnLData('day', selectedDate)} className="bg-[#D4854A] hover:bg-[#B87333] text-white h-10">Betöltés</Button>
+                </>
+              )}
+              {pnlView === 'week' && (
+                <>
+                  <button
+                    onClick={() => {
+                      const d = new Date(selectedWeekStart); d.setDate(d.getDate() - 7);
+                      const s = d.toISOString().slice(0, 10); setSelectedWeekStart(s);
+                    }}
+                    className="w-10 h-10 flex items-center justify-center rounded-lg border border-[#E8D4C0] hover:bg-[#F9F1EA] text-[#4A3F35]"
+                  >‹</button>
+                  <span className="text-sm font-medium text-[#4A3F35] min-w-[200px] text-center">
+                    {new Date(selectedWeekStart).toLocaleDateString('hu-HU', { month: 'short', day: 'numeric' })}
+                    {' – '}
+                    {(() => { const e = new Date(selectedWeekStart); e.setDate(e.getDate() + 6); return e.toLocaleDateString('hu-HU', { month: 'short', day: 'numeric', year: 'numeric' }); })()}
+                  </span>
+                  <button
+                    onClick={() => {
+                      const d = new Date(selectedWeekStart); d.setDate(d.getDate() + 7);
+                      const s = d.toISOString().slice(0, 10); setSelectedWeekStart(s);
+                    }}
+                    className="w-10 h-10 flex items-center justify-center rounded-lg border border-[#E8D4C0] hover:bg-[#F9F1EA] text-[#4A3F35]"
+                  >›</button>
+                  <Button onClick={() => loadPnLData('week', selectedDate, selectedWeekStart)} className="bg-[#D4854A] hover:bg-[#B87333] text-white h-10 ml-2">Betöltés</Button>
+                </>
+              )}
+              {pnlView === 'month' && (
+                <>
+                  <select
+                    value={selectedMonth}
+                    onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+                    className="h-10 pl-3 pr-10 border border-[#E8D4C0] rounded-md focus:border-[#D4854A] bg-white text-[#4A3F35]"
+                  >
+                    {Array.from({ length: 12 }, (_, i) => (
+                      <option key={i + 1} value={i + 1}>{i + 1}. hónap</option>
+                    ))}
+                  </select>
+                  <select
+                    value={selectedYear}
+                    onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                    className="h-10 pl-3 pr-10 border border-[#E8D4C0] rounded-md focus:border-[#D4854A] bg-white text-[#4A3F35]"
+                  >
+                    {[2024, 2025, 2026].map((year) => (
+                      <option key={year} value={year}>{year}</option>
+                    ))}
+                  </select>
+                  <Button onClick={() => loadPnLData('month', selectedDate, selectedWeekStart, selectedMonth, selectedYear)} className="bg-[#D4854A] hover:bg-[#B87333] text-white h-10">Betöltés</Button>
+                </>
+              )}
             </div>
 
             {pnlData && (
               <>
                 {/* Summary Cards */}
-                <div className="grid md:grid-cols-4 gap-4">
-                  <div className="bg-white rounded-2xl p-6 shadow-warm">
-                    <p className="text-[#8B7355] text-sm">Összes bevétel</p>
-                    <p className="text-2xl font-bold text-[#4A3F35]">{pnlData.totalIncome?.toLocaleString() || 0} Ft</p>
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                  <div className="bg-white rounded-2xl p-5 shadow-warm">
+                    <p className="text-[#8B7355] text-xs mb-1">Összes bevétel</p>
+                    <p className="text-xl font-bold text-[#4A3F35]">{pnlData.totalIncome?.toLocaleString() || 0} Ft</p>
                   </div>
-                  <div className="bg-white rounded-2xl p-6 shadow-warm">
-                    <p className="text-[#8B7355] text-sm">Foglalók</p>
-                    <p className="text-2xl font-bold text-[#D4854A]">{pnlData.totalDeposits?.toLocaleString() || 0} Ft</p>
+                  <div className="bg-white rounded-2xl p-5 shadow-warm">
+                    <p className="text-[#8B7355] text-xs mb-1">Foglalók</p>
+                    <p className="text-xl font-bold text-[#D4854A]">{pnlData.totalDeposits?.toLocaleString() || 0} Ft</p>
                   </div>
-                  <div className="bg-white rounded-2xl p-6 shadow-warm">
-                    <p className="text-[#8B7355] text-sm">Hátralék</p>
-                    <p className="text-2xl font-bold text-red-500">{pnlData.outstanding?.toLocaleString() || 0} Ft</p>
+                  <div className="bg-white rounded-2xl p-5 shadow-warm">
+                    <p className="text-[#8B7355] text-xs mb-1">Hátralék</p>
+                    <p className="text-xl font-bold text-red-500">{pnlData.outstanding?.toLocaleString() || 0} Ft</p>
                   </div>
-                  <div className="bg-white rounded-2xl p-6 shadow-warm">
-                    <p className="text-[#8B7355] text-sm">Kezelések száma</p>
-                    <p className="text-2xl font-bold text-[#8B9A7C]">{pnlData.sessionsCompleted || 0}</p>
+                  <div className="bg-white rounded-2xl p-5 shadow-warm">
+                    <p className="text-[#8B7355] text-xs mb-1">Kezelések</p>
+                    <p className="text-xl font-bold text-[#8B9A7C]">{pnlData.sessionsCompleted || 0}</p>
+                  </div>
+                  <div className="bg-white rounded-2xl p-5 shadow-warm">
+                    <p className="text-[#8B7355] text-xs mb-1">Átlag / kezelés</p>
+                    <p className="text-xl font-bold text-[#4A7C59]">
+                      {pnlData.sessionsCompleted > 0
+                        ? Math.round((pnlData.totalIncome || 0) / pnlData.sessionsCompleted).toLocaleString()
+                        : 0} Ft
+                    </p>
                   </div>
                 </div>
 
                 {/* Transactions Table */}
-                {pnlData.transactions?.length > 0 && (
+                {pnlData.transactions?.length > 0 ? (
                   <div className="bg-white rounded-2xl shadow-warm p-6">
-                    <h3 className="font-semibold text-[#4A3F35] mb-4">Tranzakciók</h3>
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-semibold text-[#4A3F35]">Tranzakciók</h3>
+                      <span className="text-sm text-[#8B7355]">{pnlData.transactions.length} tétel</span>
+                    </div>
                     <div className="overflow-x-auto">
-                      <table className="w-full">
+                      <table className="w-full text-sm">
                         <thead>
                           <tr className="border-b border-[#E8D4C0]">
                             <th className="text-left py-2 text-[#8B7355] font-medium">Dátum</th>
@@ -3164,7 +3240,7 @@ function AdminPage() {
                         <tbody>
                           {pnlData.transactions.map((txn: any, i: number) => (
                             <tr key={i} className="border-b border-[#F9F1EA]">
-                              <td className="py-3 text-[#4A3F35]">{txn.date}</td>
+                              <td className="py-3 text-[#4A3F35]">{typeof txn.date === 'string' ? txn.date : new Date(txn.date).toLocaleDateString('hu-HU')}</td>
                               <td className="py-3">
                                 <span className={`px-2 py-1 rounded text-xs ${txn.type === 'Income' || txn.type === 'Payment'
                                   ? 'bg-[#8B9A7C]/20 text-[#8B9A7C]'
@@ -3182,6 +3258,8 @@ function AdminPage() {
                       </table>
                     </div>
                   </div>
+                ) : (
+                  <div className="bg-white rounded-2xl shadow-warm p-8 text-center text-[#8B7355]">Nincs tranzakció ebben az időszakban.</div>
                 )}
               </>
             )}
@@ -3190,86 +3268,160 @@ function AdminPage() {
 
         {/* CANCEL TAB */}
         {activeTab === 'cancel' && (
-          <div className="bg-white rounded-2xl shadow-warm-lg p-6 sm:p-8">
-            <h2 className="text-2xl font-bold text-[#4A3F35] mb-6">Időpont Lemondása</h2>
-            <form onSubmit={handleCancelAppointment} className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label className="text-[#4A3F35]">Vendég neve *</Label>
-                  <Input
-                    value={formData.clientName}
-                    onChange={(e) => setFormData({ ...formData, clientName: e.target.value })}
-                    placeholder="Pl.: Kovács Anna"
-                    required
-                    className="border-[#E8D4C0] focus:border-[#D4854A] focus:ring-[#D4854A]"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-[#4A3F35]">Vendég email címe *</Label>
-                  <Input
-                    type="email"
-                    value={formData.clientEmail}
-                    onChange={(e) => setFormData({ ...formData, clientEmail: e.target.value })}
-                    placeholder="anna@pelda.hu"
-                    required
-                    className="border-[#E8D4C0] focus:border-[#D4854A] focus:ring-[#D4854A]"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-[#4A3F35]">Eredeti dátum *</Label>
-                  <Input
-                    type="date"
-                    value={formData.appointmentDate}
-                    onChange={(e) => setFormData({ ...formData, appointmentDate: e.target.value })}
-                    required
-                    className="border-[#E8D4C0] focus:border-[#D4854A] focus:ring-[#D4854A]"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-[#4A3F35]">Eredeti időpont *</Label>
-                  <Input
-                    type="time"
-                    value={formData.appointmentTime}
-                    onChange={(e) => setFormData({ ...formData, appointmentTime: e.target.value })}
-                    required
-                    className="border-[#E8D4C0] focus:border-[#D4854A] focus:ring-[#D4854A]"
-                  />
-                </div>
-                <div className="space-y-2 md:col-span-2">
-                  <Label className="text-[#4A3F35]">Kezelés *</Label>
-                  <Input
-                    value={formData.service}
-                    onChange={(e) => setFormData({ ...formData, service: e.target.value })}
-                    placeholder="Pl.: Frissítő masszázs"
-                    required
-                    className="border-[#E8D4C0] focus:border-[#D4854A] focus:ring-[#D4854A]"
-                  />
-                </div>
-                <div className="space-y-2 md:col-span-2">
-                  <Label className="text-[#4A3F35]">Lemondás oka</Label>
-                  <Textarea
-                    value={formData.reason}
-                    onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
-                    placeholder="Opcionális: lemondás oka..."
-                    className="border-[#E8D4C0] focus:border-[#D4854A] focus:ring-[#D4854A]"
-                  />
-                </div>
+          <div className="space-y-6">
+            {/* Booking Search */}
+            <div className="bg-white rounded-2xl shadow-warm-lg p-6">
+              <h2 className="text-xl font-bold text-[#4A3F35] mb-4">Foglalás keresése</h2>
+              <div className="relative">
+                <Input
+                  value={cancelSearch}
+                  onChange={(e) => setCancelSearch(e.target.value)}
+                  placeholder="Keresés név vagy email alapján..."
+                  className="border-[#E8D4C0] focus:border-[#D4854A] focus:ring-[#D4854A] pl-10"
+                />
+                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8B7355]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
+                </svg>
               </div>
 
-              <div className="bg-[#F9F1EA] rounded-xl p-4">
-                <p className="text-sm text-[#8B7355]">
-                  <strong className="text-[#4A3F35]">Fontos:</strong> A lemondás után ne felejtsd el törölni az időpontot a Google Naptárból is!
-                </p>
-              </div>
+              {cancelSearch.length >= 2 && (() => {
+                const q = cancelSearch.toLowerCase();
+                const results = allBookings.filter((b: any) =>
+                  (b.customerName || '').toLowerCase().includes(q) ||
+                  (b.customerEmail || '').toLowerCase().includes(q)
+                ).slice(0, 8);
+                return results.length > 0 ? (
+                  <div className="mt-3 space-y-2">
+                    {results.map((b: any, i: number) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => {
+                          const dateStr = b.date ? (typeof b.date === 'string' ? b.date.slice(0, 10) : new Date(b.date).toISOString().slice(0, 10)) : '';
+                          const timeStr = b.time ? String(b.time).slice(0, 5) : '';
+                          setFormData({
+                            ...formData,
+                            clientName: b.customerName || '',
+                            clientEmail: b.customerEmail || '',
+                            appointmentDate: dateStr,
+                            appointmentTime: timeStr,
+                            service: b.service || '',
+                            reason: ''
+                          });
+                          setCancelSearch('');
+                        }}
+                        className="w-full text-left p-3 rounded-xl border border-[#E8D4C0] hover:border-[#D4854A] hover:bg-[#FFF8F2] transition-colors"
+                      >
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <p className="font-medium text-[#4A3F35]">{b.customerName}</p>
+                            <p className="text-sm text-[#8B7355]">{b.customerEmail}</p>
+                          </div>
+                          <div className="text-right text-sm text-[#8B7355]">
+                            <p>{b.date ? (typeof b.date === 'string' ? b.date.slice(0, 10) : new Date(b.date).toLocaleDateString('hu-HU')) : '–'} {b.time ? String(b.time).slice(0, 5) : ''}</p>
+                            <p className="text-xs">{b.service}</p>
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="mt-3 text-sm text-[#8B7355]">Nincs találat.</p>
+                );
+              })()}
 
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full bg-red-500 hover:bg-red-600 text-white py-4 rounded-xl font-medium"
-              >
-                {isSubmitting ? 'Küldés...' : 'Lemondási értesítés küldése'}
-              </Button>
-            </form>
+              {allBookings.length === 0 && cancelSearch.length === 0 && (
+                <p className="mt-3 text-sm text-[#8B7355]">Foglalások betöltése folyamatban…</p>
+              )}
+            </div>
+
+            {/* Cancel Form */}
+            <div className="bg-white rounded-2xl shadow-warm-lg p-6 sm:p-8">
+              <h2 className="text-2xl font-bold text-[#4A3F35] mb-6">Lemondás adatai</h2>
+              {(formData.clientName || formData.clientEmail) && (
+                <div className="mb-4 px-4 py-3 bg-[#8B9A7C]/10 rounded-xl text-sm text-[#4A7C59] font-medium">
+                  ✓ Előtöltve a kiválasztott foglalásból — szükség esetén módosítható.
+                </div>
+              )}
+              <form onSubmit={handleCancelAppointment} className="space-y-6">
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label className="text-[#4A3F35]">Vendég neve *</Label>
+                    <Input
+                      value={formData.clientName}
+                      onChange={(e) => setFormData({ ...formData, clientName: e.target.value })}
+                      placeholder="Pl.: Kovács Anna"
+                      required
+                      className="border-[#E8D4C0] focus:border-[#D4854A] focus:ring-[#D4854A]"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[#4A3F35]">Vendég email címe *</Label>
+                    <Input
+                      type="email"
+                      value={formData.clientEmail}
+                      onChange={(e) => setFormData({ ...formData, clientEmail: e.target.value })}
+                      placeholder="anna@pelda.hu"
+                      required
+                      className="border-[#E8D4C0] focus:border-[#D4854A] focus:ring-[#D4854A]"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[#4A3F35]">Eredeti dátum *</Label>
+                    <Input
+                      type="date"
+                      value={formData.appointmentDate}
+                      onChange={(e) => setFormData({ ...formData, appointmentDate: e.target.value })}
+                      required
+                      className="border-[#E8D4C0] focus:border-[#D4854A] focus:ring-[#D4854A]"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[#4A3F35]">Eredeti időpont *</Label>
+                    <Input
+                      type="time"
+                      value={formData.appointmentTime}
+                      onChange={(e) => setFormData({ ...formData, appointmentTime: e.target.value })}
+                      required
+                      className="border-[#E8D4C0] focus:border-[#D4854A] focus:ring-[#D4854A]"
+                    />
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
+                    <Label className="text-[#4A3F35]">Kezelés *</Label>
+                    <Input
+                      value={formData.service}
+                      onChange={(e) => setFormData({ ...formData, service: e.target.value })}
+                      placeholder="Pl.: Frissítő masszázs"
+                      required
+                      className="border-[#E8D4C0] focus:border-[#D4854A] focus:ring-[#D4854A]"
+                    />
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
+                    <Label className="text-[#4A3F35]">Lemondás oka</Label>
+                    <Textarea
+                      value={formData.reason}
+                      onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
+                      placeholder="Opcionális: lemondás oka..."
+                      className="border-[#E8D4C0] focus:border-[#D4854A] focus:ring-[#D4854A]"
+                    />
+                  </div>
+                </div>
+
+                <div className="bg-[#F9F1EA] rounded-xl p-4">
+                  <p className="text-sm text-[#8B7355]">
+                    <strong className="text-[#4A3F35]">Fontos:</strong> A lemondás után ne felejtsd el törölni az időpontot a Google Naptárból is!
+                  </p>
+                </div>
+
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full bg-red-500 hover:bg-red-600 text-white py-4 rounded-xl font-medium"
+                >
+                  {isSubmitting ? 'Küldés...' : 'Lemondási értesítés küldése'}
+                </Button>
+              </form>
+            </div>
           </div>
         )}
 

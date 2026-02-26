@@ -167,7 +167,7 @@ function doGet(e) {
       case 'customer':
         return getCustomerProfile({ email: e.parameter.email });
       case 'pnl':
-        return getPnL({ month: e.parameter.month, year: e.parameter.year });
+        return getPnL({ mode: e.parameter.mode, month: e.parameter.month, year: e.parameter.year, date: e.parameter.date, weekStart: e.parameter.weekStart });
       case 'allBookings':
         return getAllBookings_();
       case 'pendingBookings':
@@ -870,12 +870,22 @@ function getAllBookings_() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var bookingsSheet = ss.getSheetByName(SHEETS.BOOKINGS);
   var data = bookingsSheet.getDataRange().getValues();
+
+  // Build customerId -> email lookup map
+  var customersSheet = ss.getSheetByName(SHEETS.CUSTOMERS);
+  var custData = customersSheet.getDataRange().getValues();
+  var emailMap = {};
+  for (var k = 1; k < custData.length; k++) {
+    emailMap[custData[k][0]] = custData[k][2];
+  }
+
   var bookings = [];
   for (var i = 1; i < data.length; i++) {
     bookings.push({
       bookingId: data[i][0],
       customerId: data[i][1],
       customerName: data[i][2],
+      customerEmail: emailMap[data[i][1]] || '',
       service: data[i][3],
       date: data[i][4],
       time: data[i][5],
@@ -1026,10 +1036,75 @@ function getPnLData_(month, year) {
   };
 }
 
+// Range-based P&L (used for day and week views)
+function getPnLDataRange_(startDateStr, endDateStr) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var financialSheet = ss.getSheetByName(SHEETS.FINANCIAL);
+  var txnData = financialSheet.getDataRange().getValues();
+
+  var startDate = new Date(startDateStr);
+  startDate.setHours(0, 0, 0, 0);
+  var endDate = new Date(endDateStr);
+  endDate.setHours(23, 59, 59, 999);
+
+  var totalIncome = 0;
+  var totalDeposits = 0;
+  var transactions = [];
+
+  for (var i = 1; i < txnData.length; i++) {
+    var txnDate = new Date(txnData[i][1]);
+    if (txnDate >= startDate && txnDate <= endDate) {
+      var amount = txnData[i][6];
+      var type = txnData[i][2];
+      if (type === 'Income' || type === 'Payment') {
+        totalIncome += amount;
+      } else if (type === 'Deposit') {
+        totalDeposits += amount;
+      }
+      transactions.push({
+        date: txnData[i][1],
+        type: type,
+        customer: txnData[i][4],
+        description: txnData[i][5],
+        amount: amount
+      });
+    }
+  }
+
+  var bookingsSheet = ss.getSheetByName(SHEETS.BOOKINGS);
+  var bookingsData = bookingsSheet.getDataRange().getValues();
+  var sessionsCompleted = 0;
+  for (var j = 1; j < bookingsData.length; j++) {
+    var bookingDate = new Date(bookingsData[j][4]);
+    if (bookingDate >= startDate && bookingDate <= endDate && bookingsData[j][6] === 'Confirmed') {
+      sessionsCompleted++;
+    }
+  }
+
+  return {
+    totalIncome: totalIncome,
+    totalDeposits: totalDeposits,
+    outstanding: totalIncome - totalDeposits,
+    sessionsCompleted: sessionsCompleted,
+    transactions: transactions
+  };
+}
+
 function getPnL(data) {
-  var month = data.month || new Date().getMonth() + 1;
-  var year = data.year || new Date().getFullYear();
-  return createResponse(true, 'P&L adatok', getPnLData_(month, year));
+  var mode = data.mode || 'month';
+  if (mode === 'day' && data.date) {
+    return createResponse(true, 'P&L adatok', getPnLDataRange_(data.date, data.date));
+  } else if (mode === 'week' && data.weekStart) {
+    var startDate = new Date(data.weekStart);
+    var endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + 6);
+    var endStr = Utilities.formatDate(endDate, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+    return createResponse(true, 'P&L adatok', getPnLDataRange_(data.weekStart, endStr));
+  } else {
+    var month = data.month || new Date().getMonth() + 1;
+    var year = data.year || new Date().getFullYear();
+    return createResponse(true, 'P&L adatok', getPnLData_(month, year));
+  }
 }
 
 function getDashboardData() {
