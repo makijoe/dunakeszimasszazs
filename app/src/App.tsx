@@ -63,8 +63,8 @@ function Navigation() {
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${isScrolled || isMobileMenuOpen
-          ? 'bg-white/95 backdrop-blur-md shadow-warm py-3'
-          : 'bg-transparent py-5'
+        ? 'bg-white/95 backdrop-blur-md shadow-warm py-3'
+        : 'bg-transparent py-5'
         }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -94,8 +94,8 @@ function Navigation() {
                 href={link.href}
                 onClick={(e) => { e.preventDefault(); scrollToSection(link.href); }}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${link.href === '#idopont'
-                    ? 'bg-[#D4854A] text-white hover:bg-[#B87333]'
-                    : 'text-[#4A3F35] hover:bg-[#F5E6D8] hover:text-[#D4854A]'
+                  ? 'bg-[#D4854A] text-white hover:bg-[#B87333]'
+                  : 'text-[#4A3F35] hover:bg-[#F5E6D8] hover:text-[#D4854A]'
                   }`}
               >
                 {link.label}
@@ -126,8 +126,8 @@ function Navigation() {
                   href={link.href}
                   onClick={(e) => { e.preventDefault(); scrollToSection(link.href); }}
                   className={`px-4 py-3 rounded-xl text-sm font-medium transition-all ${link.href === '#idopont'
-                      ? 'bg-[#D4854A] text-white'
-                      : 'text-[#4A3F35] hover:bg-[#F5E6D8]'
+                    ? 'bg-[#D4854A] text-white'
+                    : 'text-[#4A3F35] hover:bg-[#F5E6D8]'
                     }`}
                 >
                   {link.label}
@@ -1558,21 +1558,21 @@ function BookingSection() {
 
     try {
       let depositAmount = Number(getFinalDepositAmount());
-      
+
       // Safety check: Stripe minimum for HUF is 175 Fortint.
       // Force minimum 3000 Ft (20% of cheapest service 15000 Ft)
       if (!depositAmount || depositAmount < 175 || isNaN(depositAmount)) {
         depositAmount = 3000;
         console.warn('Calculating deposit failed or was too low, using fallback of 3000 Ft');
       }
-      
+
       // Double-check: ensure minimum 3000 Ft
       if (depositAmount < 3000) {
         depositAmount = 3000;
       }
 
       const serviceName = formData.service || 'Masszázs kezelés';
-      
+
       console.log('Sending payment amount:', depositAmount, 'Ft');
 
       // Use fetch to call Google Apps Script, read the Stripe URL from the
@@ -2654,8 +2654,8 @@ function AdminPage() {
                   if (tab.id === 'pending') loadPendingBookings();
                 }}
                 className={`flex items-center gap-2 px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === tab.id
-                    ? 'text-[#D4854A] border-b-2 border-[#D4854A]'
-                    : 'text-[#8B7355] hover:text-[#4A3F35]'
+                  ? 'text-[#D4854A] border-b-2 border-[#D4854A]'
+                  : 'text-[#8B7355] hover:text-[#4A3F35]'
                   }`}
               >
                 <span>{tab.icon}</span>
@@ -2847,9 +2847,8 @@ function AdminPage() {
                           <td className="px-4 py-3 text-[#8B7355]">{b.time}</td>
                           <td className="px-4 py-3 text-[#8B7355]">{b.amount ? Number(b.amount).toLocaleString() + ' Ft' : '-'}</td>
                           <td className="px-4 py-3">
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              b.status === 'paid' ? 'bg-[#8B9A7C]/15 text-[#4A7C59]' : 'bg-orange-100 text-orange-700'
-                            }`}>{b.status === 'paid' ? '✓ Fizetve' : '⏳ Függőben'}</span>
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${b.status === 'paid' ? 'bg-[#8B9A7C]/15 text-[#4A7C59]' : 'bg-orange-100 text-orange-700'
+                              }`}>{b.status === 'paid' ? '✓ Fizetve' : '⏳ Függőben'}</span>
                           </td>
                           <td className="px-4 py-3 text-[#8B7355] text-xs">{b.timestamp ? new Date(b.timestamp).toLocaleString('hu-HU') : '-'}</td>
                         </tr>
@@ -2940,8 +2939,8 @@ function AdminPage() {
                             <p className="text-sm text-[#8B7355]">{booking.date} {booking.time}</p>
                           </div>
                           <span className={`px-2 py-1 rounded text-xs ${booking.status === 'Confirmed'
-                              ? 'bg-[#8B9A7C]/20 text-[#8B9A7C]'
-                              : 'bg-red-100 text-red-600'
+                            ? 'bg-[#8B9A7C]/20 text-[#8B9A7C]'
+                            : 'bg-red-100 text-red-600'
                             }`}>
                             {booking.status === 'Confirmed' ? 'Megerősítve' : 'Lemondva'}
                           </span>
@@ -3167,8 +3166,8 @@ function AdminPage() {
                               <td className="py-3 text-[#4A3F35]">{txn.date}</td>
                               <td className="py-3">
                                 <span className={`px-2 py-1 rounded text-xs ${txn.type === 'Income' || txn.type === 'Payment'
-                                    ? 'bg-[#8B9A7C]/20 text-[#8B9A7C]'
-                                    : 'bg-[#D4854A]/20 text-[#D4854A]'
+                                  ? 'bg-[#8B9A7C]/20 text-[#8B9A7C]'
+                                  : 'bg-[#D4854A]/20 text-[#D4854A]'
                                   }`}>
                                   {txn.type === 'Income' ? 'Bevétel' : txn.type === 'Payment' ? 'Fizetés' : 'Foglaló'}
                                 </span>
@@ -3385,8 +3384,8 @@ function BookingSuccessPage() {
         </div>
         <h1 className="text-3xl font-bold text-[#4A3F35] mb-3">Sikeres fizetés! 🎉</h1>
         <p className="text-[#8B7355] text-lg mb-6">
-          Köszönjük a foglalást! A fizetés sikeresen megtörtént.
-          Hamarosan küldünk egy visszaigazoló emailt a foglalás részleteivel.
+          Köszönöm a foglalást! A fizetés sikeresen megtörtént.
+          Hamarosan küldök egy visszaigazoló emailt a foglalás részleteivel.
         </p>
         <div className="bg-[#F9F1EA] rounded-2xl p-5 mb-8 text-left space-y-2">
           <p className="text-[#4A3F35] font-semibold">📅 Mi a következő lépés?</p>
