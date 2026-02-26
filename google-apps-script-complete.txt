@@ -678,12 +678,14 @@ function createStripeCheckout(data) {
     
     // Build form-encoded payload for Stripe API
     // Stripe requires application/x-www-form-urlencoded format
+    // NOTE: HUF is a two-decimal currency in Stripe. Amounts must be in fillér (1/100 Forint).
+    // Multiply Forint amount by 100. E.g. 3000 Ft → 300000 fillér.
     var payload = 
       'mode=payment' +
       '&line_items[0][price_data][currency]=huf' +
       '&line_items[0][price_data][product_data][name]=' + encodeURIComponent('Foglalási díj - ' + serviceName + recurringText) +
       '&line_items[0][price_data][product_data][description]=' + encodeURIComponent('Dunakeszi Masszázs - Angyali Szalon foglalási díj') +
-      '&line_items[0][price_data][unit_amount]=' + amount + // HUF is a zero-decimal currency; pass integer forints
+      '&line_items[0][price_data][unit_amount]=' + (amount * 100) + // HUF is two-decimal: send fillér (Ft × 100)
       '&line_items[0][quantity]=1' +
       '&customer_email=' + encodeURIComponent(data.email) +
       '&success_url=' + encodeURIComponent(data.successUrl || 'https://dunakeszimasszazs.hu/#booking-success') +
@@ -756,12 +758,13 @@ function createStripeCheckoutDebug(data) {
     var serviceName = data.service || 'Masszázs kezelés';
     var recurringText = data.recurring === 'yes' ? ' (' + data.recurringCount + ' alkalom)' : '';
 
+    // NOTE: HUF is a two-decimal currency in Stripe. Amounts must be in fillér (1/100 Forint).
     var payload = 
       'mode=payment' +
       '&line_items[0][price_data][currency]=huf' +
       '&line_items[0][price_data][product_data][name]=' + encodeURIComponent('Foglalási díj - ' + serviceName + recurringText) +
       '&line_items[0][price_data][product_data][description]=' + encodeURIComponent('Dunakeszi Masszázs - Angyali Szalon foglalási díj') +
-      '&line_items[0][price_data][unit_amount]=' + amount +
+      '&line_items[0][price_data][unit_amount]=' + (amount * 100) + // HUF is two-decimal: send fillér (Ft × 100)
       '&line_items[0][quantity]=1' +
       '&customer_email=' + encodeURIComponent(data.email) +
       '&success_url=' + encodeURIComponent(data.successUrl || 'https://dunakeszimasszazs.hu/#booking-success') +
