@@ -187,7 +187,7 @@ function createBooking(data) {
   var sessionNumber = null;
   
   // If using session from package
-  if (data.usePackage && activePackage) {
+  if ((data.usePackage === true || data.usePackage === 'true') && activePackage) {
     var useResult = deductSessionFromPackage(activePackage.packageId);
     if (useResult.success) {
       packageId = activePackage.packageId;
@@ -206,7 +206,7 @@ function createBooking(data) {
   var endTime = new Date(startTime.getTime() + (60 * 60 * 1000));
   
   // Handle recurring bookings
-  var recurringCount = data.recurring ? (data.recurringCount || 1) : 1;
+  var recurringCount = (data.recurring === true || data.recurring === 'yes' || data.recurring === 'true') ? (parseInt(data.recurringCount) || 1) : 1;
   var recurringType = data.recurringType || 'weekly';
   var createdEvents = [];
   var recurringDates = [];
@@ -348,18 +348,18 @@ function useSession(data) {
     return createResponse(false, 'PackageID vagy CustomerID szükséges');
   }
   
-  var package;
+  var pkg;
   if (data.packageId) {
-    package = getPackageById(data.packageId);
+    pkg = getPackageById(data.packageId);
   } else {
-    package = findActivePackage(data.customerId, data.service);
+    pkg = findActivePackage(data.customerId, data.service);
   }
   
-  if (!package || package.sessionsRemaining <= 0) {
+  if (!pkg || pkg.sessionsRemaining <= 0) {
     return createResponse(false, 'Nincs aktív bérlet vagy elfogytak az alkalmak');
   }
   
-  return deductSessionFromPackage(package.packageId);
+  return deductSessionFromPackage(pkg.packageId);
 }
 
 function deductSessionFromPackage(packageId) {
@@ -651,18 +651,27 @@ const STRIPE_WEBHOOK_SECRET = PropertiesService.getScriptProperties().getPropert
 function createStripeCheckout(data) {
   try {
     // Validate required fields
-    if (!data.name || !data.email || (data.amount === undefined || data.amount === null)) {
-      return createHtmlResponse('<h1>Hiba</h1><p>Hiányzó kötelező mezők (név, email, összeg)</p>');
+    if (!data.name || !data.email) {
+      return createHtmlResponse('<h1>Hiba</h1><p>Hiányzó kötelező mezők (név, email)</p>');
     }
     
+    // Parse and validate amount
     var amount = parseInt(data.amount);
     
     // Safety check: Stripe minimum for HUF is 175 Ft.
-    // If amount is 0, NaN, or too low, use a default 3000 Ft deposit.
-    if (!amount || amount < 175 || isNaN(amount)) {
+    // Force minimum 3000 Ft (20% of cheapest service 15000 Ft)
+    if (!amount || isNaN(amount) || amount < 175) {
       amount = 3000;
-      Logger.log('Backend warning: Amount was too low (' + data.amount + '), forcing 3000 Ft');
+      Logger.log('Backend safety check triggered. Received: ' + data.amount + ', using: 3000 Ft');
     }
+    
+    // Additional safety: ensure minimum 3000 Ft
+    if (amount < 3000) {
+      amount = 3000;
+      Logger.log('Amount was below 3000, forcing to 3000 Ft');
+    }
+    
+    Logger.log('Creating Stripe checkout with amount: ' + amount + ' Ft');
     
     var serviceName = data.service || 'Masszázs kezelés';
     var recurringText = data.recurring === 'yes' ? ' (' + data.recurringCount + ' alkalom)' : '';
@@ -726,16 +735,22 @@ function createStripeCheckout(data) {
  */
 function createStripeCheckoutDebug(data) {
   try {
-    if (!data.email || (data.amount === undefined || data.amount === null)) {
-      return createResponse(false, 'Missing required fields: email and amount');
+    if (!data.email) {
+      return createResponse(false, 'Missing required fields: email');
     }
 
     var amount = parseInt(data.amount);
     
     // Safety check: Stripe minimum for HUF is 175 Ft.
-    if (!amount || amount < 175 || isNaN(amount)) {
+    // Force minimum 3000 Ft (20% of cheapest service 15000 Ft)
+    if (!amount || isNaN(amount) || amount < 175) {
       amount = 3000;
-      Logger.log('Debug backend warning: Amount too low (' + data.amount + '), using 3000 Ft');
+      Logger.log('Debug backend safety check. Received: ' + data.amount + ', using: 3000 Ft');
+    }
+    
+    // Additional safety: ensure minimum 3000 Ft
+    if (amount < 3000) {
+      amount = 3000;
     }
     
     var serviceName = data.service || 'Masszázs kezelés';
@@ -818,7 +833,7 @@ function storePendingBooking(data) {
     data.date,
     data.time,
     data.notes || '',
-    data.recurring ? 'yes' : 'no',
+    (data.recurring === true || data.recurring === 'yes' || data.recurring === 'true') ? 'yes' : 'no',
     data.recurringType || '',
     data.recurringCount || 1,
     data.amount,
@@ -880,25 +895,23 @@ function recordTransaction(date, type, customerId, customerName, description, am
 // ============================================
 // P&L Dashboard
 // ============================================
-function getPnL(data) {
-  var month = data.month || new Date().getMonth() + 1;
-  var year = data.year || new Date().getFullYear();
-  
+// Internal helper – returns a plain object (no ContentService wrapping).
+// Used by both getPnL() and getDashboardData().
+function getPnLData_(month, year) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var financialSheet = ss.getSheetByName(SHEETS.FINANCIAL);
-  var data = financialSheet.getDataRange().getValues();
+  var txnData = financialSheet.getDataRange().getValues();
   
   var monthlyIncome = 0;
   var monthlyDeposits = 0;
-  var monthlyOutstanding = 0;
   
   var transactions = [];
   
-  for (var i = 1; i < data.length; i++) {
-    var txnDate = new Date(data[i][1]);
+  for (var i = 1; i < txnData.length; i++) {
+    var txnDate = new Date(txnData[i][1]);
     if (txnDate.getMonth() + 1 === parseInt(month) && txnDate.getFullYear() === parseInt(year)) {
-      var amount = data[i][6];
-      var type = data[i][2];
+      var amount = txnData[i][6];
+      var type = txnData[i][2];
       
       if (type === 'Income' || type === 'Payment') {
         monthlyIncome += amount;
@@ -907,10 +920,10 @@ function getPnL(data) {
       }
       
       transactions.push({
-        date: data[i][1],
+        date: txnData[i][1],
         type: type,
-        customer: data[i][4],
-        description: data[i][5],
+        customer: txnData[i][4],
+        description: txnData[i][5],
         amount: amount
       });
     }
@@ -930,7 +943,7 @@ function getPnL(data) {
     }
   }
   
-  return createResponse(true, 'P&L adatok', {
+  return {
     month: month,
     year: year,
     totalIncome: monthlyIncome,
@@ -938,7 +951,13 @@ function getPnL(data) {
     outstanding: monthlyIncome - monthlyDeposits,
     sessionsCompleted: sessionsCompleted,
     transactions: transactions
-  });
+  };
+}
+
+function getPnL(data) {
+  var month = data.month || new Date().getMonth() + 1;
+  var year = data.year || new Date().getFullYear();
+  return createResponse(true, 'P&L adatok', getPnLData_(month, year));
 }
 
 function getDashboardData() {
@@ -978,14 +997,14 @@ function getDashboardData() {
   }
   
   // Get current month P&L
-  var pnlData = getPnL({ month: new Date().getMonth() + 1, year: new Date().getFullYear() });
+  var pnlData = getPnLData_(new Date().getMonth() + 1, new Date().getFullYear());
   
   return createResponse(true, 'Dashboard adatok', {
     customerCount: customerCount,
     activePackages: activePackages,
     totalSessionsRemaining: totalSessionsRemaining,
     todaysBookings: todaysBookings,
-    monthlyPnL: pnlData.data
+    monthlyPnL: pnlData
   });
 }
 
@@ -1251,22 +1270,22 @@ function sendBookingConfirmationToCustomer(data, recurringCount, recurringType, 
   });
 }
 
-function sendPackagePurchaseConfirmation(customer, package) {
+function sendPackagePurchaseConfirmation(customer, pkg) {
   var subject = 'Bérlet vásárlás visszaigazolás - Dunakeszi Masszázs';
   
   var body = 'Kedves ' + customer.name + '!\n\n';
   body += 'Köszönjük a bérlet vásárlásodat!\n\n';
   body += '═══════════════════════════════════════\n';
   body += '🎫 BÉRLET RÉSZLETEI:\n';
-  body += 'Bérlet száma: ' + package.packageId + '\n';
-  body += 'Alkalmak száma: ' + package.sessions + '\n';
-  body += 'Eredeti ár: ' + package.originalPrice.toLocaleString() + ' Ft\n';
-  if (package.discountPercent > 0) {
-    body += 'Kedvezmény: ' + package.discountPercent + '% (-' + package.discountAmount.toLocaleString() + ' Ft)\n';
+  body += 'Bérlet száma: ' + pkg.packageId + '\n';
+  body += 'Alkalmak száma: ' + pkg.sessions + '\n';
+  body += 'Eredeti ár: ' + pkg.originalPrice.toLocaleString() + ' Ft\n';
+  if (pkg.discountPercent > 0) {
+    body += 'Kedvezmény: ' + pkg.discountPercent + '% (-' + pkg.discountAmount.toLocaleString() + ' Ft)\n';
   }
-  body += 'Fizetendő: ' + package.finalPrice.toLocaleString() + ' Ft\n';
-  body += 'Foglaló befizetve: ' + package.depositPaid.toLocaleString() + ' Ft\n';
-  body += 'Hátralék: ' + (package.finalPrice - package.depositPaid).toLocaleString() + ' Ft\n';
+  body += 'Fizetendő: ' + pkg.finalPrice.toLocaleString() + ' Ft\n';
+  body += 'Foglaló befizetve: ' + pkg.depositPaid.toLocaleString() + ' Ft\n';
+  body += 'Hátralék: ' + (pkg.finalPrice - pkg.depositPaid).toLocaleString() + ' Ft\n';
   body += '═══════════════════════════════════════\n\n';
   
   body += 'Hogyan használhatod a bérletet:\n';
@@ -1274,7 +1293,7 @@ function sendPackagePurchaseConfirmation(customer, package) {
   body += '• A rendszer automatikusan levon egy alkalmat a bérletedből\n';
   body += '• A hátralékot az első kezelésnél kell kifizetni\n\n';
   
-  body += 'Bérlet egyenleged: ' + (customer.totalSessionsRemaining + package.sessions) + ' alkalom\n\n';
+  body += 'Bérlet egyenleged: ' + (customer.totalSessionsRemaining + pkg.sessions) + ' alkalom\n\n';
   
   body += 'Ha kérdésed van, hívj bátran:\n';
   body += '📞 +36 30 487 7883\n\n';
