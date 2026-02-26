@@ -1480,6 +1480,7 @@ function BookingSection() {
     { name: 'Arany kollagén arckezelés', price: 30000 },
     { name: 'Ultrahangos zsírbontás', price: 15000 },
     { name: 'Metamorf masszázs', price: 15000 },
+    { name: 'BEMER matrac', price: 15000 },
     { name: 'BEMER matrac (20 perc)', price: 7500 },
     { name: 'BEMER matrac (40 perc)', price: 15000 }
   ];
@@ -1491,8 +1492,23 @@ function BookingSection() {
   ];
 
   const getSelectedServicePrice = () => {
-    const service = servicesList.find(s => s.name === formData.service);
-    return service ? service.price : 0;
+    // 1. Try to find in servicesList (used by the booking select menu)
+    const slItem = servicesList.find(s => s.name === formData.service);
+    if (slItem) return slItem.price;
+
+    // 2. Try to find in services (used by the service cards/modals)
+    const sItem = services.find(s => s.name === formData.service);
+    if (sItem && typeof (sItem as any).price === 'number') return (sItem as any).price;
+
+    // 3. Robust fallbacks for BEMER case
+    if (formData.service?.includes('BEMER')) {
+      if (formData.service.includes('20')) return 7500;
+      return 15000;
+    }
+
+    // 4. Ultimate fallback to avoid 175 Ft error (minimum amount)
+    // If no service is selected or found, default to a standard session price
+    return 15000;
   };
 
   // Discount system for multiple sessions
