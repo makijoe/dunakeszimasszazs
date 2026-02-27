@@ -2341,18 +2341,20 @@ function ManageBookingsPage() {
   const [newTime, setNewTime] = useState('');
   const [changeNotes, setChangeNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [slotAvailable, setSlotAvailable] = useState<boolean | null>(null);
-  const [isCheckingSlot, setIsCheckingSlot] = useState(false);
+  const [slotsForDate, setSlotsForDate] = useState<Record<string, boolean> | null>(null);
+  const [isLoadingSlots, setIsLoadingSlots] = useState(false);
 
-  const checkSlotAvailability = async (date: string, time: string) => {
-    if (!date || !time) { setSlotAvailable(null); return; }
-    setIsCheckingSlot(true);
+  const loadSlotsForDate = async (date: string) => {
+    if (!date) { setSlotsForDate(null); return; }
+    setIsLoadingSlots(true);
+    setNewTime('');
     try {
-      const res = await fetch(`${SCRIPT_URL}?action=checkSlot&date=${date}&time=${encodeURIComponent(time)}`);
+      const res = await fetch(`${SCRIPT_URL}?action=getSlotsForDate&date=${date}`);
       const data = await res.json();
-      setSlotAvailable(data.success === true);
-    } catch { setSlotAvailable(null); }
-    finally { setIsCheckingSlot(false); }
+      if (data.success && data.data?.slots) setSlotsForDate(data.data.slots);
+      else setSlotsForDate(null);
+    } catch { setSlotsForDate(null); }
+    finally { setIsLoadingSlots(false); }
   };
 
   const timeSlots = ['08:30', '09:45', '11:00', '12:15', '13:30', '14:45', '16:00', '17:15', '18:30'];
@@ -2440,7 +2442,7 @@ function ManageBookingsPage() {
         setNewDate('');
         setNewTime('');
         setChangeNotes('');
-        setSlotAvailable(null);
+        setSlotsForDate(null);
         // Reload so list is fresh
         await loadBookings(undefined, email);
       } else {
@@ -2464,7 +2466,7 @@ function ManageBookingsPage() {
     const d = new Date(); d.setDate(d.getDate() + 1); return d.toISOString().slice(0, 10);
   })();
 
-  const closeModal = () => { setSelectedBooking(null); setActionType(null); setCancelReason(''); setNewDate(''); setNewTime(''); setChangeNotes(''); setSlotAvailable(null); };
+  const closeModal = () => { setSelectedBooking(null); setActionType(null); setCancelReason(''); setNewDate(''); setNewTime(''); setChangeNotes(''); setSlotsForDate(null); };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#F9F1EA] to-[#FFFBF7]">
@@ -2638,40 +2640,57 @@ function ManageBookingsPage() {
             </div>
             <form onSubmit={handleChangeRequest} className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
-                <div>
+                <div className="col-span-2">
                   <Label className="text-[#4A3F35] text-sm font-medium">Új dátum *</Label>
                   <Input
                     type="date"
                     value={newDate}
-                    onChange={(e) => { setNewDate(e.target.value); setSlotAvailable(null); if (e.target.value && newTime) checkSlotAvailability(e.target.value, newTime); }}
+                    onChange={(e) => { setNewDate(e.target.value); loadSlotsForDate(e.target.value); }}
                     min={minDateStr}
                     required
                     className="mt-1.5 border-[#E8D4C0] focus:border-[#D4854A]"
                   />
                 </div>
-                <div>
-                  <Label className="text-[#4A3F35] text-sm font-medium">Új időpont *</Label>
-                  <select
-                    value={newTime}
-                    onChange={(e) => { setNewTime(e.target.value); setSlotAvailable(null); if (newDate && e.target.value) checkSlotAvailability(newDate, e.target.value); }}
-                    required
-                    className="mt-1.5 w-full border border-[#E8D4C0] rounded-md px-3 py-2 text-sm text-[#4A3F35] bg-white focus:outline-none focus:ring-1 focus:ring-[#D4854A] focus:border-[#D4854A]"
-                  >
-                    <option value="">Válassz időpontot</option>
-                    {timeSlots.map(slot => (
-                      <option key={slot} value={slot}>{slot}</option>
-                    ))}
-                  </select>
-                </div>
               </div>
-              {/* Slot availability indicator */}
-              {(isCheckingSlot || slotAvailable !== null) && (
-                <div className={`text-sm px-3 py-2 rounded-lg flex items-center gap-2 ${
-                  isCheckingSlot ? 'bg-gray-50 text-gray-500' :
-                  slotAvailable ? 'bg-green-50 border border-green-200 text-green-700' :
-                  'bg-red-50 border border-red-200 text-red-700'
-                }`}>
-                  {isCheckingSlot ? '⏳ Ellenőrzés...' : slotAvailable ? '✅ Ez az időpont szabad!' : '❌ Ez az időpont már foglalt – válassz másikat'}
+              {/* Slot availability grid */}
+              {newDate && (
+                <div>
+                  <Label className="text-[#4A3F35] text-sm font-medium mb-2 block">Új időpont kiválasztása *</Label>
+                  {isLoadingSlots ? (
+                    <div className="flex items-center justify-center py-6 text-[#8B7355] text-sm">
+                      <div className="w-4 h-4 border-2 border-[#D4854A]/30 border-t-[#D4854A] rounded-full animate-spin mr-2" />
+                      Időpontok betöltése...
+                    </div>
+                  ) : slotsForDate ? (
+                    <div className="grid grid-cols-3 gap-2">
+                      {timeSlots.map(slot => {
+                        const available = slotsForDate[slot];
+                        const selected = newTime === slot;
+                        return (
+                          <button
+                            key={slot}
+                            type="button"
+                            disabled={!available}
+                            onClick={() => available && setNewTime(slot)}
+                            className={`py-2.5 rounded-xl text-sm font-medium border-2 transition-all ${
+                              !available
+                                ? 'bg-gray-50 border-gray-200 text-gray-300 line-through cursor-not-allowed'
+                                : selected
+                                  ? 'bg-[#D4854A] border-[#D4854A] text-white shadow-md'
+                                  : 'bg-white border-[#E8D4C0] text-[#4A3F35] hover:border-[#D4854A] hover:bg-[#FFF8F2] cursor-pointer'
+                            }`}
+                          >
+                            {slot}
+                            {available && !selected && <span className="block text-xs text-[#8B9A7C] font-normal">✓ szabad</span>}
+                            {!available && <span className="block text-xs text-gray-300 font-normal">foglalt</span>}
+                            {selected && <span className="block text-xs text-white/80 font-normal">✓ kiválasztva</span>}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-red-500 py-3">Nem sikerült betölteni az időpontokat. Kérlek próbáld újra.</p>
+                  )}
                 </div>
               )}
               <div>
@@ -2691,7 +2710,7 @@ function ManageBookingsPage() {
                 <Button type="button" variant="outline" onClick={closeModal} className="flex-1 border-[#E8D4C0]">
                   Mégsem
                 </Button>
-                <Button type="submit" disabled={isSubmitting || slotAvailable === false || isCheckingSlot} className="flex-1 bg-[#D4854A] hover:bg-[#B87333] text-white">
+                <Button type="submit" disabled={isSubmitting || !newTime || isLoadingSlots} className="flex-1 bg-[#D4854A] hover:bg-[#B87333] text-white">
                   {isSubmitting ? 'Módosítás...' : 'Módosítás megerősítése'}
                 </Button>
               </div>
