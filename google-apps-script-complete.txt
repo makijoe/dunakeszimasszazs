@@ -206,9 +206,9 @@ function createBooking(data) {
   var dupSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEETS.BOOKINGS);
   var dupData = dupSheet.getDataRange().getValues();
   for (var di = 1; di < dupData.length; di++) {
-    if (dupData[di][1] === customerId && dupData[di][6] === 'Confirmed') {
+    if (dupData[di][1] === customerId && (dupData[di][6] === 'Confirmed' || dupData[di][6] === 'ChangeRequested')) {
       var dupDate = typeof dupData[di][4] === 'string' ? dupData[di][4].slice(0,10) : formatDate(new Date(dupData[di][4]));
-      var dupTime = typeof dupData[di][5] === 'string' ? String(dupData[di][5]).slice(0,5) : String(dupData[di][5]).slice(0,5);
+      var dupTime = formatTimeFromSheet(dupData[di][5]);
       if (dupDate === data.date && dupTime === data.time) {
         return createResponse(false, 'Ezen az időponton már van aktív foglalásod! Kérjük válassz másik időpontot.');
       }
@@ -316,8 +316,8 @@ function createBooking(data) {
     var eventId = event.getId();
     createdEvents.push(eventId);
     
-    // Record booking (including calendar event ID for later cancellation/modification)
-    recordBooking(customerId, data.name, data.service, dateStr, data.time, packageId, sessionNumber, eventId);
+    // Record booking (including calendar event ID and Stripe payment intent for refunds)
+    recordBooking(customerId, data.name, data.service, dateStr, data.time, packageId, sessionNumber, eventId, data.stripePaymentIntentId || '');
   }
   
   // Send confirmation emails
@@ -945,7 +945,7 @@ function getAllBookings_() {
       customerEmail: emailMap[data[i][1]] || '',
       service: data[i][3],
       date: typeof data[i][4] === 'string' ? data[i][4].slice(0,10) : formatDate(new Date(data[i][4])),
-      time: typeof data[i][5] === 'string' ? String(data[i][5]).slice(0,5) : String(data[i][5]).slice(0,5),
+      time: formatTimeFromSheet(data[i][5]),
       status: data[i][6],
       packageId: data[i][7],
       sessionNumber: data[i][8],
@@ -983,7 +983,7 @@ function getPendingBookings_() {
 // ============================================
 // Record Booking
 // ============================================
-function recordBooking(customerId, customerName, service, date, time, packageId, sessionNumber, calendarEventId) {
+function recordBooking(customerId, customerName, service, date, time, packageId, sessionNumber, calendarEventId, stripePaymentIntentId) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var bookingsSheet = ss.getSheetByName(SHEETS.BOOKINGS);
   
@@ -1000,7 +1000,8 @@ function recordBooking(customerId, customerName, service, date, time, packageId,
     packageId || '',
     sessionNumber || '',
     formatDate(new Date()),
-    calendarEventId || ''
+    calendarEventId || '',
+    stripePaymentIntentId || ''
   ]);
   
   return bookingId;
@@ -1103,8 +1104,8 @@ function getMyBookings_(email) {
         bookings.push({
           bookingId: bookingsData[j][0],
           service: bookingsData[j][3],
-          date: typeof bookingsData[j][4] === 'string' ? bookingsData[j][4] : formatDate(new Date(bookingsData[j][4])),
-          time: typeof bookingsData[j][5] === 'string' ? String(bookingsData[j][5]).slice(0, 5) : String(bookingsData[j][5]),
+          date: typeof bookingsData[j][4] === 'string' ? bookingsData[j][4].slice(0,10) : formatDate(new Date(bookingsData[j][4])),
+          time: formatTimeFromSheet(bookingsData[j][5]),
           status: bookingsData[j][6],
           calendarEventId: bookingsData[j][10] || ''
         });
@@ -1156,9 +1157,10 @@ function selfCancelBooking_(data) {
       }
       bookingRow = j + 1;
       bookingService = bookingsData[j][3];
-      bookingDate = typeof bookingsData[j][4] === 'string' ? bookingsData[j][4] : formatDate(new Date(bookingsData[j][4]));
-      bookingTime = typeof bookingsData[j][5] === 'string' ? String(bookingsData[j][5]).slice(0, 5) : String(bookingsData[j][5]);
+      bookingDate = typeof bookingsData[j][4] === 'string' ? bookingsData[j][4].slice(0,10) : formatDate(new Date(bookingsData[j][4]));
+      bookingTime = formatTimeFromSheet(bookingsData[j][5]);
       var calendarEventId = bookingsData[j][10] || '';
+      var stripePaymentIntentId = bookingsData[j][11] || '';
       break;
     }
   }
@@ -1175,12 +1177,39 @@ function selfCancelBooking_(data) {
 
   // Mark as cancelled in sheet
   bookingsSheet.getRange(bookingRow, 7).setValue('Cancelled');
-  SpreadsheetApp.flush(); // Force-persist immediately so next read sees the update (non-fatal – never crash the cancellation)
+  SpreadsheetApp.flush();
   var calendarDeleted = false;
   try {
     calendarDeleted = deleteCalendarEvent_(calendarEventId, bookingDate, bookingTime, customerName);
   } catch (calErr) {
     Logger.log('Calendar deletion skipped: ' + calErr);
+  }
+
+  // Attempt Stripe refund if we have a payment intent ID
+  var refundStatus = 'Nincs Stripe fizetési adat – manuális visszatérítés szükséges';
+  var refundAmount = '';
+  if (stripePaymentIntentId) {
+    try {
+      var STRIPE_SECRET_KEY = PropertiesService.getScriptProperties().getProperty('STRIPE_SECRET_KEY');
+      var refundResp = UrlFetchApp.fetch('https://api.stripe.com/v1/refunds', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + STRIPE_SECRET_KEY, 'Content-Type': 'application/x-www-form-urlencoded' },
+        payload: 'payment_intent=' + encodeURIComponent(stripePaymentIntentId),
+        muteHttpExceptions: true
+      });
+      var refundJson = JSON.parse(refundResp.getContentText());
+      if (refundJson.id) {
+        refundAmount = (refundJson.amount / 100).toLocaleString() + ' Ft';
+        refundStatus = '✅ STRIPE VISSZATÉRÍTÉS SIKERES – ' + refundAmount + ' (refund ID: ' + refundJson.id + ')';
+        Logger.log('Stripe refund issued: ' + refundJson.id + ' for ' + stripePaymentIntentId);
+      } else {
+        refundStatus = '⚠️ Stripe visszatérítés sikertelen: ' + JSON.stringify(refundJson) + ' – manuális visszatérítés szükséges!';
+        Logger.log('Stripe refund failed: ' + JSON.stringify(refundJson));
+      }
+    } catch (refErr) {
+      refundStatus = '⚠️ Stripe API hiba: ' + refErr + ' – manuális visszatérítés szükséges!';
+      Logger.log('Stripe refund error: ' + refErr);
+    }
   }
 
   // Notify Edina
@@ -1195,6 +1224,7 @@ function selfCancelBooking_(data) {
   edinaBody += '⏰ Időpont: ' + bookingTime + '\n';
   if (reason) edinaBody += '📝 Indoklás: ' + reason + '\n';
   edinaBody += '═══════════════════════════════════════\n\n';
+  edinaBody += '💳 VISSZATÉRÍTÉS: ' + refundStatus + '\n\n';
   if (calendarDeleted) {
     edinaBody += '✅ A Google Naptár esemény automatikusan törölve.';
   } else {
@@ -1212,6 +1242,14 @@ function selfCancelBooking_(data) {
   custBody += '📅 Dátum: ' + bookingDate + '\n';
   custBody += '⏰ Időpont: ' + bookingTime + '\n';
   custBody += '═══════════════════════════════════════\n\n';
+  if (stripePaymentIntentId) {
+    if (refundStatus.indexOf('SIKERES') !== -1) {
+      custBody += '💳 A befizetett foglalási díj (' + refundAmount + ') visszautalásra kerül a bankkártyádra.\n';
+      custBody += '   Az összeg általában 5–10 munkanapon belül megjelenik a számládon.\n\n';
+    } else {
+      custBody += '💳 A visszatérítéssel kapcsolatban hamarosan felvesszük veled a kapcsolatot.\n\n';
+    }
+  }
   custBody += 'Ha új időpontot szeretnél foglalni:\n';
   custBody += '🌐 https://dunakeszimasszazs.hu/#idopont\n\n';
   custBody += 'Üdvözlettel,\nMakra Edina\nDunakeszi Masszázs - Angyali Szalon\n📞 +36 30 487 7883';
@@ -1255,8 +1293,8 @@ function selfRequestChange_(data) {
   for (var j = 1; j < bookingsData.length; j++) {
     if (bookingsData[j][0] === bookingId && bookingsData[j][1] === customerId) {
       bookingService = bookingsData[j][3];
-      bookingDate = typeof bookingsData[j][4] === 'string' ? bookingsData[j][4] : formatDate(new Date(bookingsData[j][4]));
-      bookingTime = typeof bookingsData[j][5] === 'string' ? String(bookingsData[j][5]).slice(0, 5) : String(bookingsData[j][5]);
+      bookingDate = typeof bookingsData[j][4] === 'string' ? bookingsData[j][4].slice(0,10) : formatDate(new Date(bookingsData[j][4]));
+      bookingTime = formatTimeFromSheet(bookingsData[j][5]);
       calEventId = bookingsData[j][10] || '';
       bookingRow = j + 1;
       break;
@@ -1278,7 +1316,7 @@ function selfRequestChange_(data) {
     if (bookingsData[k][0] !== bookingId && bookingsData[k][1] === customerId &&
         (bookingsData[k][6] === 'Confirmed' || bookingsData[k][6] === 'ChangeRequested')) {
       var chkDate = typeof bookingsData[k][4] === 'string' ? bookingsData[k][4].slice(0,10) : formatDate(new Date(bookingsData[k][4]));
-      var chkTime = typeof bookingsData[k][5] === 'string' ? String(bookingsData[k][5]).slice(0,5) : String(bookingsData[k][5]).slice(0,5);
+      var chkTime = formatTimeFromSheet(bookingsData[k][5]);
       if (chkDate === newDate && chkTime === newTime) {
         return createResponse(false, 'Ezen az időponton már van aktív foglalásod! Kérjük válassz másik időpontot.');
       }
@@ -1996,7 +2034,8 @@ function handleStripeWebhook(event) {
         recurring: metadata.recurring || 'no',
         recurringType: metadata.recurring_type || 'weekly',
         recurringCount: metadata.recurring_count || '1',
-        usePackage: 'false'
+        usePackage: 'false',
+        stripePaymentIntentId: session.payment_intent || ''
       };
 
       Logger.log('Creating booking from webhook: ' + JSON.stringify(bookingData));
@@ -2207,10 +2246,24 @@ function createHtmlResponse(html) {
   return output;
 }
 
+// Timezone for all user-facing date/time formatting
+var TZ = 'Europe/Budapest';
+
+// Format a JS Date as YYYY-MM-DD in Budapest time
 function formatDate(date) {
-  return date.getFullYear() + '-' + 
-         String(date.getMonth() + 1).padStart(2, '0') + '-' + 
-         String(date.getDate()).padStart(2, '0');
+  return Utilities.formatDate(date, TZ, 'yyyy-MM-dd');
+}
+
+// Safely extract HH:MM from a sheet cell value.
+// Google Sheets stores time-typed cells as Date objects (Dec 30 1899 HH:MM:SS).
+// This handles both that case and plain strings like "09:45" or "09:45:00".
+function formatTimeFromSheet(val) {
+  if (!val && val !== 0) return '';
+  if (val instanceof Date) {
+    return String(val.getHours()).padStart(2, '0') + ':' + String(val.getMinutes()).padStart(2, '0');
+  }
+  // String — take first 5 chars ("HH:MM")
+  return String(val).slice(0, 5);
 }
 
 function getRecurringTypeText(type) {
