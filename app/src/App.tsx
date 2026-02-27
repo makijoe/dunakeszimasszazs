@@ -718,7 +718,7 @@ const services = [
   },
   {
     id: 'bemer',
-    name: 'BEMER matrac',
+    name: 'BEMER Kezelés',
     duration: '20 vagy 40 perc',
     price: 15000,
     shortDescription: 'A mikroerek pacemakere. Sejtszintű támogatás a mikrokeringés javításával.',
@@ -762,8 +762,8 @@ function PricingSection() {
     { name: 'Ultrahangos zsírbontás', duration: 'kb. 45-60 perc', price: '15 000' },
     { name: 'Arany kollagén arckezelés', duration: 'kb. 60-90 perc', price: '30 000' },
     { name: 'Metamorf masszázs', duration: 'kb. 60 perc', price: '15 000' },
-    { name: 'BEMER matrac (20 perc)', duration: 'kb. 20 perc', price: '7 500' },
-    { name: 'BEMER matrac (40 perc)', duration: 'kb. 40 perc', price: '15 000' },
+    { name: 'BEMER Kezelés (20 perc)', duration: 'kb. 20 perc', price: '7 500' },
+    { name: 'BEMER Kezelés (40 perc)', duration: 'kb. 40 perc', price: '15 000' },
   ];
 
   return (
@@ -1496,9 +1496,9 @@ function BookingSection() {
     { name: 'Arany kollagén arckezelés', price: 30000 },
     { name: 'Ultrahangos zsírbontás', price: 15000 },
     { name: 'Metamorf masszázs', price: 15000 },
-    { name: 'BEMER matrac', price: 15000 },
-    { name: 'BEMER matrac (20 perc)', price: 7500 },
-    { name: 'BEMER matrac (40 perc)', price: 15000 }
+    { name: 'BEMER Kezelés', price: 15000 },
+    { name: 'BEMER Kezelés (20 perc)', price: 7500 },
+    { name: 'BEMER Kezelés (40 perc)', price: 15000 }
   ];
 
   // Time slots with 75-minute intervals (60 min session + 15 min break)
