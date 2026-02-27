@@ -2230,6 +2230,287 @@ function calculateDiscount(sessionCount) {
 }
 
 // ============================================
+// SYSTEM TEST RUNNER
+// Run manually from the Apps Script editor (NOT deployed).
+// Tests every backend feature. Creates [TEST] tagged data,
+// runs all checks, then cleans itself up automatically.
+// NOTE: Stripe checkout is intentionally NOT tested here
+//       (live keys are active – never test Stripe from GAS directly).
+// Test notification emails will be sent to Edina with [TEST] in the name.
+// ============================================
+function runSystemTests() {
+  var TAG = '[TEST]';
+  var testEmail = 'dunakeszimasszor@gmail.com'; // test emails land here
+  var testName  = TAG + ' Auto Teszt';
+  var testPhone = '+36 99 000 0000';
+  var testService = 'Frissítő masszázs';
+
+  // Dates: 3 and 4 days from now (safely outside 24h restriction)
+  var d3 = new Date(); d3.setDate(d3.getDate() + 3);
+  var d4 = new Date(); d4.setDate(d4.getDate() + 4);
+  var dateA = formatDate(d3); // used for single + duplicate tests
+  var dateB = formatDate(d4); // used for recurring test
+  var timeA = '10:00';
+  var timeB = '11:15';
+  var timeC = '14:00'; // used for change-request target
+
+  // Date within 24h for policy enforcement test (2h from now)
+  var dSoon = new Date(); dSoon.setHours(dSoon.getHours() + 2);
+  var date24h = formatDate(dSoon);
+  var time24h = String(dSoon.getHours()).padStart(2,'0') + ':' + String(dSoon.getMinutes()).padStart(2,'0');
+
+  var passed = 0, failed = 0, skipped = 0;
+  var log = [];
+
+  function pass(name)          { passed++;  log.push('✅ PASS: ' + name);  Logger.log('PASS: ' + name); }
+  function fail(name, detail)  { failed++;  log.push('❌ FAIL: ' + name + '\n       → ' + detail); Logger.log('FAIL: ' + name + ' – ' + detail); }
+  function skip(name, reason)  { skipped++; log.push('⏭️  SKIP: ' + name + ' (' + reason + ')'); }
+
+  // Safely parse response — functions return plain objects via createResponse()
+  function r(resp) {
+    if (!resp) return { success: false, message: 'null response' };
+    if (typeof resp === 'object' && 'success' in resp) return resp;
+    try { return JSON.parse(resp.getContent ? resp.getContent() : resp); } catch(e) { return { success: false, message: 'parse error: ' + e }; }
+  }
+
+  log.push('╔══════════════════════════════════════════╗');
+  log.push('║  DUNAKESZI MASSZÁZS – RENDSZERTESZT      ║');
+  log.push('╚══════════════════════════════════════════╝');
+  log.push('Futtatva: ' + new Date().toLocaleString('hu-HU'));
+  log.push('Teszt dátum A: ' + dateA + ' ' + timeA);
+  log.push('Teszt dátum B: ' + dateB + ' ' + timeA + ' (ismétlődő)');
+  log.push('24h teszt: ' + date24h + ' ' + time24h);
+  log.push('');
+
+  // ── 1. Vásárló létrehozás ──────────────────────────
+  var testCustomerId;
+  try {
+    var c1 = getOrCreateCustomer(testName, testEmail, testPhone);
+    if (c1 && c1.customerId) { testCustomerId = c1.customerId; pass('1. Vásárló létrehozás'); }
+    else { fail('1. Vásárló létrehozás', JSON.stringify(c1)); }
+  } catch(e) { fail('1. Vásárló létrehozás', e.toString()); }
+
+  // ── 2. Duplikált vásárló megelőzés ────────────────
+  try {
+    var c2 = getOrCreateCustomer(testName, testEmail, testPhone);
+    if (c2 && c2.customerId === testCustomerId) { pass('2. Duplikált vásárló megelőzés (ugyanaz az ID)'); }
+    else { fail('2. Duplikált vásárló megelőzés', 'Különböző ID: ' + (c2 ? c2.customerId : 'null')); }
+  } catch(e) { fail('2. Duplikált vásárló megelőzés', e.toString()); }
+
+  // ── 3. Egyszeri foglalás létrehozás ───────────────
+  try {
+    var r3 = r(createBooking({ name: testName, email: testEmail, phone: testPhone,
+      service: testService, date: dateA, time: timeA, recurring: 'no', recurringCount: '1', notes: TAG }));
+    if (r3.success) { pass('3. Egyszeri foglalás létrehozás'); }
+    else { fail('3. Egyszeri foglalás létrehozás', r3.message); }
+  } catch(e) { fail('3. Egyszeri foglalás létrehozás', e.toString()); }
+
+  // ── 4. Duplikált időpont megelőzés ────────────────
+  try {
+    var r4 = r(createBooking({ name: testName, email: testEmail, phone: testPhone,
+      service: testService, date: dateA, time: timeA, recurring: 'no', recurringCount: '1', notes: TAG }));
+    if (!r4.success && r4.message && r4.message.indexOf('már van') !== -1) { pass('4. Duplikált időpont megelőzés'); }
+    else { fail('4. Duplikált időpont megelőzés', 'El kellett volna utasítani. Kapott: ' + JSON.stringify(r4)); }
+  } catch(e) { fail('4. Duplikált időpont megelőzés', e.toString()); }
+
+  // ── 5. Ismétlődő foglalás + automatikus bérlet ────
+  try {
+    var r5 = r(createBooking({ name: testName, email: testEmail, phone: testPhone,
+      service: testService, date: dateB, time: timeA, recurring: 'yes', recurringCount: '3', recurringType: 'weekly', notes: TAG }));
+    if (r5.success) {
+      var pkgs5 = r(getAllPackages_());
+      var myPkgs = (pkgs5.data && pkgs5.data.packages ? pkgs5.data.packages : [])
+        .filter(function(p) { return p.customerName === testName && Number(p.sessionsPurchased) === 3; });
+      if (myPkgs.length > 0) { pass('5. Ismétlődő foglalás (3 alkalom) + automatikus bérlet létrehozás'); }
+      else { fail('5. Automatikus bérlet létrehozás', 'Bérlet nem jelent meg a SessionPackages-ben'); }
+    } else { fail('5. Ismétlődő foglalás létrehozás', r5.message); }
+  } catch(e) { fail('5. Ismétlődő foglalás + automatikus bérlet', e.toString()); }
+
+  // ── 6. Saját foglalások lekérése (dátum formátum) ─
+  var myBookingsData;
+  try {
+    var r6 = r(getMyBookings_(testEmail));
+    if (r6.success && r6.data && r6.data.bookings) {
+      myBookingsData = r6.data.bookings;
+      var allDates = myBookingsData.every(function(b) { return /^\d{4}-\d{2}-\d{2}$/.test(b.date); });
+      var allTimes = myBookingsData.every(function(b) { return /^\d{2}:\d{2}$/.test(b.time); });
+      if (myBookingsData.length > 0 && allDates && allTimes) { pass('6. Saját foglalások (helyes YYYY-MM-DD dátum, HH:MM idő – ' + myBookingsData.length + ' db)'); }
+      else { fail('6. Saját foglalások formátum', 'dates ok=' + allDates + ' times ok=' + allTimes + ' count=' + myBookingsData.length); }
+    } else { fail('6. Saját foglalások lekérése', r6.message); }
+  } catch(e) { fail('6. Saját foglalások lekérése', e.toString()); }
+
+  // ── 7. Összes foglalás lekérése (admin) ───────────
+  try {
+    var r7 = r(getAllBookings_());
+    if (r7.success && r7.data && r7.data.bookings) {
+      var mine7 = r7.data.bookings.filter(function(b) { return b.customerName === testName; });
+      var datesOk = mine7.every(function(b) { return /^\d{4}-\d{2}-\d{2}$/.test(b.date); });
+      var timesOk = mine7.every(function(b) { return /^\d{2}:\d{2}$/.test(b.time); });
+      var createdOk = mine7.every(function(b) { return b.createdDate && b.createdDate.length >= 8; });
+      if (mine7.length > 0 && datesOk && timesOk && createdOk) { pass('7. Összes foglalás (helyes dátum/idő/létrehozva formátum – ' + mine7.length + ' db)'); }
+      else { fail('7. Összes foglalás formátum', 'dates=' + datesOk + ' times=' + timesOk + ' created=' + createdOk + ' count=' + mine7.length); }
+    } else { fail('7. Összes foglalás lekérése', r7.message); }
+  } catch(e) { fail('7. Összes foglalás lekérése', e.toString()); }
+
+  // ── 8. Bérletek lekérése ──────────────────────────
+  try {
+    var r8 = r(getAllPackages_());
+    if (r8.success && r8.data && r8.data.packages) {
+      var myPkgs8 = r8.data.packages.filter(function(p) { return p.customerName === testName; });
+      if (myPkgs8.length > 0) { pass('8. Bérletek lekérése (' + myPkgs8.length + ' teszt bérlet)'); }
+      else { fail('8. Bérletek lekérése', 'Nincs bérlet a teszt vásárló nevén'); }
+    } else { fail('8. Bérletek lekérése', r8.message); }
+  } catch(e) { fail('8. Bérletek lekérése', e.toString()); }
+
+  // ── 9. Saját lemondás ─────────────────────────────
+  var confirmedBefore9 = myBookingsData ? myBookingsData.filter(function(b) { return b.status === 'Confirmed'; }) : [];
+  if (confirmedBefore9.length > 0) {
+    try {
+      var r9 = r(selfCancelBooking_({ bookingId: confirmedBefore9[0].bookingId, email: testEmail, reason: 'Automatikus teszt' }));
+      if (r9.success) { pass('9. Saját foglalás lemondás'); }
+      else { fail('9. Saját foglalás lemondás', r9.message); }
+    } catch(e) { fail('9. Saját foglalás lemondás', e.toString()); }
+  } else { skip('9. Saját foglalás lemondás', 'Nincs Confirmed foglalás'); }
+
+  // ── 10. 24 órás szabály érvényesítés ─────────────
+  try {
+    var r10c = r(createBooking({ name: testName, email: testEmail, phone: testPhone,
+      service: testService, date: date24h, time: time24h, recurring: 'no', recurringCount: '1', notes: TAG + '_24H' }));
+    if (r10c.success) {
+      // Reload bookings to find this near-term booking
+      var mb10 = r(getMyBookings_(testEmail));
+      var b24 = (mb10.data && mb10.data.bookings ? mb10.data.bookings : []).filter(function(b) { return b.date === date24h && b.time.slice(0,5) === time24h.slice(0,5); });
+      if (b24.length > 0) {
+        var r10 = r(selfCancelBooking_({ bookingId: b24[0].bookingId, email: testEmail, reason: 'teszt' }));
+        if (!r10.success && r10.message && r10.message.indexOf('24') !== -1) { pass('10. 24 órás lemondási szabály érvényesítés'); }
+        else { fail('10. 24 órás lemondási szabály', 'El kellett volna utasítani 24h üzenettel. Kapott: ' + JSON.stringify(r10)); }
+      } else { skip('10. 24 órás lemondási szabály', '24h-s foglalás nem található visszatöltés után'); }
+    } else { skip('10. 24 órás lemondási szabály', 'Nem sikerült közeli foglalást létrehozni: ' + r10c.message); }
+  } catch(e) { fail('10. 24 órás lemondási szabály', e.toString()); }
+
+  // ── 11. Módosítási kérelem ────────────────────────
+  var freshBookings11;
+  try {
+    var mb11 = r(getMyBookings_(testEmail));
+    freshBookings11 = mb11.data && mb11.data.bookings ? mb11.data.bookings : [];
+    var confirmed11 = freshBookings11.filter(function(b) { return b.status === 'Confirmed'; });
+    if (confirmed11.length > 0) {
+      var d5 = new Date(); d5.setDate(d5.getDate() + 5);
+      var r11 = r(selfRequestChange_({ bookingId: confirmed11[0].bookingId, email: testEmail, newDate: formatDate(d5), newTime: timeC, notes: 'teszt módosítás' }));
+      if (r11.success) { pass('11. Módosítási kérelem küldés + ChangeRequested státusz'); }
+      else { fail('11. Módosítási kérelem', r11.message); }
+    } else { skip('11. Módosítási kérelem', 'Nincs Confirmed foglalás'); }
+  } catch(e) { fail('11. Módosítási kérelem', e.toString()); }
+
+  // ── 12. Ütköző módosítás megelőzés ───────────────
+  try {
+    var mb12 = r(getMyBookings_(testEmail));
+    var all12 = mb12.data && mb12.data.bookings ? mb12.data.bookings : [];
+    var conf12 = all12.filter(function(b) { return b.status === 'Confirmed'; });
+    var others12 = all12.filter(function(b) { return b.status !== 'Cancelled'; });
+    var target12 = others12.find(function(b) { return conf12.length > 0 && b.bookingId !== conf12[0].bookingId; });
+    if (conf12.length > 0 && target12) {
+      var r12 = r(selfRequestChange_({ bookingId: conf12[0].bookingId, email: testEmail, newDate: target12.date, newTime: target12.time, notes: 'ütközés teszt' }));
+      if (!r12.success && r12.message && r12.message.indexOf('már van') !== -1) { pass('12. Ütköző módosítás megelőzés'); }
+      else { fail('12. Ütköző módosítás megelőzés', 'El kellett volna utasítani. Kapott: ' + JSON.stringify(r12)); }
+    } else { skip('12. Ütköző módosítás megelőzés', 'Nincs elég foglalás az ütközés teszteléséhez (conf=' + conf12.length + ' others=' + others12.length + ')'); }
+  } catch(e) { fail('12. Ütköző módosítás megelőzés', e.toString()); }
+
+  // ── 13. Bérlet alkalom levonás ────────────────────
+  try {
+    var r13all = r(getAllPackages_());
+    var pkg13 = (r13all.data && r13all.data.packages ? r13all.data.packages : [])
+      .find(function(p) { return p.customerName === testName && p.status === 'Active' && Number(p.sessionsRemaining) > 0; });
+    if (pkg13) {
+      var before13 = Number(pkg13.sessionsRemaining);
+      var rd13 = deductSessionFromPackage(pkg13.packageId);
+      var r13all2 = r(getAllPackages_());
+      var updated13 = (r13all2.data && r13all2.data.packages ? r13all2.data.packages : [])
+        .find(function(p) { return p.packageId === pkg13.packageId; });
+      if (updated13 && Number(updated13.sessionsRemaining) === before13 - 1) { pass('13. Bérlet alkalom levonás (' + before13 + ' → ' + updated13.sessionsRemaining + ' maradt)'); }
+      else { fail('13. Bérlet alkalom levonás', 'Várt: ' + (before13-1) + ' Kapott: ' + (updated13 ? updated13.sessionsRemaining : 'n/a')); }
+    } else { skip('13. Bérlet alkalom levonás', 'Nincs aktív bérlet'); }
+  } catch(e) { fail('13. Bérlet alkalom levonás', e.toString()); }
+
+  // ── 14. Szabad időpont ellenőrzés (naptár) ────────
+  try {
+    var freeDate = new Date(); freeDate.setDate(freeDate.getDate() + 60);
+    var avail = isTimeSlotAvailable(formatDate(freeDate), '03:00');
+    if (avail === true) { pass('14. Szabad időpont ellenőrzés (60 nap múlva 03:00 → szabad)'); }
+    else { fail('14. Szabad időpont ellenőrzés', 'Valószínűleg szabad időpont foglaltként jelent meg'); }
+  } catch(e) { fail('14. Szabad időpont ellenőrzés (naptár)', e.toString()); }
+
+  // ── 15. ChangeRequested foglalás megjelenik a listán ─
+  try {
+    var mb15 = r(getMyBookings_(testEmail));
+    var cr15 = (mb15.data && mb15.data.bookings ? mb15.data.bookings : []).filter(function(b) { return b.status === 'ChangeRequested'; });
+    if (cr15.length > 0) { pass('15. ChangeRequested foglalás megjelenik az ügyfél listájában'); }
+    else { skip('15. ChangeRequested státusz láthatóság', 'Nincs ChangeRequested státuszú foglalás (teszt 11 sikertelen volt?)'); }
+  } catch(e) { fail('15. ChangeRequested státusz láthatóság', e.toString()); }
+
+  // ── CLEANUP ───────────────────────────────────────
+  var cleanedRows = 0, cleanedCal = 0;
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+
+    // Bookings sheet
+    var bSh = ss.getSheetByName(SHEETS.BOOKINGS);
+    var bD = bSh.getDataRange().getValues();
+    for (var bi = bD.length - 1; bi >= 1; bi--) {
+      if (String(bD[bi][2]).indexOf(TAG) !== -1) { bSh.deleteRow(bi + 1); cleanedRows++; }
+    }
+    // SessionPackages sheet
+    var pSh = ss.getSheetByName(SHEETS.SESSION_PACKAGES);
+    var pD = pSh.getDataRange().getValues();
+    for (var pi = pD.length - 1; pi >= 1; pi--) {
+      if (String(pD[pi][2]).indexOf(TAG) !== -1) { pSh.deleteRow(pi + 1); cleanedRows++; }
+    }
+    // Customers sheet
+    var cSh = ss.getSheetByName(SHEETS.CUSTOMERS);
+    var cD = cSh.getDataRange().getValues();
+    for (var ci = cD.length - 1; ci >= 1; ci--) {
+      if (String(cD[ci][1]).indexOf(TAG) !== -1) { cSh.deleteRow(ci + 1); cleanedRows++; }
+    }
+    // Financial sheet
+    var fSh = ss.getSheetByName(SHEETS.FINANCIAL);
+    if (fSh) {
+      var fD = fSh.getDataRange().getValues();
+      for (var fi = fD.length - 1; fi >= 1; fi--) {
+        if (String(fD[fi][4]).indexOf(TAG) !== -1) { fSh.deleteRow(fi + 1); cleanedRows++; }
+      }
+    }
+    // Google Calendar events tagged [TEST]
+    try {
+      var cal = CalendarApp.getDefaultCalendar();
+      var calFrom = new Date(); calFrom.setDate(calFrom.getDate() - 1);
+      var calTo = new Date(); calTo.setDate(calTo.getDate() + 100);
+      cal.getEvents(calFrom, calTo).forEach(function(ev) {
+        if (ev.getTitle().indexOf(TAG) !== -1 || ev.getDescription().indexOf(TAG) !== -1) {
+          ev.deleteEvent(); cleanedCal++;
+        }
+      });
+    } catch(calE) { log.push('⚠️  Naptár cleanup hiba: ' + calE); }
+
+    log.push('');
+    log.push('🧹 Cleanup: ' + cleanedRows + ' sor + ' + cleanedCal + ' naptáresemény törölve');
+  } catch(cleanE) { log.push('⚠️  Cleanup hiba: ' + cleanE); }
+
+  // ── SUMMARY ───────────────────────────────────────
+  log.push('');
+  log.push('══════════════════════════════════════════');
+  log.push('EREDMÉNY:  ✅ ' + passed + ' PASSED  |  ❌ ' + failed + ' FAILED  |  ⏭️  ' + skipped + ' SKIPPED');
+  log.push('══════════════════════════════════════════');
+
+  var fullLog = log.join('\n');
+  Logger.log(fullLog);
+  SpreadsheetApp.getUi().alert(
+    failed === 0 ? '✅ Minden teszt átment! (' + passed + '/' + (passed+skipped) + ')' : '⚠️  ' + failed + ' teszt FAILED – lásd részleteket',
+    fullLog,
+    SpreadsheetApp.getUi().ButtonSet.OK
+  );
+}
+
+// ============================================
 // ONE-TIME CLEANUP — Run manually from Apps Script editor
 // Clears ALL rows (except headers) from Bookings, Customers,
 // SessionPackages, Financial, PendingBookings sheets.
