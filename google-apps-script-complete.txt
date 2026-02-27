@@ -265,10 +265,11 @@ function createBooking(data) {
       location: 'Angyali Szalon, Dunakeszi'
     });
     event.setColor(packageId ? '2' : '6'); // Green for package sessions, orange for regular
-    createdEvents.push(event.getId());
+    var eventId = event.getId();
+    createdEvents.push(eventId);
     
-    // Record booking
-    recordBooking(customerId, data.name, data.service, dateStr, data.time, packageId, sessionNumber);
+    // Record booking (including calendar event ID for later cancellation/modification)
+    recordBooking(customerId, data.name, data.service, dateStr, data.time, packageId, sessionNumber, eventId);
   }
   
   // Send confirmation emails
@@ -934,7 +935,7 @@ function getPendingBookings_() {
 // ============================================
 // Record Booking
 // ============================================
-function recordBooking(customerId, customerName, service, date, time, packageId, sessionNumber) {
+function recordBooking(customerId, customerName, service, date, time, packageId, sessionNumber, calendarEventId) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var bookingsSheet = ss.getSheetByName(SHEETS.BOOKINGS);
   
@@ -951,7 +952,7 @@ function recordBooking(customerId, customerName, service, date, time, packageId,
     packageId || '',
     sessionNumber || '',
     formatDate(new Date()),
-    ''
+    calendarEventId || ''
   ]);
   
   return bookingId;
@@ -1055,7 +1056,8 @@ function getMyBookings_(email) {
           bookingId: bookingsData[j][0],
           service: bookingsData[j][3],
           date: typeof bookingsData[j][4] === 'string' ? bookingsData[j][4] : formatDate(new Date(bookingsData[j][4])),
-          time: typeof bookingsData[j][5] === 'string' ? String(bookingsData[j][5]).slice(0, 5) : String(bookingsData[j][5])
+          time: typeof bookingsData[j][5] === 'string' ? String(bookingsData[j][5]).slice(0, 5) : String(bookingsData[j][5]),
+          calendarEventId: bookingsData[j][10] || ''
         });
       }
     }
@@ -1107,6 +1109,7 @@ function selfCancelBooking_(data) {
       bookingService = bookingsData[j][3];
       bookingDate = typeof bookingsData[j][4] === 'string' ? bookingsData[j][4] : formatDate(new Date(bookingsData[j][4]));
       bookingTime = typeof bookingsData[j][5] === 'string' ? String(bookingsData[j][5]).slice(0, 5) : String(bookingsData[j][5]);
+      var calendarEventId = bookingsData[j][10] || '';
       break;
     }
   }
@@ -1115,6 +1118,9 @@ function selfCancelBooking_(data) {
 
   // Mark as cancelled in sheet
   bookingsSheet.getRange(bookingRow, 7).setValue('Cancelled');
+
+  // Auto-delete Google Calendar event
+  var calendarDeleted = deleteCalendarEvent_(calendarEventId, bookingDate, bookingTime, customerName);
 
   // Notify Edina
   var edinaSubject = '🔴 Ügyfél mondta le – ' + customerName + ' (' + bookingDate + ' ' + bookingTime + ')';
@@ -1128,7 +1134,11 @@ function selfCancelBooking_(data) {
   edinaBody += '⏰ Időpont: ' + bookingTime + '\n';
   if (reason) edinaBody += '📝 Indoklás: ' + reason + '\n';
   edinaBody += '═══════════════════════════════════════\n\n';
-  edinaBody += '⚠️ Töröld ki az időpontot a Google Naptárból!';
+  if (calendarDeleted) {
+    edinaBody += '✅ A Google Naptár esemény automatikusan törölve.';
+  } else {
+    edinaBody += '⚠️ A naptári esemény nem volt automán törölhető – kérjük ellenőrizd manuálisan a Google Naptárt!';
+  }
 
   MailApp.sendEmail({ to: 'dunakeszimasszor@gmail.com', subject: edinaSubject, body: edinaBody, name: 'Dunakeszi Masszázs - Admin' });
 
@@ -1139,11 +1149,11 @@ function selfCancelBooking_(data) {
   custBody += '═══════════════════════════════════════\n';
   custBody += '💆 Kezelés: ' + bookingService + '\n';
   custBody += '📅 Dátum: ' + bookingDate + '\n';
-  custBody += '⏰ IdŐpont: ' + bookingTime + '\n';
+  custBody += '⏰ Időpont: ' + bookingTime + '\n';
   custBody += '═══════════════════════════════════════\n\n';
   custBody += 'Ha új időpontot szeretnél foglalni:\n';
   custBody += '🌐 https://dunakeszimasszazs.hu/#idopont\n\n';
-  custBody += 'Üdrözlattel,\nMakra Edina\nDunakeszi Masszázs - Angyali Szalon\n📞 +36 30 487 7883';
+  custBody += 'Üdvözlettel,\nMakra Edina\nDunakeszi Masszázs - Angyali Szalon\n📞 +36 30 487 7883';
 
   MailApp.sendEmail({ to: email, subject: custSubject, body: custBody, name: 'Dunakeszi Masszázs - Angyali Szalon' });
 
@@ -1178,18 +1188,22 @@ function selfRequestChange_(data) {
   // Find the booking
   var bookingsSheet = ss.getSheetByName(SHEETS.BOOKINGS);
   var bookingsData = bookingsSheet.getDataRange().getValues();
-  var bookingService = '', bookingDate = '', bookingTime = '';
+  var bookingService = '', bookingDate = '', bookingTime = '', calEventId = '';
 
   for (var j = 1; j < bookingsData.length; j++) {
     if (bookingsData[j][0] === bookingId && bookingsData[j][1] === customerId) {
       bookingService = bookingsData[j][3];
       bookingDate = typeof bookingsData[j][4] === 'string' ? bookingsData[j][4] : formatDate(new Date(bookingsData[j][4]));
       bookingTime = typeof bookingsData[j][5] === 'string' ? String(bookingsData[j][5]).slice(0, 5) : String(bookingsData[j][5]);
+      calEventId = bookingsData[j][10] || '';
       break;
     }
   }
 
   if (!bookingDate) return createResponse(false, 'Foglalás nem található');
+
+  // Flag the Google Calendar event to show the change request
+  flagCalendarEventForChange_(calEventId, bookingDate, bookingTime, customerName, newDate, newTime);
 
   // Notify Edina with change request
   var edinaSubject = '📝 Időpont módosítási kérelem – ' + customerName;
@@ -1215,16 +1229,108 @@ function selfRequestChange_(data) {
   custBody += 'Módosítási kérelmed megérkezett.\n\n';
   custBody += '═══════════════════════════════════════\n';
   custBody += '💆 Kezelés: ' + bookingService + '\n\n';
-  custBody += '❌ Jelenlegi idŐpont: ' + bookingDate + ' ' + bookingTime + '\n';
-  custBody += '✅ Kért új idŐpont: ' + newDate + ' ' + newTime + '\n';
+  custBody += '❌ Jelenlegi időpont: ' + bookingDate + ' ' + bookingTime + '\n';
+  custBody += '✅ Kért új időpont: ' + newDate + ' ' + newTime + '\n';
   if (notes) custBody += '📝 Megjegyzés: ' + notes + '\n';
   custBody += '═══════════════════════════════════════\n\n';
   custBody += 'Hamarosan visszajelzünk a módosítás visszaigazolásával!\n\n';
-  custBody += 'Üdrözlattel,\nMakra Edina\nDunakeszi Masszázs - Angyali Szalon\n📞 +36 30 487 7883';
+  custBody += 'Üdvözlettel,\nMakra Edina\nDunakeszi Masszázs - Angyali Szalon\n📞 +36 30 487 7883';
 
   MailApp.sendEmail({ to: email, subject: custSubject, body: custBody, name: 'Dunakeszi Masszázs - Angyali Szalon' });
 
   return createResponse(true, 'Módosítási kérelmed elküldve! Hamarosan értesítünk a visszaigazolással.');
+}
+
+// ============================================
+// Calendar Helper Functions
+// ============================================
+
+// Tries to delete a Google Calendar event by its stored ID.
+// Falls back to searching by date/time window + customer name if ID is missing.
+function deleteCalendarEvent_(calendarEventId, bookingDate, bookingTime, customerName) {
+  var calendar = CalendarApp.getDefaultCalendar();
+
+  // Primary: delete by stored event ID
+  if (calendarEventId) {
+    try {
+      var evt = calendar.getEventById(calendarEventId);
+      if (evt) {
+        evt.deleteEvent();
+        Logger.log('Calendar event deleted by ID: ' + calendarEventId);
+        return true;
+      }
+    } catch (e) {
+      Logger.log('Could not delete by ID, falling back to search: ' + e);
+    }
+  }
+
+  // Fallback: search for events within ±2 minutes of the booking slot
+  try {
+    var parts = bookingTime.split(':');
+    var start = new Date(bookingDate + 'T' + (parts[0] || '00') + ':' + (parts[1] || '00') + ':00');
+    var searchStart = new Date(start.getTime() - 2 * 60000);
+    var searchEnd   = new Date(start.getTime() + 2 * 60000);
+    var events = calendar.getEvents(searchStart, searchEnd);
+    for (var i = 0; i < events.length; i++) {
+      var title = events[i].getTitle();
+      if (title.indexOf(customerName) !== -1 || title.indexOf('Masszázs') !== -1) {
+        events[i].deleteEvent();
+        Logger.log('Calendar event deleted by search: ' + title);
+        return true;
+      }
+    }
+  } catch (e) {
+    Logger.log('Fallback calendar search failed: ' + e);
+  }
+
+  Logger.log('Calendar event not found for: ' + customerName + ' ' + bookingDate + ' ' + bookingTime);
+  return false;
+}
+
+// Flags a Google Calendar event to visually show a pending change request.
+// Updates the event title and adds the new requested date/time to the description.
+function flagCalendarEventForChange_(calendarEventId, bookingDate, bookingTime, customerName, newDate, newTime) {
+  var calendar = CalendarApp.getDefaultCalendar();
+  var changeNote = 'MÓDOSÍTÁS KÉRT: ' + newDate + ' ' + newTime;
+
+  // Primary: update by stored event ID
+  if (calendarEventId) {
+    try {
+      var evt = calendar.getEventById(calendarEventId);
+      if (evt) {
+        evt.setTitle('⚠️ ' + changeNote + ' | ' + evt.getTitle());
+        var desc = evt.getDescription() || '';
+        evt.setDescription('⚠️ Ügyfél módosítást kért!\nKért új időpont: ' + newDate + ' ' + newTime + '\n\n' + desc);
+        Logger.log('Calendar event flagged by ID: ' + calendarEventId);
+        return true;
+      }
+    } catch (e) {
+      Logger.log('Could not flag by ID, falling back to search: ' + e);
+    }
+  }
+
+  // Fallback: search ±2 minutes
+  try {
+    var parts = bookingTime.split(':');
+    var start = new Date(bookingDate + 'T' + (parts[0] || '00') + ':' + (parts[1] || '00') + ':00');
+    var searchStart = new Date(start.getTime() - 2 * 60000);
+    var searchEnd   = new Date(start.getTime() + 2 * 60000);
+    var events = calendar.getEvents(searchStart, searchEnd);
+    for (var i = 0; i < events.length; i++) {
+      var title = events[i].getTitle();
+      if (title.indexOf(customerName) !== -1) {
+        events[i].setTitle('⚠️ ' + changeNote + ' | ' + title);
+        var desc = events[i].getDescription() || '';
+        events[i].setDescription('⚠️ Ügyfél módosítást kért!\nKért új időpont: ' + newDate + ' ' + newTime + '\n\n' + desc);
+        Logger.log('Calendar event flagged by search: ' + title);
+        return true;
+      }
+    }
+  } catch (e) {
+    Logger.log('Fallback flag search failed: ' + e);
+  }
+
+  return false;
 }
 
 // ============================================
