@@ -1242,7 +1242,13 @@ function selfCancelBooking_(data) {
     edinaBody += '⚠️ A naptári esemény nem volt automán törölhető – kérjük ellenőrizd manuálisan a Google Naptárt!';
   }
 
-  MailApp.sendEmail({ to: 'dunakeszimasszor@gmail.com', subject: edinaSubject, body: edinaBody, name: 'Dunakeszi Masszázs - Admin', replyTo: 'dunakeszimasszor@gmail.com' });
+  var cancelEdinaHtml = buildSimpleHtml('Foglalás lemondva', '🔴',
+    '<p style="font-size:14px;color:#555;">Kedves Edina! ' + customerName + ' lemondta a foglalását.</p>' +
+    htmlRows([['👤 Név', customerName], ['📧 Email', email], ['💪 Kezelés', bookingService], ['📅 Dátum', bookingDate], ['⏰ Időpont', bookingTime], ['📝 Indoklás', reason || '–']]) +
+    '<p style="font-size:13px;background:#fff8f0;border:1px solid #fcd9b0;border-radius:6px;padding:10px;margin-top:12px;">💳 <strong>Visszatérítés:</strong> ' + refundStatus + '</p>' +
+    '<p style="font-size:13px;color:#555;margin-top:8px;">' + (calendarDeleted ? '✅ Google Naptár esemény automatikusan törölve.' : '⚠️ Naptári eseményt kérjük ellenőrizd manuálisan!') + '</p>'
+  );
+  MailApp.sendEmail({ to: 'dunakeszimasszor@gmail.com', subject: edinaSubject, body: edinaBody, htmlBody: cancelEdinaHtml, name: 'Dunakeszi Masszázs - Admin', replyTo: 'dunakeszimasszor@gmail.com' });
 
   // Confirm to customer
   var custSubject = 'Foglalás lemondva – Dunakeszi Masszázs';
@@ -1265,7 +1271,18 @@ function selfCancelBooking_(data) {
   custBody += '🌐 https://dunakeszimasszazs.hu/#idopont\n\n';
   custBody += 'Üdvözlettel,\nMakra Edina\nDunakeszi Masszázs - Angyali Szalon\n📞 +36 30 487 7883';
 
-  MailApp.sendEmail({ to: email, subject: custSubject, body: custBody, name: 'Dunakeszi Masszázs - Angyali Szalon', replyTo: 'dunakeszimasszor@gmail.com' });
+  var refundNote = stripePaymentIntentId
+    ? (refundStatus.indexOf('SIKERES') !== -1
+        ? '<p style="font-size:13px;background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:10px;">💳 A befizetett foglalási díj (' + refundAmount + ') visszautalásra kerül a bankkártyádra (5–10 munkanap).</p>'
+        : '<p style="font-size:13px;background:#fff8f0;border:1px solid #fcd9b0;border-radius:6px;padding:10px;">💳 A visszatérítéssel kapcsolatban hamarosan felvesszük veled a kapcsolatot.</p>')
+    : '';
+  var cancelCustHtml = buildSimpleHtml('Foglalás lemondva', '✅',
+    '<p style="font-size:14px;color:#555;">Kedves <strong>' + customerName + '</strong>! Foglalásod sikeresen lemondva.</p>' +
+    htmlRows([['💪 Kezelés', bookingService], ['📅 Dátum', bookingDate], ['⏰ Időpont', bookingTime]]) +
+    refundNote +
+    '<p style="font-size:13px;color:#555;margin-top:12px;">Új időpontot bármikor foglalhatsz: <a href="https://dunakeszimasszazs.hu/#idopont" style="color:#D4854A;">dunakeszimasszazs.hu</a></p>'
+  );
+  MailApp.sendEmail({ to: email, subject: custSubject, body: custBody, htmlBody: cancelCustHtml, name: 'Dunakeszi Masszázs - Angyali Szalon', replyTo: 'dunakeszimasszor@gmail.com' });
 
   return createResponse(true, 'Foglalásod sikeresen lemondva! Visszaigazolást küldünk emailben.');
 }
@@ -1363,7 +1380,17 @@ function selfRequestChange_(data) {
   edinaBody += '═══════════════════════════════════════\n\n';
   edinaBody += 'Kérjük, erősítsd meg az ügyfélnek az új időpontot!';
 
-  MailApp.sendEmail({ to: 'dunakeszimasszor@gmail.com', subject: edinaSubject, body: edinaBody, name: 'Dunakeszi Masszázs - Admin', replyTo: 'dunakeszimasszor@gmail.com' });
+  var changeEdinaHtml = buildSimpleHtml('Időpont módosítási kérelem', '📝',
+    '<p style="font-size:14px;color:#555;">Kedves Edina! ' + customerName + ' időpont-módosítást kér.</p>' +
+    htmlRows([['👤 Név', customerName], ['📧 Email', email], ['💪 Kezelés', bookingService]]) +
+    '<div style="display:flex;gap:12px;margin:12px 0;">' +
+    '<div style="flex:1;background:#fff0f0;border:1px solid #fca5a5;border-radius:6px;padding:10px;font-size:13px;"><strong>❌ Jelenlegi</strong><br>' + bookingDate + ' ' + bookingTime + '</div>' +
+    '<div style="flex:1;background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:10px;font-size:13px;"><strong>✅ Kért új</strong><br>' + newDate + ' ' + newTime + '</div>' +
+    '</div>' +
+    (notes ? '<p style="font-size:13px;color:#555;">📝 Megjegyzés: ' + notes + '</p>' : '') +
+    '<p style="font-size:13px;color:#D4854A;font-weight:bold;margin-top:12px;">Kérjük erősítsd meg az ügyfélnek az új időpontot!</p>'
+  );
+  MailApp.sendEmail({ to: 'dunakeszimasszor@gmail.com', subject: edinaSubject, body: edinaBody, htmlBody: changeEdinaHtml, name: 'Dunakeszi Masszázs - Admin', replyTo: 'dunakeszimasszor@gmail.com' });
 
   // Pending confirmation to customer
   var custSubject = 'Időpont módosítási kérelem elküldve – Dunakeszi Masszázs';
@@ -1378,7 +1405,17 @@ function selfRequestChange_(data) {
   custBody += 'Hamarosan visszajelzünk a módosítás visszaigazolásával!\n\n';
   custBody += 'Üdvözlettel,\nMakra Edina\nDunakeszi Masszázs - Angyali Szalon\n📞 +36 30 487 7883';
 
-  MailApp.sendEmail({ to: email, subject: custSubject, body: custBody, name: 'Dunakeszi Masszázs - Angyali Szalon', replyTo: 'dunakeszimasszor@gmail.com' });
+  var changeCustHtml = buildSimpleHtml('Módosítási kérelem elküldve', '🔄',
+    '<p style="font-size:14px;color:#555;">Kedves <strong>' + customerName + '</strong>! Módosítási kérelmed megérkezett.</p>' +
+    htmlRows([['💪 Kezelés', bookingService]]) +
+    '<div style="display:flex;gap:12px;margin:12px 0;">' +
+    '<div style="flex:1;background:#fff0f0;border:1px solid #fca5a5;border-radius:6px;padding:10px;font-size:13px;"><strong>❌ Jelenlegi</strong><br>' + bookingDate + ' ' + bookingTime + '</div>' +
+    '<div style="flex:1;background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:10px;font-size:13px;"><strong>✅ Kért új</strong><br>' + newDate + ' ' + newTime + '</div>' +
+    '</div>' +
+    (notes ? '<p style="font-size:13px;color:#555;">📝 Megjegyzés: ' + notes + '</p>' : '') +
+    '<p style="font-size:13px;color:#555;margin-top:12px;">⏳ Hamarosan visszajelzünk a visszaigazolással!</p>'
+  );
+  MailApp.sendEmail({ to: email, subject: custSubject, body: custBody, htmlBody: changeCustHtml, name: 'Dunakeszi Masszázs - Angyali Szalon', replyTo: 'dunakeszimasszor@gmail.com' });
 
   return createResponse(true, 'Módosítási kérelmed elküldve! Hamarosan értesítünk a visszaigazolással.');
 }
@@ -1773,10 +1810,20 @@ function handleChange(data) {
              'Makra Edina\n' +
              'Dunakeszi Masszázs - Angyali Szalon';
   
+  var handleChangeCustHtml = buildSimpleHtml('Időpont módosítva', '✅',
+    '<p style="font-size:14px;color:#555;">Kedves <strong>' + data.clientName + '</strong>! Időpontod módosításra került.</p>' +
+    '<div style="display:flex;gap:12px;margin:12px 0;">' +
+    '<div style="flex:1;background:#fff0f0;border:1px solid #fca5a5;border-radius:6px;padding:10px;font-size:13px;"><strong>❌ Eredeti</strong><br>' + data.appointmentDate + ' ' + data.appointmentTime + '</div>' +
+    '<div style="flex:1;background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:10px;font-size:13px;"><strong>✅ Új időpont</strong><br>' + data.newDate + ' ' + data.newTime + '</div>' +
+    '</div>' +
+    htmlRows([['💪 Kezelés', data.service || 'Nincs megadva'], ['📍 Cím', 'Dunakeszi, Kolonics György utca 2/B'], ['🔔 Kapucsengő', '1/43']]) +
+    '<p style="font-size:13px;color:#555;margin-top:8px;">Ha kérdésed van: <a href="tel:+36304877883" style="color:#D4854A;">+36 30 487 7883</a></p>'
+  );
   MailApp.sendEmail({
     to: data.clientEmail,
     subject: subject,
     body: body,
+    htmlBody: handleChangeCustHtml,
     name: 'Dunakeszi Masszázs - Angyali Szalon',
     replyTo: 'dunakeszimasszor@gmail.com'
   });
@@ -1796,10 +1843,20 @@ function handleChange(data) {
                   '═══════════════════════════════════════\n\n' +
                   'Ne felejtsd el frissíteni az időpontot a Google Naptárból!';
   
+  var handleChangeEdinaHtml = buildSimpleHtml('Időpont módosítva', '📋',
+    '<p style="font-size:14px;color:#555;">Kedves Edina! Egy időpont módosításra került.</p>' +
+    htmlRows([['👤 Név', data.clientName], ['📧 Email', data.clientEmail], ['💪 Kezelés', data.service || 'Nincs megadva']]) +
+    '<div style="display:flex;gap:12px;margin:12px 0;">' +
+    '<div style="flex:1;background:#fff0f0;border:1px solid #fca5a5;border-radius:6px;padding:10px;font-size:13px;"><strong>❌ Eredeti</strong><br>' + data.appointmentDate + ' ' + data.appointmentTime + '</div>' +
+    '<div style="flex:1;background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:10px;font-size:13px;"><strong>✅ Új</strong><br>' + data.newDate + ' ' + data.newTime + '</div>' +
+    '</div>' +
+    '<p style="font-size:13px;color:#D4854A;font-weight:bold;">⚠️ Ne felejtsd el frissíteni az időpontot a Google Naptárban!</p>'
+  );
   MailApp.sendEmail({
     to: 'dunakeszimasszor@gmail.com',
     subject: edinaSubject,
     body: edinaBody,
+    htmlBody: handleChangeEdinaHtml,
     name: 'Dunakeszi Masszázs - Admin',
     replyTo: 'dunakeszimasszor@gmail.com'
   });
@@ -1859,10 +1916,29 @@ function sendBookingConfirmationToEdina(data, recurringCount, recurringType, rec
   edinaBody += 'Üdvözlettel,\n';
   edinaBody += 'Dunakeszi Masszázs Weboldal';
   
+  // Build HTML version for Edina booking notification
+  var edinaRows = [['👤 Név', data.name], ['📞 Telefon', data.phone || 'Nincs megadva'], ['📧 Email', data.email], ['💪 Kezelés', data.service], ['📅 ' + (recurringCount > 1 ? 'Első dátum' : 'Dátum'), data.date], ['⏰ Időpont', data.time]];
+  if (recurringCount > 1) { edinaRows.push(['🔄 Ismétlődés', getRecurringTypeText(recurringType)]); edinaRows.push(['📊 Alkalmak', recurringCount + ' db']); }
+  if (discountPercent > 0) edinaRows.push(['💰 Kedvezmény', discountPercent + '%']);
+  if (packageId) edinaRows.push(['🎫 Bérlet', packageId]);
+  edinaRows.push(['📝 Megjegyzés', data.notes || 'Nincs megadva']);
+  var edinaDatesHtml = '';
+  if (recurringCount > 1) {
+    edinaDatesHtml = '<p style="margin:12px 0 4px;font-size:13px;color:#555;"><strong>Összes foglalt időpont:</strong></p><ol style="margin:0;padding-left:20px;font-size:13px;color:#333;">';
+    for (var jh = 0; jh < recurringDates.length; jh++) { edinaDatesHtml += '<li>' + recurringDates[jh] + ' ' + data.time + '</li>'; }
+    edinaDatesHtml += '</ol>';
+  }
+  var edinaHtmlBody = buildSimpleHtml(
+    (recurringCount > 1 ? 'Új ismétlődő foglalás' : 'Új időpontfoglalás'),
+    '📆',
+    '<p style="font-size:14px;color:#555;">Kedves Edina! Új foglalás érkezett a weboldalról.</p>' + htmlRows(edinaRows) + edinaDatesHtml +
+    '<p style="font-size:13px;color:#555;margin-top:12px;">✅ A foglalás automatikusan hozzáadva a Google Naptáradhoz.</p>'
+  );
   MailApp.sendEmail({
     to: 'dunakeszimasszor@gmail.com',
     subject: edinaSubject,
     body: edinaBody,
+    htmlBody: edinaHtmlBody,
     name: 'Dunakeszi Masszázs - Foglalási Rendszer',
     replyTo: 'dunakeszimasszor@gmail.com'
   });
@@ -2010,10 +2086,25 @@ function sendPackagePurchaseConfirmation(customer, pkg) {
   body += 'Makra Edina\n';
   body += 'Dunakeszi Masszázs - Angyali Szalon';
   
+  var pkgRows = [['🎫 Bérlet száma', pkg.packageId], ['📅 Alkalmak', pkg.sessions + ' db'], ['💰 Eredeti ár', pkg.originalPrice.toLocaleString() + ' Ft']];
+  if (pkg.discountPercent > 0) pkgRows.push(['🎉 Kedvezmény', pkg.discountPercent + '% (−' + pkg.discountAmount.toLocaleString() + ' Ft)']);
+  pkgRows.push(['✅ Befizetett foglaló', pkg.depositPaid.toLocaleString() + ' Ft']);
+  pkgRows.push(['💵 Hátralék', (pkg.finalPrice - pkg.depositPaid).toLocaleString() + ' Ft']);
+  var pkgHtml = buildSimpleHtml('Bérlet vásárlás visszaigazolás', '🎫',
+    '<p style="font-size:14px;color:#555;">Kedves <strong>' + customer.name + '</strong>! Köszönöm a bérlet vásárlásodat.</p>' +
+    htmlRows(pkgRows) +
+    '<div style="background:#fff8f0;border:1px solid #fcd9b0;border-radius:6px;padding:12px;margin-top:12px;font-size:13px;color:#555;">' +
+    '<strong>Hogyan használd a bérleted?</strong><ul style="margin:8px 0;padding-left:18px;">' +
+    '<li>Foglalj időpontot a weboldalon vagy telefonon</li>' +
+    '<li>A rendszer automatikusan levon egy alkalmat</li>' +
+    '<li>A hátralékot az első kezelésnél kell kifizetni</li>' +
+    '</ul></div>'
+  );
   MailApp.sendEmail({
     to: customer.email,
     subject: subject,
     body: body,
+    htmlBody: pkgHtml,
     name: 'Dunakeszi Masszázs - Angyali Szalon',
     replyTo: 'dunakeszimasszor@gmail.com'
   });
@@ -2282,6 +2373,47 @@ function formatTimeFromSheet(val) {
   }
   // String — take first 5 chars ("HH:MM")
   return String(val).slice(0, 5);
+}
+
+// ============================================
+// Generic branded HTML email builder
+// Wraps any HTML content in the salon's orange-branded card.
+// Used for ALL emails except the rich customer booking confirmation
+// (which has its own buildCustomerConfirmationHtml).
+// ============================================
+function buildSimpleHtml(title, icon, contentHtml) {
+  var pc = '#D4854A'; // primary orange
+  var h = '<!DOCTYPE html><html><body style="margin:0;padding:0;background:#f5f0eb;font-family:Arial,sans-serif;">';
+  h += '<div style="max-width:600px;margin:24px auto;border:1px solid #e0d6c8;border-radius:12px;overflow:hidden;">';
+  // Header
+  h += '<div style="background:' + pc + ';padding:20px 24px;text-align:center;">';
+  h += '<div style="font-size:32px;margin-bottom:6px;">' + icon + '</div>';
+  h += '<h1 style="color:#fff;margin:0;font-size:20px;font-weight:bold;">' + title + '</h1>';
+  h += '<p style="color:rgba(255,255,255,0.85);margin:4px 0 0;font-size:13px;">Dunakeszi Masszázs – Angyali Szalon</p>';
+  h += '</div>';
+  // Body
+  h += '<div style="padding:24px;background:#fdfaf7;">' + contentHtml + '</div>';
+  // Footer
+  h += '<div style="background:#f0ece6;padding:16px 24px;text-align:center;border-top:1px solid #e0d6c8;">';
+  h += '<p style="margin:0;font-size:12px;color:#888;">Makra Edina · Dunakeszi Masszázs – Angyali Szalon</p>';
+  h += '<p style="margin:4px 0 0;font-size:12px;color:#888;">📞 +36 30 487 7883 · <a href="https://dunakeszimasszazs.hu" style="color:' + pc + ';">dunakeszimasszazs.hu</a></p>';
+  h += '</div>';
+  h += '</div></body></html>';
+  return h;
+}
+
+// Renders a detail-row table for buildSimpleHtml
+function htmlRows(rows) {
+  var s = '<table style="width:100%;border-collapse:collapse;margin:16px 0;">';
+  for (var i = 0; i < rows.length; i++) {
+    var bg = i % 2 === 0 ? '#fff' : '#faf6f2';
+    s += '<tr style="background:' + bg + ';">';
+    s += '<td style="padding:8px 12px;font-size:13px;color:#666;width:45%;border-bottom:1px solid #ede8e2;">' + rows[i][0] + '</td>';
+    s += '<td style="padding:8px 12px;font-size:13px;color:#333;font-weight:bold;border-bottom:1px solid #ede8e2;">' + rows[i][1] + '</td>';
+    s += '</tr>';
+  }
+  s += '</table>';
+  return s;
 }
 
 function getRecurringTypeText(type) {
