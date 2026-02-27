@@ -217,19 +217,54 @@ function createBooking(data) {
 
   // Check if customer has active session package
   var activePackage = findActivePackage(customerId, data.service);
-  
+
   var packageId = null;
   var sessionNumber = null;
-  
-  // If using session from package
-  if ((data.usePackage === true || data.usePackage === 'true') && activePackage) {
+
+  // Handle recurring booking → auto-create a bérlet (SessionPackages entry)
+  var recurringCountEarly = (data.recurring === true || data.recurring === 'yes' || data.recurring === 'true') ? (parseInt(data.recurringCount) || 1) : 1;
+
+  if (recurringCountEarly >= 2) {
+    // Auto-create a bérlet for this multi-session booking
+    var ss2 = SpreadsheetApp.getActiveSpreadsheet();
+    var packagesSheet2 = ss2.getSheetByName(SHEETS.SESSION_PACKAGES);
+    var autoPackageId = 'PKG' + Date.now();
+    var pricePerSession = 15000; // all services are 15 000 Ft
+    var autoOriginalPrice = recurringCountEarly * pricePerSession;
+    var autoDiscountPct = calculateDiscount(recurringCountEarly);
+    var autoDiscountAmt = Math.round(autoOriginalPrice * (autoDiscountPct / 100));
+    var autoFinalPrice = autoOriginalPrice - autoDiscountAmt;
+    // deposit already paid by customer via Stripe (passed in as data.amount in Ft)
+    var autoDepositPaid = parseInt(data.amount) || Math.round(autoFinalPrice * 0.2);
+    packagesSheet2.appendRow([
+      autoPackageId,
+      customerId,
+      data.name,
+      formatDate(new Date()),
+      data.service || 'Bármely kezelés',
+      recurringCountEarly,   // sessionsPurchased
+      0,                     // sessionsUsed (none completed yet)
+      recurringCountEarly,   // sessionsRemaining
+      autoOriginalPrice,
+      autoDiscountPct,
+      autoDiscountAmt,
+      autoFinalPrice,
+      autoDepositPaid,
+      'Active',
+      'Automatikusan létrehozva – ismétlődő foglalásból (' + recurringCountEarly + ' alkalom)'
+    ]);
+    SpreadsheetApp.flush();
+    updateCustomerSessionTotals(customerId);
+    packageId = autoPackageId;
+  } else if ((data.usePackage === true || data.usePackage === 'true') && activePackage) {
+    // Single-session booking deducting from an existing package
     var useResult = deductSessionFromPackage(activePackage.packageId);
     if (useResult.success) {
       packageId = activePackage.packageId;
       sessionNumber = useResult.sessionNumber;
     }
   }
-  
+
   // Create calendar event
   var calendar = CalendarApp.getDefaultCalendar();
   var dateParts = data.date.split('-');
