@@ -1003,6 +1003,7 @@ function recordBooking(customerId, customerName, service, date, time, packageId,
     calendarEventId || '',
     stripePaymentIntentId || ''
   ]);
+  SpreadsheetApp.flush(); // Ensure row is immediately visible to subsequent reads in the same execution
   
   return bookingId;
 }
@@ -2441,32 +2442,61 @@ function runSystemTests() {
     } else { skip('10. 24 órás lemondási szabály', 'Nem sikerült közeli foglalást létrehozni: ' + r10c.message); }
   } catch(e) { fail('10. 24 órás lemondási szabály', e.toString()); }
 
+  // Force-cancel any near-term (<25h) [TEST] booking so it doesn't become confirmed11[0]
+  try {
+    var bSh10 = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEETS.BOOKINGS);
+    var bD10 = bSh10.getDataRange().getValues();
+    for (var bi10 = bD10.length - 1; bi10 >= 1; bi10--) {
+      if (String(bD10[bi10][2]).indexOf(TAG) !== -1 && bD10[bi10][6] === 'Confirmed') {
+        var rowDate10 = typeof bD10[bi10][4] === 'string' ? bD10[bi10][4].slice(0,10) : formatDate(new Date(bD10[bi10][4]));
+        var rowTime10 = formatTimeFromSheet(bD10[bi10][5]);
+        var rowMs10 = new Date(rowDate10 + 'T' + rowTime10 + ':00').getTime();
+        if ((rowMs10 - Date.now()) < 25 * 60 * 60 * 1000) {
+          bSh10.getRange(bi10 + 1, 7).setValue('Cancelled');
+        }
+      }
+    }
+    SpreadsheetApp.flush();
+  } catch(e10c) { Logger.log('Near-term test cleanup skipped: ' + e10c); }
+
   // ── 11. Módosítási kérelem ────────────────────────
   var freshBookings11;
   try {
     var mb11 = r(getMyBookings_(testEmail));
     freshBookings11 = mb11.data && mb11.data.bookings ? mb11.data.bookings : [];
-    var confirmed11 = freshBookings11.filter(function(b) { return b.status === 'Confirmed'; });
+    // Only pick a booking safely >25h in the future to avoid 24h policy rejection
+    var now11 = Date.now();
+    var confirmed11 = freshBookings11.filter(function(b) {
+      return b.status === 'Confirmed' &&
+             (new Date(b.date + 'T' + b.time + ':00').getTime() - now11) > 25 * 60 * 60 * 1000;
+    });
     if (confirmed11.length > 0) {
       var d5 = new Date(); d5.setDate(d5.getDate() + 5);
       var r11 = r(selfRequestChange_({ bookingId: confirmed11[0].bookingId, email: testEmail, newDate: formatDate(d5), newTime: timeC, notes: 'teszt módosítás' }));
       if (r11.success) { pass('11. Módosítási kérelem küldés + ChangeRequested státusz'); }
       else { fail('11. Módosítási kérelem', r11.message); }
-    } else { skip('11. Módosítási kérelem', 'Nincs Confirmed foglalás'); }
+    } else { skip('11. Módosítási kérelem', 'Nincs >25h jövőbeli Confirmed foglalás'); }
   } catch(e) { fail('11. Módosítási kérelem', e.toString()); }
 
   // ── 12. Ütköző módosítás megelőzés ───────────────
   try {
     var mb12 = r(getMyBookings_(testEmail));
     var all12 = mb12.data && mb12.data.bookings ? mb12.data.bookings : [];
-    var conf12 = all12.filter(function(b) { return b.status === 'Confirmed'; });
-    var others12 = all12.filter(function(b) { return b.status !== 'Cancelled'; });
+    var now12 = Date.now();
+    var conf12 = all12.filter(function(b) {
+      return b.status === 'Confirmed' &&
+             (new Date(b.date + 'T' + b.time + ':00').getTime() - now12) > 25 * 60 * 60 * 1000;
+    });
+    var others12 = all12.filter(function(b) {
+      return (b.status === 'Confirmed' || b.status === 'ChangeRequested') &&
+             (new Date(b.date + 'T' + b.time + ':00').getTime() - now12) > 25 * 60 * 60 * 1000;
+    });
     var target12 = others12.find(function(b) { return conf12.length > 0 && b.bookingId !== conf12[0].bookingId; });
     if (conf12.length > 0 && target12) {
       var r12 = r(selfRequestChange_({ bookingId: conf12[0].bookingId, email: testEmail, newDate: target12.date, newTime: target12.time, notes: 'ütközés teszt' }));
       if (!r12.success && r12.message && r12.message.indexOf('már van') !== -1) { pass('12. Ütköző módosítás megelőzés'); }
       else { fail('12. Ütköző módosítás megelőzés', 'El kellett volna utasítani. Kapott: ' + JSON.stringify(r12)); }
-    } else { skip('12. Ütköző módosítás megelőzés', 'Nincs elég foglalás az ütközés teszteléséhez (conf=' + conf12.length + ' others=' + others12.length + ')'); }
+    } else { skip('12. Ütköző módosítás megelőzés', 'Nincs elég jövőbeli foglalás az ütközés teszteléséhez (conf=' + conf12.length + ' others=' + others12.length + ')'); }
   } catch(e) { fail('12. Ütköző módosítás megelőzés', e.toString()); }
 
   // ── 13. Bérlet alkalom levonás ────────────────────
