@@ -2343,12 +2343,6 @@ function ManageBookingsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const timeSlots = ['08:30', '09:45', '11:00', '12:15', '13:30', '14:45', '16:00', '17:15', '18:30'];
-  const isWithin24Hours = (dateStr: string, timeStr: string): boolean => {
-    try {
-      const dt = new Date(`${dateStr.slice(0, 10)}T${String(timeStr).slice(0, 5)}:00`);
-      return (dt.getTime() - Date.now()) < 24 * 60 * 60 * 1000;
-    } catch { return false; }
-  };
 
   const loadBookings = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -2533,36 +2527,24 @@ function ManageBookingsPage() {
                         </p>
                         <p className="text-[#8B7355] text-sm mt-0.5">⏰ {typeof booking.time === 'string' ? booking.time.slice(0, 5) : booking.time}</p>
                       </div>
-                      {(() => {
-                        const bDate = typeof booking.date === 'string' ? booking.date.slice(0, 10) : new Date(booking.date).toISOString().slice(0, 10);
-                        const bTime = typeof booking.time === 'string' ? booking.time.slice(0, 5) : String(booking.time);
-                        const tooLate = isWithin24Hours(bDate, bTime);
-                        return (
-                          <div className="flex flex-col items-end gap-1 shrink-0">
-                            <div className="flex gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                disabled={tooLate}
-                                onClick={() => { if (!tooLate) { setSelectedBooking(booking); setActionType('change'); } }}
-                                className={tooLate ? 'border-gray-200 text-gray-400 text-xs cursor-not-allowed' : 'border-[#8B9A7C] text-[#4A7C59] hover:bg-[#8B9A7C]/10 text-xs font-medium'}
-                              >
-                                📅 Módosítás
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                disabled={tooLate}
-                                onClick={() => { if (!tooLate) { setSelectedBooking(booking); setActionType('cancel'); } }}
-                                className={tooLate ? 'border-gray-200 text-gray-400 text-xs cursor-not-allowed' : 'border-red-200 text-red-500 hover:bg-red-50 text-xs font-medium'}
-                              >
-                                ❌ Lemondás
-                              </Button>
-                            </div>
-                            {tooLate && <p className="text-xs text-orange-500">⚠️ 24 órán belül nem módosítható</p>}
-                          </div>
-                        );
-                      })()}
+                      <div className="flex gap-2 shrink-0">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => { setSelectedBooking(booking); setActionType('change'); }}
+                          className="border-[#8B9A7C] text-[#4A7C59] hover:bg-[#8B9A7C]/10 text-xs font-medium"
+                        >
+                          📅 Módosítás
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => { setSelectedBooking(booking); setActionType('cancel'); }}
+                          className="border-red-200 text-red-500 hover:bg-red-50 text-xs font-medium"
+                        >
+                          ❌ Lemondás
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -2600,8 +2582,8 @@ function ManageBookingsPage() {
                   className="mt-1.5 border-[#E8D4C0] focus:border-[#D4854A] text-sm"
                 />
               </div>
-              <p className="text-xs text-[#8B7355] bg-orange-50 p-3 rounded-lg">
-                ⚠️ Visszaigazolást küldünk emailben. A befizetett foglaló nem kerül visszatérítésre.
+              <p className="text-xs text-[#8B7355] bg-orange-50 border border-orange-100 p-3 rounded-lg">
+                ⚠️ Lemondás legkésőbb <b>24 órával korábban</b> lehetséges. A befizetett foglaló nem kerül visszatérítésre.
               </p>
               <div className="flex gap-3">
                 <Button type="button" variant="outline" onClick={closeModal} className="flex-1 border-[#E8D4C0]">
@@ -2667,8 +2649,8 @@ function ManageBookingsPage() {
                   className="mt-1.5 border-[#E8D4C0] focus:border-[#D4854A] text-sm"
                 />
               </div>
-              <p className="text-xs text-[#8B7355] bg-blue-50 p-3 rounded-lg">
-                ℹ️ Ez egy kérelem — Edina emailben erősíti meg az új időpontot.
+              <p className="text-xs text-[#8B7355] bg-blue-50 border border-blue-100 p-3 rounded-lg">
+                ℹ️ Ez egy kérelem — Edina emailben erősíti meg az új időpontot. Módosítás legkésőbb <b>24 órával korábban</b> kérhető.
               </p>
               <div className="flex gap-3">
                 <Button type="button" variant="outline" onClick={closeModal} className="flex-1 border-[#E8D4C0]">
