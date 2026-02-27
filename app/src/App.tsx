@@ -2344,12 +2344,13 @@ function ManageBookingsPage() {
 
   const timeSlots = ['08:30', '09:45', '11:00', '12:15', '13:30', '14:45', '16:00', '17:15', '18:30'];
 
-  const loadBookings = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email) return;
+  const loadBookings = async (e?: React.FormEvent, forEmail?: string) => {
+    if (e) e.preventDefault();
+    const targetEmail = forEmail || email;
+    if (!targetEmail) return;
     setIsLoading(true);
     try {
-      const response = await fetch(`${SCRIPT_URL}?action=myBookings&email=${encodeURIComponent(email)}`);
+      const response = await fetch(`${SCRIPT_URL}?action=myBookings&email=${encodeURIComponent(targetEmail)}`);
       const data = await response.json();
       if (data.success) {
         setMyBookings(data.data.bookings || []);
@@ -2426,6 +2427,8 @@ function ManageBookingsPage() {
         setNewDate('');
         setNewTime('');
         setChangeNotes('');
+        // Reload so list is fresh
+        await loadBookings(undefined, email);
       } else {
         toast.error(result.message || 'Hiba a kérelem küldésekor');
       }

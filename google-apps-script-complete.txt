@@ -1126,8 +1126,7 @@ function selfCancelBooking_(data) {
 
   // Mark as cancelled in sheet
   bookingsSheet.getRange(bookingRow, 7).setValue('Cancelled');
-
-  // Auto-delete Google Calendar event (non-fatal – never crash the cancellation)
+  SpreadsheetApp.flush(); // Force-persist immediately so next read sees the update (non-fatal – never crash the cancellation)
   var calendarDeleted = false;
   try {
     calendarDeleted = deleteCalendarEvent_(calendarEventId, bookingDate, bookingTime, customerName);
