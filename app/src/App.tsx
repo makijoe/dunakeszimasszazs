@@ -2370,10 +2370,14 @@ function ManageBookingsPage() {
     if (!selectedBooking) return;
     setIsSubmitting(true);
     try {
+      const params = new URLSearchParams();
+      params.append('action', 'selfCancel');
+      params.append('bookingId', selectedBooking.bookingId);
+      params.append('email', email);
+      params.append('reason', cancelReason);
       const response = await fetch(SCRIPT_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'selfCancel', bookingId: selectedBooking.bookingId, email, reason: cancelReason })
+        body: params
       });
       const result = await response.json();
       if (result.success) {
@@ -2400,20 +2404,19 @@ function ManageBookingsPage() {
     }
     setIsSubmitting(true);
     try {
+      const params = new URLSearchParams();
+      params.append('action', 'selfChange');
+      params.append('bookingId', selectedBooking.bookingId);
+      params.append('email', email);
+      params.append('service', selectedBooking.service);
+      params.append('currentDate', selectedBooking.date);
+      params.append('currentTime', selectedBooking.time);
+      params.append('newDate', newDate);
+      params.append('newTime', newTime);
+      params.append('notes', changeNotes);
       const response = await fetch(SCRIPT_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'selfChange',
-          bookingId: selectedBooking.bookingId,
-          email,
-          service: selectedBooking.service,
-          currentDate: selectedBooking.date,
-          currentTime: selectedBooking.time,
-          newDate,
-          newTime,
-          notes: changeNotes
-        })
+        body: params
       });
       const result = await response.json();
       if (result.success) {
@@ -2795,10 +2798,12 @@ function AdminPage() {
   const handleUseSession = async (packageId: string, customerName: string) => {
     if (!confirm(`Biztosan levonsz 1 alkalmat? Vásárló: ${customerName}`)) return;
     try {
+      const params = new URLSearchParams();
+      params.append('action', 'useSession');
+      params.append('packageId', packageId);
       const response = await fetch(SCRIPT_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'useSession', packageId })
+        body: params
       });
       const result = await response.json();
       if (result.success) {
@@ -2833,20 +2838,19 @@ function AdminPage() {
     setIsSubmitting(true);
 
     try {
+      const params = new URLSearchParams();
+      params.append('action', 'purchasePackage');
+      params.append('email', packageForm.customerEmail);
+      params.append('name', packageForm.customerName);
+      params.append('phone', packageForm.customerPhone);
+      params.append('service', packageForm.service);
+      params.append('sessions', String(packageForm.sessions));
+      params.append('originalPrice', String(packageForm.originalPrice));
+      params.append('depositPaid', String(packageForm.depositPaid));
+      params.append('notes', packageForm.notes);
       const response = await fetch(SCRIPT_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'purchasePackage',
-          email: packageForm.customerEmail,
-          name: packageForm.customerName,
-          phone: packageForm.customerPhone,
-          service: packageForm.service,
-          sessions: packageForm.sessions,
-          originalPrice: packageForm.originalPrice,
-          depositPaid: packageForm.depositPaid,
-          notes: packageForm.notes
-        })
+        body: params
       });
 
       const data = await response.json();
@@ -2878,18 +2882,17 @@ function AdminPage() {
     setIsSubmitting(true);
 
     try {
+      const params = new URLSearchParams();
+      params.append('action', 'cancel');
+      params.append('clientName', formData.clientName);
+      params.append('clientEmail', formData.clientEmail);
+      params.append('appointmentDate', formData.appointmentDate);
+      params.append('appointmentTime', formData.appointmentTime);
+      params.append('service', formData.service);
+      params.append('reason', formData.reason);
       const response = await fetch(SCRIPT_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'cancel',
-          clientName: formData.clientName,
-          clientEmail: formData.clientEmail,
-          appointmentDate: formData.appointmentDate,
-          appointmentTime: formData.appointmentTime,
-          service: formData.service,
-          reason: formData.reason
-        })
+        body: params
       });
       const result = await response.json();
       if (!result.success) throw new Error(result.message || 'Hiba a lemondás küldésekor');
@@ -2917,19 +2920,18 @@ function AdminPage() {
     setIsSubmitting(true);
 
     try {
+      const params = new URLSearchParams();
+      params.append('action', 'change');
+      params.append('clientName', formData.clientName);
+      params.append('clientEmail', formData.clientEmail);
+      params.append('appointmentDate', formData.appointmentDate);
+      params.append('appointmentTime', formData.appointmentTime);
+      params.append('service', formData.service);
+      params.append('newDate', formData.newDate);
+      params.append('newTime', formData.newTime);
       const response = await fetch(SCRIPT_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'change',
-          clientName: formData.clientName,
-          clientEmail: formData.clientEmail,
-          appointmentDate: formData.appointmentDate,
-          appointmentTime: formData.appointmentTime,
-          service: formData.service,
-          newDate: formData.newDate,
-          newTime: formData.newTime
-        })
+        body: params
       });
       const result = await response.json();
       if (!result.success) throw new Error(result.message || 'Hiba a módosítás küldésekor');
