@@ -2342,6 +2342,14 @@ function ManageBookingsPage() {
   const [changeNotes, setChangeNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const timeSlots = ['08:30', '09:45', '11:00', '12:15', '13:30', '14:45', '16:00', '17:15', '18:30'];
+  const isWithin24Hours = (dateStr: string, timeStr: string): boolean => {
+    try {
+      const dt = new Date(`${dateStr.slice(0, 10)}T${String(timeStr).slice(0, 5)}:00`);
+      return (dt.getTime() - Date.now()) < 24 * 60 * 60 * 1000;
+    } catch { return false; }
+  };
+
   const loadBookings = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
@@ -2525,24 +2533,36 @@ function ManageBookingsPage() {
                         </p>
                         <p className="text-[#8B7355] text-sm mt-0.5">⏰ {typeof booking.time === 'string' ? booking.time.slice(0, 5) : booking.time}</p>
                       </div>
-                      <div className="flex gap-2 shrink-0">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => { setSelectedBooking(booking); setActionType('change'); }}
-                          className="border-[#8B9A7C] text-[#4A7C59] hover:bg-[#8B9A7C]/10 text-xs font-medium"
-                        >
-                          📅 Időpont módosítás
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => { setSelectedBooking(booking); setActionType('cancel'); }}
-                          className="border-red-200 text-red-500 hover:bg-red-50 text-xs font-medium"
-                        >
-                          ❌ Lemondás
-                        </Button>
-                      </div>
+                      {(() => {
+                        const bDate = typeof booking.date === 'string' ? booking.date.slice(0, 10) : new Date(booking.date).toISOString().slice(0, 10);
+                        const bTime = typeof booking.time === 'string' ? booking.time.slice(0, 5) : String(booking.time);
+                        const tooLate = isWithin24Hours(bDate, bTime);
+                        return (
+                          <div className="flex flex-col items-end gap-1 shrink-0">
+                            <div className="flex gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                disabled={tooLate}
+                                onClick={() => { if (!tooLate) { setSelectedBooking(booking); setActionType('change'); } }}
+                                className={tooLate ? 'border-gray-200 text-gray-400 text-xs cursor-not-allowed' : 'border-[#8B9A7C] text-[#4A7C59] hover:bg-[#8B9A7C]/10 text-xs font-medium'}
+                              >
+                                📅 Módosítás
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                disabled={tooLate}
+                                onClick={() => { if (!tooLate) { setSelectedBooking(booking); setActionType('cancel'); } }}
+                                className={tooLate ? 'border-gray-200 text-gray-400 text-xs cursor-not-allowed' : 'border-red-200 text-red-500 hover:bg-red-50 text-xs font-medium'}
+                              >
+                                ❌ Lemondás
+                              </Button>
+                            </div>
+                            {tooLate && <p className="text-xs text-orange-500">⚠️ 24 órán belül nem módosítható</p>}
+                          </div>
+                        );
+                      })()}
                     </div>
                   </div>
                 ))}
@@ -2624,13 +2644,17 @@ function ManageBookingsPage() {
                 </div>
                 <div>
                   <Label className="text-[#4A3F35] text-sm font-medium">Kért új időpont *</Label>
-                  <Input
-                    type="time"
+                  <select
                     value={newTime}
                     onChange={(e) => setNewTime(e.target.value)}
                     required
-                    className="mt-1.5 border-[#E8D4C0] focus:border-[#D4854A]"
-                  />
+                    className="mt-1.5 w-full border border-[#E8D4C0] rounded-md px-3 py-2 text-sm text-[#4A3F35] bg-white focus:outline-none focus:ring-1 focus:ring-[#D4854A] focus:border-[#D4854A]"
+                  >
+                    <option value="">Válassz időpontot</option>
+                    {timeSlots.map(slot => (
+                      <option key={slot} value={slot}>{slot}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
               <div>
@@ -2775,9 +2799,14 @@ function AdminPage() {
     try {
       const response = await fetch(`${SCRIPT_URL}?action=allPackages`);
       const data = await response.json();
-      if (data.success) setAllPackages(data.data.packages || []);
+      if (data.success) {
+        setAllPackages(data.data?.packages || []);
+      } else {
+        toast.error('Bérletek betöltése sikertelen: ' + (data.message || 'Kérjük frissítsd az oldalt'));
+      }
     } catch (error) {
       console.error('Error loading packages:', error);
+      toast.error('Bérletek betöltése sikertelen. Ellenőrizd a kapcsolatot és próbáld újra.');
     }
   };
 

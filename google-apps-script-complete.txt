@@ -1116,11 +1116,24 @@ function selfCancelBooking_(data) {
 
   if (bookingRow === -1) return createResponse(false, 'Foglalás nem található');
 
+  // Enforce 24h cancellation policy
+  try {
+    var bMs = new Date(bookingDate + 'T' + bookingTime + ':00').getTime();
+    if ((bMs - Date.now()) < 24 * 60 * 60 * 1000) {
+      return createResponse(false, 'A foglalást legkésőbb 24 órával korábban lehet lemondani.');
+    }
+  } catch(e) { /* date parsing edge case, continue */ }
+
   // Mark as cancelled in sheet
   bookingsSheet.getRange(bookingRow, 7).setValue('Cancelled');
 
-  // Auto-delete Google Calendar event
-  var calendarDeleted = deleteCalendarEvent_(calendarEventId, bookingDate, bookingTime, customerName);
+  // Auto-delete Google Calendar event (non-fatal – never crash the cancellation)
+  var calendarDeleted = false;
+  try {
+    calendarDeleted = deleteCalendarEvent_(calendarEventId, bookingDate, bookingTime, customerName);
+  } catch (calErr) {
+    Logger.log('Calendar deletion skipped: ' + calErr);
+  }
 
   // Notify Edina
   var edinaSubject = '🔴 Ügyfél mondta le – ' + customerName + ' (' + bookingDate + ' ' + bookingTime + ')';
@@ -1202,8 +1215,20 @@ function selfRequestChange_(data) {
 
   if (!bookingDate) return createResponse(false, 'Foglalás nem található');
 
-  // Flag the Google Calendar event to show the change request
-  flagCalendarEventForChange_(calEventId, bookingDate, bookingTime, customerName, newDate, newTime);
+  // Enforce 24h change policy
+  try {
+    var bMs = new Date(bookingDate + 'T' + bookingTime + ':00').getTime();
+    if ((bMs - Date.now()) < 24 * 60 * 60 * 1000) {
+      return createResponse(false, 'A foglalást legkésőbb 24 órával korábban lehet módosítani.');
+    }
+  } catch(e) { /* date parsing edge case, continue */ }
+
+  // Flag the Google Calendar event (non-fatal – never crash the change request)
+  try {
+    flagCalendarEventForChange_(calEventId, bookingDate, bookingTime, customerName, newDate, newTime);
+  } catch (calErr) {
+    Logger.log('Calendar flagging skipped: ' + calErr);
+  }
 
   // Notify Edina with change request
   var edinaSubject = '📝 Időpont módosítási kérelem – ' + customerName;
@@ -1248,7 +1273,11 @@ function selfRequestChange_(data) {
 // Tries to delete a Google Calendar event by its stored ID.
 // Falls back to searching by date/time window + customer name if ID is missing.
 function deleteCalendarEvent_(calendarEventId, bookingDate, bookingTime, customerName) {
-  var calendar = CalendarApp.getDefaultCalendar();
+  var calendar;
+  try { calendar = CalendarApp.getDefaultCalendar(); } catch(e) {
+    Logger.log('CalendarApp unavailable in deleteCalendarEvent_: ' + e);
+    return false;
+  }
 
   // Primary: delete by stored event ID
   if (calendarEventId) {
@@ -1290,7 +1319,11 @@ function deleteCalendarEvent_(calendarEventId, bookingDate, bookingTime, custome
 // Flags a Google Calendar event to visually show a pending change request.
 // Updates the event title and adds the new requested date/time to the description.
 function flagCalendarEventForChange_(calendarEventId, bookingDate, bookingTime, customerName, newDate, newTime) {
-  var calendar = CalendarApp.getDefaultCalendar();
+  var calendar;
+  try { calendar = CalendarApp.getDefaultCalendar(); } catch(e) {
+    Logger.log('CalendarApp unavailable in flagCalendarEventForChange_: ' + e);
+    return false;
+  }
   var changeNote = 'MÓDOSÍTÁS KÉRT: ' + newDate + ' ' + newTime;
 
   // Primary: update by stored event ID
