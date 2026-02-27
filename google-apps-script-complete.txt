@@ -1153,7 +1153,7 @@ function selfCancelBooking_(data) {
     edinaBody += '⚠️ A naptári esemény nem volt automán törölhető – kérjük ellenőrizd manuálisan a Google Naptárt!';
   }
 
-  MailApp.sendEmail({ to: 'dunakeszimasszor@gmail.com', subject: edinaSubject, body: edinaBody, name: 'Dunakeszi Masszázs - Admin' });
+  MailApp.sendEmail({ to: 'dunakeszimasszor@gmail.com', subject: edinaSubject, body: edinaBody, name: 'Dunakeszi Masszázs - Admin', replyTo: 'dunakeszimasszor@gmail.com' });
 
   // Confirm to customer
   var custSubject = 'Foglalás lemondva – Dunakeszi Masszázs';
@@ -1168,7 +1168,7 @@ function selfCancelBooking_(data) {
   custBody += '🌐 https://dunakeszimasszazs.hu/#idopont\n\n';
   custBody += 'Üdvözlettel,\nMakra Edina\nDunakeszi Masszázs - Angyali Szalon\n📞 +36 30 487 7883';
 
-  MailApp.sendEmail({ to: email, subject: custSubject, body: custBody, name: 'Dunakeszi Masszázs - Angyali Szalon' });
+  MailApp.sendEmail({ to: email, subject: custSubject, body: custBody, name: 'Dunakeszi Masszázs - Angyali Szalon', replyTo: 'dunakeszimasszor@gmail.com' });
 
   return createResponse(true, 'Foglalásod sikeresen lemondva! Visszaigazolást küldünk emailben.');
 }
@@ -1246,7 +1246,7 @@ function selfRequestChange_(data) {
   edinaBody += '═══════════════════════════════════════\n\n';
   edinaBody += 'Kérjük, erősítsd meg az ügyfélnek az új időpontot!';
 
-  MailApp.sendEmail({ to: 'dunakeszimasszor@gmail.com', subject: edinaSubject, body: edinaBody, name: 'Dunakeszi Masszázs - Admin' });
+  MailApp.sendEmail({ to: 'dunakeszimasszor@gmail.com', subject: edinaSubject, body: edinaBody, name: 'Dunakeszi Masszázs - Admin', replyTo: 'dunakeszimasszor@gmail.com' });
 
   // Pending confirmation to customer
   var custSubject = 'Időpont módosítási kérelem elküldve – Dunakeszi Masszázs';
@@ -1261,7 +1261,7 @@ function selfRequestChange_(data) {
   custBody += 'Hamarosan visszajelzünk a módosítás visszaigazolásával!\n\n';
   custBody += 'Üdvözlettel,\nMakra Edina\nDunakeszi Masszázs - Angyali Szalon\n📞 +36 30 487 7883';
 
-  MailApp.sendEmail({ to: email, subject: custSubject, body: custBody, name: 'Dunakeszi Masszázs - Angyali Szalon' });
+  MailApp.sendEmail({ to: email, subject: custSubject, body: custBody, name: 'Dunakeszi Masszázs - Angyali Szalon', replyTo: 'dunakeszimasszor@gmail.com' });
 
   return createResponse(true, 'Módosítási kérelmed elküldve! Hamarosan értesítünk a visszaigazolással.');
 }
@@ -1595,7 +1595,8 @@ function handleCancellation(data) {
     to: data.clientEmail,
     subject: subject,
     body: body,
-    name: 'Dunakeszi Masszázs - Angyali Szalon'
+    name: 'Dunakeszi Masszázs - Angyali Szalon',
+    replyTo: 'dunakeszimasszor@gmail.com'
   });
   
   // Send notification to Edina
@@ -1620,7 +1621,8 @@ function handleCancellation(data) {
     to: 'dunakeszimasszor@gmail.com',
     subject: edinaSubject,
     body: edinaBody,
-    name: 'Dunakeszi Masszázs - Admin'
+    name: 'Dunakeszi Masszázs - Admin',
+    replyTo: 'dunakeszimasszor@gmail.com'
   });
   
   return createResponse(true, 'Lemondási értesítés elküldve!');
@@ -1658,7 +1660,8 @@ function handleChange(data) {
     to: data.clientEmail,
     subject: subject,
     body: body,
-    name: 'Dunakeszi Masszázs - Angyali Szalon'
+    name: 'Dunakeszi Masszázs - Angyali Szalon',
+    replyTo: 'dunakeszimasszor@gmail.com'
   });
   
   // Send notification to Edina
@@ -1680,7 +1683,8 @@ function handleChange(data) {
     to: 'dunakeszimasszor@gmail.com',
     subject: edinaSubject,
     body: edinaBody,
-    name: 'Dunakeszi Masszázs - Admin'
+    name: 'Dunakeszi Masszázs - Admin',
+    replyTo: 'dunakeszimasszor@gmail.com'
   });
   
   return createResponse(true, 'Módosítási értesítés elküldve!');
@@ -1742,7 +1746,8 @@ function sendBookingConfirmationToEdina(data, recurringCount, recurringType, rec
     to: 'dunakeszimasszor@gmail.com',
     subject: edinaSubject,
     body: edinaBody,
-    name: 'Dunakeszi Masszázs - Foglalási Rendszer'
+    name: 'Dunakeszi Masszázs - Foglalási Rendszer',
+    replyTo: 'dunakeszimasszor@gmail.com'
   });
 }
 
@@ -1852,7 +1857,8 @@ function sendBookingConfirmationToCustomer(data, recurringCount, recurringType, 
     subject: customerSubject,
     body: customerBody,
     htmlBody: buildCustomerConfirmationHtml(data, recurringCount, recurringType, recurringDates, discountPercent, packageId, customer),
-    name: 'Dunakeszi Masszázs - Angyali Szalon'
+    name: 'Dunakeszi Masszázs - Angyali Szalon',
+    replyTo: 'dunakeszimasszor@gmail.com'
   });
 }
 
@@ -1891,7 +1897,8 @@ function sendPackagePurchaseConfirmation(customer, pkg) {
     to: customer.email,
     subject: subject,
     body: body,
-    name: 'Dunakeszi Masszázs - Angyali Szalon'
+    name: 'Dunakeszi Masszázs - Angyali Szalon',
+    replyTo: 'dunakeszimasszor@gmail.com'
   });
 }
 
