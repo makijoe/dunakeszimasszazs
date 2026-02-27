@@ -2383,10 +2383,10 @@ function ManageBookingsPage() {
       const result = await response.json();
       if (result.success) {
         toast.success('Foglalásod sikeresen lemondva! Visszaigazolást küldtünk.');
-        setMyBookings(prev => prev.filter((b: any) => b.bookingId !== selectedBooking.bookingId));
         setSelectedBooking(null);
         setActionType(null);
         setCancelReason('');
+        await loadBookings(undefined, email);
       } else {
         toast.error(result.message || 'Hiba a lemondás során');
       }
@@ -2527,7 +2527,12 @@ function ManageBookingsPage() {
                   <div key={booking.bookingId} className="bg-white rounded-2xl shadow-warm p-5">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div>
-                        <p className="font-semibold text-[#4A3F35] text-lg">{booking.service}</p>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="font-semibold text-[#4A3F35] text-lg">{booking.service}</p>
+                          {booking.status === 'ChangeRequested' && (
+                            <span className="px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded-full text-xs font-medium">⏳ Módosítás kérve</span>
+                          )}
+                        </div>
                         <p className="text-[#D4854A] font-medium mt-0.5">
                           {formatDisplayDate(typeof booking.date === 'string' ? booking.date.slice(0, 10) : new Date(booking.date).toISOString().slice(0, 10))}
                         </p>
@@ -3204,7 +3209,14 @@ function AdminPage() {
         {activeTab === 'bookings' && (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-[#4A3F35]">Összes foglalás</h2>
+              <div>
+                <h2 className="text-2xl font-bold text-[#4A3F35]">Összes foglalás</h2>
+                {allBookings.length > 0 && (
+                  <p className="text-sm text-[#8B7355] mt-0.5">
+                    {allBookings.filter((b:any)=>b.status==='Confirmed').length} aktív · {allBookings.filter((b:any)=>b.status==='ChangeRequested').length} módosítás kérve · {allBookings.filter((b:any)=>b.status==='Cancelled').length} lemondva
+                  </p>
+                )}
+              </div>
               <button onClick={loadAllBookings} className="px-4 py-2 bg-[#D4854A] text-white rounded-lg text-sm hover:bg-[#B87333]">Frissítés</button>
             </div>
             <div className="bg-white rounded-2xl shadow-warm overflow-hidden">
@@ -3215,24 +3227,42 @@ function AdminPage() {
                   <table className="w-full text-sm">
                     <thead className="bg-[#F9F1EA]">
                       <tr>
-                        {['Név', 'Kezelés', 'Dátum', 'Időpont', 'Státusz', 'Létrehozva'].map(h => (
+                        {['Név', 'Email', 'Kezelés', 'Dátum', 'Időpont', 'Státusz', 'Létrehozva'].map(h => (
                           <th key={h} className="px-4 py-3 text-left text-[#4A3F35] font-semibold">{h}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
-                      {allBookings.map((b: any, i: number) => (
-                        <tr key={i} className="border-t border-[#F5E6D8] hover:bg-[#FFFBF7]">
-                          <td className="px-4 py-3 font-medium text-[#4A3F35]">{b.customerName}</td>
-                          <td className="px-4 py-3 text-[#8B7355]">{b.service}</td>
-                          <td className="px-4 py-3 text-[#8B7355]">{b.date}</td>
-                          <td className="px-4 py-3 text-[#8B7355]">{b.time}</td>
-                          <td className="px-4 py-3">
-                            <span className="px-2 py-1 bg-[#8B9A7C]/15 text-[#4A7C59] rounded-full text-xs font-medium">{b.status}</span>
-                          </td>
-                          <td className="px-4 py-3 text-[#8B7355]">{b.createdDate}</td>
-                        </tr>
-                      ))}
+                      {allBookings.map((b: any, i: number) => {
+                        const statusColors: Record<string, string> = {
+                          Confirmed: 'bg-[#8B9A7C]/15 text-[#4A7C59]',
+                          ChangeRequested: 'bg-yellow-100 text-yellow-700',
+                          Cancelled: 'bg-red-100 text-red-600',
+                        };
+                        const statusLabels: Record<string, string> = {
+                          Confirmed: '✓ Aktív',
+                          ChangeRequested: '⏳ Módosítás',
+                          Cancelled: '✕ Lemondva',
+                        };
+                        const dateStr = b.date ? (typeof b.date === 'string' ? b.date.slice(0,10) : new Date(b.date).toLocaleDateString('hu-HU')) : '–';
+                        const timeStr = b.time ? String(b.time).slice(0,5) : '–';
+                        const createdStr = b.createdDate ? (typeof b.createdDate === 'string' ? b.createdDate.slice(0,10) : new Date(b.createdDate).toLocaleDateString('hu-HU')) : '–';
+                        return (
+                          <tr key={i} className="border-t border-[#F5E6D8] hover:bg-[#FFFBF7]">
+                            <td className="px-4 py-3 font-medium text-[#4A3F35]">{b.customerName}</td>
+                            <td className="px-4 py-3 text-[#8B7355] text-xs">{b.customerEmail || '–'}</td>
+                            <td className="px-4 py-3 text-[#8B7355]">{b.service}</td>
+                            <td className="px-4 py-3 text-[#8B7355] whitespace-nowrap">{dateStr}</td>
+                            <td className="px-4 py-3 text-[#8B7355] whitespace-nowrap">{timeStr}</td>
+                            <td className="px-4 py-3">
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[b.status] || 'bg-gray-100 text-gray-500'}`}>
+                                {statusLabels[b.status] || b.status}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-[#8B7355] text-xs whitespace-nowrap">{createdStr}</td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>

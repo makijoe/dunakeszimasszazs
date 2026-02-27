@@ -201,7 +201,20 @@ function createBooking(data) {
   
   var customer = getOrCreateCustomer(data.name, data.email, data.phone);
   var customerId = customer.customerId;
-  
+
+  // Prevent same customer from double-booking the same date + time
+  var dupSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEETS.BOOKINGS);
+  var dupData = dupSheet.getDataRange().getValues();
+  for (var di = 1; di < dupData.length; di++) {
+    if (dupData[di][1] === customerId && dupData[di][6] === 'Confirmed') {
+      var dupDate = typeof dupData[di][4] === 'string' ? dupData[di][4].slice(0,10) : formatDate(new Date(dupData[di][4]));
+      var dupTime = typeof dupData[di][5] === 'string' ? String(dupData[di][5]).slice(0,5) : String(dupData[di][5]).slice(0,5);
+      if (dupDate === data.date && dupTime === data.time) {
+        return createResponse(false, 'Ezen az időponton már van aktív foglalásod! Kérjük válassz másik időpontot.');
+      }
+    }
+  }
+
   // Check if customer has active session package
   var activePackage = findActivePackage(customerId, data.service);
   
@@ -896,12 +909,12 @@ function getAllBookings_() {
       customerName: data[i][2],
       customerEmail: emailMap[data[i][1]] || '',
       service: data[i][3],
-      date: data[i][4],
-      time: data[i][5],
+      date: typeof data[i][4] === 'string' ? data[i][4].slice(0,10) : formatDate(new Date(data[i][4])),
+      time: typeof data[i][5] === 'string' ? String(data[i][5]).slice(0,5) : String(data[i][5]).slice(0,5),
       status: data[i][6],
       packageId: data[i][7],
       sessionNumber: data[i][8],
-      createdDate: data[i][9]
+      createdDate: typeof data[i][9] === 'string' ? data[i][9].slice(0,10) : (data[i][9] ? formatDate(new Date(data[i][9])) : '')
     });
   }
   return createResponse(true, 'Összes foglálás', { bookings: bookings.reverse() });
@@ -1049,7 +1062,7 @@ function getMyBookings_(email) {
 
   var bookings = [];
   for (var j = 1; j < bookingsData.length; j++) {
-    if (bookingsData[j][1] === customerId && bookingsData[j][6] === 'Confirmed') {
+    if (bookingsData[j][1] === customerId && (bookingsData[j][6] === 'Confirmed' || bookingsData[j][6] === 'ChangeRequested')) {
       var bookingDate = new Date(bookingsData[j][4]);
       if (bookingDate >= today) {
         bookings.push({
@@ -1057,6 +1070,7 @@ function getMyBookings_(email) {
           service: bookingsData[j][3],
           date: typeof bookingsData[j][4] === 'string' ? bookingsData[j][4] : formatDate(new Date(bookingsData[j][4])),
           time: typeof bookingsData[j][5] === 'string' ? String(bookingsData[j][5]).slice(0, 5) : String(bookingsData[j][5]),
+          status: bookingsData[j][6],
           calendarEventId: bookingsData[j][10] || ''
         });
       }
@@ -1201,6 +1215,7 @@ function selfRequestChange_(data) {
   var bookingsSheet = ss.getSheetByName(SHEETS.BOOKINGS);
   var bookingsData = bookingsSheet.getDataRange().getValues();
   var bookingService = '', bookingDate = '', bookingTime = '', calEventId = '';
+  var bookingRow = -1;
 
   for (var j = 1; j < bookingsData.length; j++) {
     if (bookingsData[j][0] === bookingId && bookingsData[j][1] === customerId) {
@@ -1208,6 +1223,7 @@ function selfRequestChange_(data) {
       bookingDate = typeof bookingsData[j][4] === 'string' ? bookingsData[j][4] : formatDate(new Date(bookingsData[j][4]));
       bookingTime = typeof bookingsData[j][5] === 'string' ? String(bookingsData[j][5]).slice(0, 5) : String(bookingsData[j][5]);
       calEventId = bookingsData[j][10] || '';
+      bookingRow = j + 1;
       break;
     }
   }
@@ -1221,6 +1237,24 @@ function selfRequestChange_(data) {
       return createResponse(false, 'A foglalást legkésőbb 24 órával korábban lehet módosítani.');
     }
   } catch(e) { /* date parsing edge case, continue */ }
+
+  // Check if customer already has another booking at the requested new date+time
+  for (var k = 1; k < bookingsData.length; k++) {
+    if (bookingsData[k][0] !== bookingId && bookingsData[k][1] === customerId &&
+        (bookingsData[k][6] === 'Confirmed' || bookingsData[k][6] === 'ChangeRequested')) {
+      var chkDate = typeof bookingsData[k][4] === 'string' ? bookingsData[k][4].slice(0,10) : formatDate(new Date(bookingsData[k][4]));
+      var chkTime = typeof bookingsData[k][5] === 'string' ? String(bookingsData[k][5]).slice(0,5) : String(bookingsData[k][5]).slice(0,5);
+      if (chkDate === newDate && chkTime === newTime) {
+        return createResponse(false, 'Ezen az időponton már van aktív foglalásod! Kérjük válassz másik időpontot.');
+      }
+    }
+  }
+
+  // Mark booking as ChangeRequested so it shows as pending in the customer list
+  if (bookingRow > 0) {
+    bookingsSheet.getRange(bookingRow, 7).setValue('ChangeRequested');
+    SpreadsheetApp.flush();
+  }
 
   // Flag the Google Calendar event (non-fatal – never crash the change request)
   try {
