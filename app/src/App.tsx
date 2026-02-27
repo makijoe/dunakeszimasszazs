@@ -2341,6 +2341,19 @@ function ManageBookingsPage() {
   const [newTime, setNewTime] = useState('');
   const [changeNotes, setChangeNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [slotAvailable, setSlotAvailable] = useState<boolean | null>(null);
+  const [isCheckingSlot, setIsCheckingSlot] = useState(false);
+
+  const checkSlotAvailability = async (date: string, time: string) => {
+    if (!date || !time) { setSlotAvailable(null); return; }
+    setIsCheckingSlot(true);
+    try {
+      const res = await fetch(`${SCRIPT_URL}?action=checkSlot&date=${date}&time=${encodeURIComponent(time)}`);
+      const data = await res.json();
+      setSlotAvailable(data.success === true);
+    } catch { setSlotAvailable(null); }
+    finally { setIsCheckingSlot(false); }
+  };
 
   const timeSlots = ['08:30', '09:45', '11:00', '12:15', '13:30', '14:45', '16:00', '17:15', '18:30'];
 
@@ -2421,12 +2434,13 @@ function ManageBookingsPage() {
       });
       const result = await response.json();
       if (result.success) {
-        toast.success('Módosítási kérelem elküldve! Hamarosan értesítünk.');
+        toast.success('Időpontod sikeresen módosítva! Visszaigazolást küldtünk.');
         setSelectedBooking(null);
         setActionType(null);
         setNewDate('');
         setNewTime('');
         setChangeNotes('');
+        setSlotAvailable(null);
         // Reload so list is fresh
         await loadBookings(undefined, email);
       } else {
@@ -2450,7 +2464,7 @@ function ManageBookingsPage() {
     const d = new Date(); d.setDate(d.getDate() + 1); return d.toISOString().slice(0, 10);
   })();
 
-  const closeModal = () => { setSelectedBooking(null); setActionType(null); setCancelReason(''); setNewDate(''); setNewTime(''); setChangeNotes(''); };
+  const closeModal = () => { setSelectedBooking(null); setActionType(null); setCancelReason(''); setNewDate(''); setNewTime(''); setChangeNotes(''); setSlotAvailable(null); };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#F9F1EA] to-[#FFFBF7]">
@@ -2609,11 +2623,11 @@ function ManageBookingsPage() {
         </div>
       )}
 
-      {/* Change Request Modal */}
+      {/* Change Modal */}
       {selectedBooking && actionType === 'change' && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full">
-            <h3 className="text-xl font-bold text-[#4A3F35] mb-4">Időpont módosítás kérése</h3>
+            <h3 className="text-xl font-bold text-[#4A3F35] mb-4">Időpont módosítása</h3>
             <div className="bg-[#FFF8F2] border border-[#E8D4C0] rounded-xl p-4 mb-5">
               <p className="text-xs text-[#8B7355] mb-1">Jelenlegi időpont:</p>
               <p className="font-semibold text-[#4A3F35]">{selectedBooking.service}</p>
@@ -2625,21 +2639,21 @@ function ManageBookingsPage() {
             <form onSubmit={handleChangeRequest} className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label className="text-[#4A3F35] text-sm font-medium">Kért új dátum *</Label>
+                  <Label className="text-[#4A3F35] text-sm font-medium">Új dátum *</Label>
                   <Input
                     type="date"
                     value={newDate}
-                    onChange={(e) => setNewDate(e.target.value)}
+                    onChange={(e) => { setNewDate(e.target.value); setSlotAvailable(null); if (e.target.value && newTime) checkSlotAvailability(e.target.value, newTime); }}
                     min={minDateStr}
                     required
                     className="mt-1.5 border-[#E8D4C0] focus:border-[#D4854A]"
                   />
                 </div>
                 <div>
-                  <Label className="text-[#4A3F35] text-sm font-medium">Kért új időpont *</Label>
+                  <Label className="text-[#4A3F35] text-sm font-medium">Új időpont *</Label>
                   <select
                     value={newTime}
-                    onChange={(e) => setNewTime(e.target.value)}
+                    onChange={(e) => { setNewTime(e.target.value); setSlotAvailable(null); if (newDate && e.target.value) checkSlotAvailability(newDate, e.target.value); }}
                     required
                     className="mt-1.5 w-full border border-[#E8D4C0] rounded-md px-3 py-2 text-sm text-[#4A3F35] bg-white focus:outline-none focus:ring-1 focus:ring-[#D4854A] focus:border-[#D4854A]"
                   >
@@ -2650,25 +2664,35 @@ function ManageBookingsPage() {
                   </select>
                 </div>
               </div>
+              {/* Slot availability indicator */}
+              {(isCheckingSlot || slotAvailable !== null) && (
+                <div className={`text-sm px-3 py-2 rounded-lg flex items-center gap-2 ${
+                  isCheckingSlot ? 'bg-gray-50 text-gray-500' :
+                  slotAvailable ? 'bg-green-50 border border-green-200 text-green-700' :
+                  'bg-red-50 border border-red-200 text-red-700'
+                }`}>
+                  {isCheckingSlot ? '⏳ Ellenőrzés...' : slotAvailable ? '✅ Ez az időpont szabad!' : '❌ Ez az időpont már foglalt – válassz másikat'}
+                </div>
+              )}
               <div>
                 <Label className="text-[#4A3F35] text-sm font-medium">Megjegyzés</Label>
                 <Textarea
                   value={changeNotes}
                   onChange={(e) => setChangeNotes(e.target.value)}
-                  placeholder="Pl.: Csak délelőtt érek rá, vagy hétfő/kedd lenne a legjobb..."
+                  placeholder="Pl.: Csak délelőtt érek rá..."
                   rows={2}
                   className="mt-1.5 border-[#E8D4C0] focus:border-[#D4854A] text-sm"
                 />
               </div>
-              <p className="text-xs text-[#8B7355] bg-blue-50 border border-blue-100 p-3 rounded-lg">
-                ℹ️ Ez egy kérelem — Edina emailben erősíti meg az új időpontot. Módosítás legkésőbb <b>24 órával korábban</b> kérhető.
+              <p className="text-xs text-[#8B7355] bg-orange-50 border border-orange-100 p-3 rounded-lg">
+                ℹ️ A módosítás <b>azonnal érvényes</b> – visszaigazolást küldünk emailben. Módosítás legkésőbb <b>24 órával korábban</b> kérhető.
               </p>
               <div className="flex gap-3">
                 <Button type="button" variant="outline" onClick={closeModal} className="flex-1 border-[#E8D4C0]">
                   Mégsem
                 </Button>
-                <Button type="submit" disabled={isSubmitting} className="flex-1 bg-[#D4854A] hover:bg-[#B87333] text-white">
-                  {isSubmitting ? 'Küldés...' : 'Kérelem küldése'}
+                <Button type="submit" disabled={isSubmitting || slotAvailable === false || isCheckingSlot} className="flex-1 bg-[#D4854A] hover:bg-[#B87333] text-white">
+                  {isSubmitting ? 'Módosítás...' : 'Módosítás megerősítése'}
                 </Button>
               </div>
             </form>
@@ -2683,7 +2707,7 @@ function ManageBookingsPage() {
 function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'bookings' | 'pending' | 'customers' | 'packages' | 'pnl' | 'cancel' | 'notify'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'bookings' | 'pending' | 'customers' | 'packages' | 'pnl' | 'cancel' | 'notify' | 'blockslot'>('dashboard');
   const [formData, setFormData] = useState({
     clientName: '',
     clientEmail: '',
@@ -2724,6 +2748,30 @@ function AdminPage() {
   const [allBookings, setAllBookings] = useState<any[]>([]);
   const [pendingBookings, setPendingBookings] = useState<any[]>([]);
   const [allPackages, setAllPackages] = useState<any[]>([]);
+  const [blockSlotForm, setBlockSlotForm] = useState({ date: '', time: '', label: '', duration: '75' });
+  const [isBlockingSlot, setIsBlockingSlot] = useState(false);
+
+  const handleBlockSlot = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsBlockingSlot(true);
+    try {
+      const params = new URLSearchParams();
+      params.append('action', 'blockSlot');
+      params.append('date', blockSlotForm.date);
+      params.append('time', blockSlotForm.time);
+      params.append('label', blockSlotForm.label || 'Zárolt időpont');
+      params.append('duration', blockSlotForm.duration);
+      const res = await fetch(SCRIPT_URL, { method: 'POST', body: params });
+      const result = await res.json();
+      if (result.success) {
+        toast.success('Időpont zárolva: ' + blockSlotForm.date + ' ' + blockSlotForm.time);
+        setBlockSlotForm({ date: '', time: '', label: '', duration: '75' });
+      } else {
+        toast.error(result.message || 'Hiba a zárolás során');
+      }
+    } catch { toast.error('Hiba a zárolás során'); }
+    finally { setIsBlockingSlot(false); }
+  };
 
   const ADMIN_PASSWORD = 'Edina2025!';
 
@@ -3071,6 +3119,7 @@ function AdminPage() {
               { id: 'pnl', label: 'P&L', icon: '💰' },
               { id: 'cancel', label: 'Lemondás', icon: '❌' },
               { id: 'notify', label: 'Módosítás', icon: '📝' },
+              { id: 'blockslot', label: 'Zárolás', icon: '🔒' },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -4043,6 +4092,77 @@ function AdminPage() {
                 className="w-full bg-[#8B9A7C] hover:bg-[#7A8B6B] text-white py-4 rounded-xl font-medium"
               >
                 {isSubmitting ? 'Küldés...' : 'Módosítási értesítés küldése'}
+              </Button>
+            </form>
+          </div>
+        )}
+
+        {activeTab === 'blockslot' && (
+          <div className="bg-white rounded-2xl shadow-warm-lg p-6 sm:p-8 max-w-lg">
+            <h2 className="text-2xl font-bold text-[#4A3F35] mb-2">Időpont zárolása</h2>
+            <p className="text-sm text-[#8B7355] mb-6">
+              Ezzel a funkcióval lezárhatsz egy időpontot, így az online foglalásban <b>nem lesz elérhető</b>.
+              Pl. ha beteg vagy, szabadnapot veszel ki, vagy más okból nem érsz rá.
+            </p>
+            <form onSubmit={handleBlockSlot} className="space-y-5">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-[#4A3F35]">Dátum *</Label>
+                  <Input
+                    type="date"
+                    value={blockSlotForm.date}
+                    onChange={(e) => setBlockSlotForm({ ...blockSlotForm, date: e.target.value })}
+                    required
+                    className="border-[#E8D4C0] focus:border-[#D4854A]"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-[#4A3F35]">Időpont *</Label>
+                  <select
+                    value={blockSlotForm.time}
+                    onChange={(e) => setBlockSlotForm({ ...blockSlotForm, time: e.target.value })}
+                    required
+                    className="w-full border border-[#E8D4C0] rounded-md px-3 py-2 text-sm text-[#4A3F35] bg-white focus:outline-none focus:ring-1 focus:ring-[#D4854A] focus:border-[#D4854A]"
+                  >
+                    <option value="">Válassz időpontot</option>
+                    {['08:00','09:30','11:00','12:30','14:00','15:30','17:00'].map(t => (
+                      <option key={t} value={t}>{t}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-[#4A3F35]">Megjegyzés (opcionális)</Label>
+                <Input
+                  value={blockSlotForm.label}
+                  onChange={(e) => setBlockSlotForm({ ...blockSlotForm, label: e.target.value })}
+                  placeholder="Pl.: Betegség, szabadnap..."
+                  className="border-[#E8D4C0] focus:border-[#D4854A]"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-[#4A3F35]">Időtartam (perc)</Label>
+                <select
+                  value={blockSlotForm.duration}
+                  onChange={(e) => setBlockSlotForm({ ...blockSlotForm, duration: e.target.value })}
+                  className="w-full border border-[#E8D4C0] rounded-md px-3 py-2 text-sm text-[#4A3F35] bg-white focus:outline-none focus:ring-1 focus:ring-[#D4854A] focus:border-[#D4854A]"
+                >
+                  <option value="75">75 perc (1 időpont)</option>
+                  <option value="150">150 perc (2 időpont)</option>
+                  <option value="225">225 perc (3 időpont)</option>
+                  <option value="300">300 perc (4 időpont)</option>
+                  <option value="480">Egész nap (8 óra)</option>
+                </select>
+              </div>
+              <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 text-sm text-amber-800">
+                🔒 A zárolt időpont megjelenik a Google Naptárban, és <b>senki sem tud foglalni</b> az adott időre.
+              </div>
+              <Button
+                type="submit"
+                disabled={isBlockingSlot}
+                className="w-full bg-[#4A3F35] hover:bg-[#3a3029] text-white py-4 rounded-xl font-medium"
+              >
+                {isBlockingSlot ? 'Zárolás...' : '🔒 Időpont zárolása'}
               </Button>
             </form>
           </div>

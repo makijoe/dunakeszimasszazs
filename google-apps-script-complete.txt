@@ -143,6 +143,8 @@ function doPost(e) {
         return selfCancelBooking_(data);
       case 'selfChange':
         return selfRequestChange_(data);
+      case 'blockSlot':
+        return blockSlot_(data);
       case 'createStripeCheckout':
         return createStripeCheckout(data);
       case 'createStripeCheckoutDebug':
@@ -178,6 +180,8 @@ function doGet(e) {
         return getPendingBookings_();
       case 'allPackages':
         return getAllPackages_();
+      case 'checkSlot':
+        return createResponse(isTimeSlotAvailable(e.parameter.date, e.parameter.time), isTimeSlotAvailable(e.parameter.date, e.parameter.time) ? 'Szabad' : 'Foglalt');
       case 'myBookings':
         return getMyBookings_(e.parameter.email);
       default:
@@ -1331,7 +1335,7 @@ function selfRequestChange_(data) {
 
   if (!bookingDate) return createResponse(false, 'Foglalás nem található');
 
-  // Enforce 24h change policy
+  // Enforce 24h change policy on the OLD booking
   try {
     var bMs = new Date(bookingDate + 'T' + bookingTime + ':00').getTime();
     if ((bMs - Date.now()) < 24 * 60 * 60 * 1000) {
@@ -1351,73 +1355,84 @@ function selfRequestChange_(data) {
     }
   }
 
-  // Mark booking as ChangeRequested so it shows as pending in the customer list
+  // Check the new slot is actually free in the calendar
+  if (!isTimeSlotAvailable(newDate, newTime)) {
+    return createResponse(false, 'Ez az időpont sajnos már foglalt. Kérjük válassz másik időpontot.');
+  }
+
+  // ── Fully automatic: delete old calendar event, create new one ──
+  try {
+    deleteCalendarEvent_(calEventId, bookingDate, bookingTime, customerName);
+  } catch (delErr) {
+    Logger.log('Old calendar event deletion skipped: ' + delErr);
+  }
+
+  var newCalEventId = '';
+  try {
+    var calendar = CalendarApp.getDefaultCalendar();
+    var dateParts = newDate.split('-');
+    var timeParts = newTime.split(':');
+    var newStart = new Date(
+      parseInt(dateParts[0]), parseInt(dateParts[1]) - 1, parseInt(dateParts[2]),
+      parseInt(timeParts[0]), parseInt(timeParts[1])
+    );
+    var newEnd = new Date(newStart.getTime() + 75 * 60 * 1000);
+    var newEvent = calendar.createEvent('Masszázs - ' + customerName + ' - ' + bookingService, newStart, newEnd, {
+      description: 'Módosított foglalás\nÜgyfél: ' + customerName + '\nEmail: ' + email + '\nKezelés: ' + bookingService,
+      location: 'Angyali Szalon, Dunakeszi'
+    });
+    newEvent.setColor('6'); // orange
+    newCalEventId = newEvent.getId();
+  } catch (calErr) {
+    Logger.log('New calendar event creation skipped: ' + calErr);
+  }
+
+  // Update booking: new date, time, status = Confirmed, new calendar event ID
   if (bookingRow > 0) {
-    bookingsSheet.getRange(bookingRow, 7).setValue('ChangeRequested');
+    bookingsSheet.getRange(bookingRow, 5).setValue(newDate);
+    bookingsSheet.getRange(bookingRow, 6).setValue(newTime);
+    bookingsSheet.getRange(bookingRow, 7).setValue('Confirmed');
+    if (newCalEventId) bookingsSheet.getRange(bookingRow, 11).setValue(newCalEventId);
     SpreadsheetApp.flush();
   }
 
-  // Flag the Google Calendar event (non-fatal – never crash the change request)
-  try {
-    flagCalendarEventForChange_(calEventId, bookingDate, bookingTime, customerName, newDate, newTime);
-  } catch (calErr) {
-    Logger.log('Calendar flagging skipped: ' + calErr);
-  }
-
-  // Notify Edina with change request
-  var edinaSubject = '📝 Időpont módosítási kérelem – ' + customerName;
-  var edinaBody = 'Kedves Edina!\n\n';
-  edinaBody += customerName + ' időpont-módosítást kér:\n\n';
-  edinaBody += '═══════════════════════════════════════\n';
-  edinaBody += '👤 Név: ' + customerName + '\n';
-  edinaBody += '📧 Email: ' + email + '\n';
-  edinaBody += '💆 Kezelés: ' + bookingService + '\n\n';
-  edinaBody += '❌ JELENLEGI IDŐPONT:\n';
-  edinaBody += '   📅 ' + bookingDate + ' ' + bookingTime + '\n\n';
-  edinaBody += '✅ KÉRT Új IDŐPONT:\n';
-  edinaBody += '   📅 ' + newDate + ' ' + newTime + '\n';
-  if (notes) edinaBody += '\n📝 Megjegyzés: ' + notes + '\n';
-  edinaBody += '═══════════════════════════════════════\n\n';
-  edinaBody += 'Kérjük, erősítsd meg az ügyfélnek az új időpontot!';
-
-  var changeEdinaHtml = buildSimpleHtml('Időpont módosítási kérelem', '📝',
-    '<p style="font-size:14px;color:#555;">Kedves Edina! ' + customerName + ' időpont-módosítást kér.</p>' +
+  // Notify Edina (FYI — no action needed)
+  var edinaSubject = '✅ Időpont módosítva – ' + customerName;
+  var edinaBody = 'Kedves Edina!\n\n' + customerName + ' időpontja automatikusan módosítva:\n\n' +
+    '❌ Régi: ' + bookingDate + ' ' + bookingTime + '\n' +
+    '✅ Új: ' + newDate + ' ' + newTime + '\n' +
+    '💆 Kezelés: ' + bookingService + '\n' +
+    (notes ? '📝 Megjegyzés: ' + notes + '\n' : '') +
+    '\nA Google Naptár automatikusan frissítve.';
+  var changeEdinaHtml = buildSimpleHtml('Időpont módosítva (automatikus)', '✅',
+    '<p style="font-size:14px;color:#555;">Kedves Edina! ' + customerName + ' időpontja automatikusan módosítva — nincs teendőd.</p>' +
     htmlRows([['👤 Név', customerName], ['📧 Email', email], ['💪 Kezelés', bookingService]]) +
     '<div style="display:flex;gap:12px;margin:12px 0;">' +
-    '<div style="flex:1;background:#fff0f0;border:1px solid #fca5a5;border-radius:6px;padding:10px;font-size:13px;"><strong>❌ Jelenlegi</strong><br>' + bookingDate + ' ' + bookingTime + '</div>' +
-    '<div style="flex:1;background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:10px;font-size:13px;"><strong>✅ Kért új</strong><br>' + newDate + ' ' + newTime + '</div>' +
+    '<div style="flex:1;background:#fff0f0;border:1px solid #fca5a5;border-radius:6px;padding:10px;font-size:13px;"><strong>❌ Régi</strong><br>' + bookingDate + ' ' + bookingTime + '</div>' +
+    '<div style="flex:1;background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:10px;font-size:13px;"><strong>✅ Új</strong><br>' + newDate + ' ' + newTime + '</div>' +
     '</div>' +
     (notes ? '<p style="font-size:13px;color:#555;">📝 Megjegyzés: ' + notes + '</p>' : '') +
-    '<p style="font-size:13px;color:#D4854A;font-weight:bold;margin-top:12px;">Kérjük erősítsd meg az ügyfélnek az új időpontot!</p>'
+    '<p style="font-size:13px;color:#555;margin-top:8px;">🗓️ Google Naptár automatikusan frissítve.</p>'
   );
   MailApp.sendEmail({ to: 'dunakeszimasszor@gmail.com', subject: edinaSubject, body: edinaBody, htmlBody: changeEdinaHtml, name: 'Dunakeszi Masszázs - Admin', replyTo: 'dunakeszimasszor@gmail.com' });
 
-  // Pending confirmation to customer
-  var custSubject = 'Időpont módosítási kérelem elküldve – Dunakeszi Masszázs';
-  var custBody = 'Kedves ' + customerName + '!\n\n';
-  custBody += 'Módosítási kérelmed megérkezett.\n\n';
-  custBody += '═══════════════════════════════════════\n';
-  custBody += '💆 Kezelés: ' + bookingService + '\n\n';
-  custBody += '❌ Jelenlegi időpont: ' + bookingDate + ' ' + bookingTime + '\n';
-  custBody += '✅ Kért új időpont: ' + newDate + ' ' + newTime + '\n';
-  if (notes) custBody += '📝 Megjegyzés: ' + notes + '\n';
-  custBody += '═══════════════════════════════════════\n\n';
-  custBody += 'Hamarosan visszajelzünk a módosítás visszaigazolásával!\n\n';
-  custBody += 'Üdvözlettel,\nMakra Edina\nDunakeszi Masszázs - Angyali Szalon\n📞 +36 30 487 7883';
-
-  var changeCustHtml = buildSimpleHtml('Módosítási kérelem elküldve', '🔄',
-    '<p style="font-size:14px;color:#555;">Kedves <strong>' + customerName + '</strong>! Módosítási kérelmed megérkezett.</p>' +
-    htmlRows([['💪 Kezelés', bookingService]]) +
-    '<div style="display:flex;gap:12px;margin:12px 0;">' +
-    '<div style="flex:1;background:#fff0f0;border:1px solid #fca5a5;border-radius:6px;padding:10px;font-size:13px;"><strong>❌ Jelenlegi</strong><br>' + bookingDate + ' ' + bookingTime + '</div>' +
-    '<div style="flex:1;background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:10px;font-size:13px;"><strong>✅ Kért új</strong><br>' + newDate + ' ' + newTime + '</div>' +
-    '</div>' +
-    (notes ? '<p style="font-size:13px;color:#555;">📝 Megjegyzés: ' + notes + '</p>' : '') +
-    '<p style="font-size:13px;color:#555;margin-top:12px;">⏳ Hamarosan visszajelzünk a visszaigazolással!</p>'
+  // Confirm to customer immediately
+  var custSubject = '✅ Időpont módosítva – Dunakeszi Masszázs';
+  var custBody = 'Kedves ' + customerName + '!\n\n' +
+    'Foglalásod sikeresen módosítva:\n\n' +
+    '💆 Kezelés: ' + bookingService + '\n' +
+    '✅ Új időpont: ' + newDate + ' ' + newTime + '\n\n' +
+    '📍 Dunakeszi, Kolonics György utca 2/B – Kapucsengő: 1/43\n\n' +
+    'Üdvözlettel,\nMakra Edina\n📞 +36 30 487 7883';
+  var changeCustHtml = buildSimpleHtml('Időpont sikeresen módosítva', '✅',
+    '<p style="font-size:14px;color:#555;">Kedves <strong>' + customerName + '</strong>! Foglalásod módosítva.</p>' +
+    htmlRows([['💪 Kezelés', bookingService], ['✅ Új időpont', newDate + ' ' + newTime], ['📍 Cím', 'Dunakeszi, Kolonics György utca 2/B'], ['🔔 Kapucsengő', '1/43']]) +
+    (notes ? '<p style="font-size:13px;color:#555;margin-top:8px;">📝 Megjegyzés: ' + notes + '</p>' : '') +
+    '<p style="font-size:13px;color:#555;margin-top:12px;">Ha kérdésed van: <a href="tel:+36304877883" style="color:#D4854A;">+36 30 487 7883</a></p>'
   );
   MailApp.sendEmail({ to: email, subject: custSubject, body: custBody, htmlBody: changeCustHtml, name: 'Dunakeszi Masszázs - Angyali Szalon', replyTo: 'dunakeszimasszor@gmail.com' });
 
-  return createResponse(true, 'Módosítási kérelmed elküldve! Hamarosan értesítünk a visszaigazolással.');
+  return createResponse(true, 'Időpontod sikeresen módosítva! Visszaigazolást küldtünk emailben.');
 }
 
 // ============================================
@@ -2196,6 +2211,31 @@ function isTimeSlotAvailable(dateStr, timeStr) {
   var searchEnd   = new Date(start.getTime() + (75 * 60 * 1000));
   var events = calendar.getEvents(searchStart, searchEnd);
   return events.length === 0;
+}
+
+// Block a time slot by creating a calendar event (admin use)
+// data: { date, time, label (optional), duration (optional minutes, default 75) }
+function blockSlot_(data) {
+  if (!data.date || !data.time) return createResponse(false, 'Hiányzó dátum vagy időpont');
+  try {
+    var calendar = CalendarApp.getDefaultCalendar();
+    var dateParts = data.date.split('-');
+    var timeParts = data.time.split(':');
+    var start = new Date(
+      parseInt(dateParts[0]), parseInt(dateParts[1]) - 1, parseInt(dateParts[2]),
+      parseInt(timeParts[0]), parseInt(timeParts[1])
+    );
+    var duration = parseInt(data.duration) || 75;
+    var end = new Date(start.getTime() + duration * 60 * 1000);
+    var title = data.label ? '🔒 ' + data.label : '🔒 Zárolt időpont';
+    var event = calendar.createEvent(title, start, end, {
+      description: 'Admin által zárolt időpont. Nem foglalható.'
+    });
+    event.setColor('8'); // graphite / dark
+    return createResponse(true, 'Időpont sikeresen zárolva: ' + data.date + ' ' + data.time, { eventId: event.getId() });
+  } catch(e) {
+    return createResponse(false, 'Hiba a zárolás során: ' + e.message);
+  }
 }
 
 function logError(context, error) {
