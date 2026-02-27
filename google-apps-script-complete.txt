@@ -203,6 +203,11 @@ function createBooking(data) {
   var customerId = customer.customerId;
 
   // Prevent same customer from double-booking the same date + time
+  // 1) Check in-memory cache first (GAS read cache means sheet reads are stale in same execution)
+  if (_createdBookingKeys[customerId + '|' + data.date + '|' + data.time]) {
+    return createResponse(false, 'Ezen az időponton már van aktív foglalásod! Kérjük válassz másik időpontot.');
+  }
+  // 2) Check persisted sheet data (catches cross-execution duplicates)
   var dupSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEETS.BOOKINGS);
   var dupData = dupSheet.getDataRange().getValues();
   for (var di = 1; di < dupData.length; di++) {
@@ -279,6 +284,7 @@ function createBooking(data) {
   var recurringCount = (data.recurring === true || data.recurring === 'yes' || data.recurring === 'true') ? (parseInt(data.recurringCount) || 1) : 1;
   var recurringType = data.recurringType || 'weekly';
   var createdEvents = [];
+  var createdBookingIds = [];
   var recurringDates = [];
   
   var discountPercent = calculateDiscount(recurringCount);
@@ -317,7 +323,10 @@ function createBooking(data) {
     createdEvents.push(eventId);
     
     // Record booking (including calendar event ID and Stripe payment intent for refunds)
-    recordBooking(customerId, data.name, data.service, dateStr, data.time, packageId, sessionNumber, eventId, data.stripePaymentIntentId || '');
+    var newBookingId = recordBooking(customerId, data.name, data.service, dateStr, data.time, packageId, sessionNumber, eventId, data.stripePaymentIntentId || '');
+    createdBookingIds.push(newBookingId);
+    // Register in-memory so same-execution duplicate checks catch this immediately
+    _createdBookingKeys[customerId + '|' + dateStr + '|' + data.time] = true;
   }
   
   // Send confirmation emails
@@ -327,6 +336,7 @@ function createBooking(data) {
   return createResponse(true, 'Foglalás sikeresen rögzítve!', {
     customerId: customerId,
     eventIds: createdEvents,
+    bookingIds: createdBookingIds,
     recurringCount: recurringCount,
     recurringDates: recurringDates,
     discountPercent: discountPercent,
@@ -2250,6 +2260,13 @@ function createHtmlResponse(html) {
 // Timezone for all user-facing date/time formatting
 var TZ = 'Europe/Budapest';
 
+// In-memory set of booking keys created in THIS script execution.
+// GAS caches sheet reads within a single execution — appendRow+flush() does NOT
+// invalidate the read cache, so dupData reads would return stale (pre-write) data.
+// This set is the ground truth for same-execution duplicate detection.
+// Key format: "customerId|YYYY-MM-DD|HH:MM"
+var _createdBookingKeys = {};
+
 // Format a JS Date as YYYY-MM-DD in Budapest time
 function formatDate(date) {
   return Utilities.formatDate(date, TZ, 'yyyy-MM-dd');
@@ -2431,14 +2448,13 @@ function runSystemTests() {
     var r10c = r(createBooking({ name: testName, email: testEmail, phone: testPhone,
       service: testService, date: date24h, time: time24h, recurring: 'no', recurringCount: '1', notes: TAG + '_24H' }));
     if (r10c.success) {
-      // Reload bookings to find this near-term booking
-      var mb10 = r(getMyBookings_(testEmail));
-      var b24 = (mb10.data && mb10.data.bookings ? mb10.data.bookings : []).filter(function(b) { return b.date === date24h && b.time.slice(0,5) === time24h.slice(0,5); });
-      if (b24.length > 0) {
-        var r10 = r(selfCancelBooking_({ bookingId: b24[0].bookingId, email: testEmail, reason: 'teszt' }));
+      // Use the bookingId returned directly — avoids stale sheet read cache
+      var bid10 = (r10c.data && r10c.data.bookingIds && r10c.data.bookingIds.length > 0) ? r10c.data.bookingIds[0] : null;
+      if (bid10) {
+        var r10 = r(selfCancelBooking_({ bookingId: bid10, email: testEmail, reason: 'teszt' }));
         if (!r10.success && r10.message && r10.message.indexOf('24') !== -1) { pass('10. 24 órás lemondási szabály érvényesítés'); }
         else { fail('10. 24 órás lemondási szabály', 'El kellett volna utasítani 24h üzenettel. Kapott: ' + JSON.stringify(r10)); }
-      } else { skip('10. 24 órás lemondási szabály', '24h-s foglalás nem található visszatöltés után'); }
+      } else { skip('10. 24 órás lemondási szabály', '24h-s bookingId nem érhető el a válaszban'); }
     } else { skip('10. 24 órás lemondási szabály', 'Nem sikerült közeli foglalást létrehozni: ' + r10c.message); }
   } catch(e) { fail('10. 24 órás lemondási szabály', e.toString()); }
 
