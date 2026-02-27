@@ -2229,6 +2229,63 @@ function calculateDiscount(sessionCount) {
   return 0;
 }
 
+// ============================================
+// ONE-TIME CLEANUP — Run manually from Apps Script editor
+// Clears ALL rows (except headers) from Bookings, Customers,
+// SessionPackages, Financial, PendingBookings sheets.
+// Also deletes all Google Calendar events created by the system.
+// DO NOT deploy this — run it once from the editor then delete it.
+// ============================================
+function cleanupAllTestData() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheetsToWipe = [
+    SHEETS.BOOKINGS,
+    SHEETS.CUSTOMERS,
+    SHEETS.SESSION_PACKAGES,
+    SHEETS.FINANCIAL,
+    'PendingBookings'
+  ];
+
+  var report = [];
+
+  sheetsToWipe.forEach(function(name) {
+    var sheet = ss.getSheetByName(name);
+    if (!sheet) { report.push(name + ': not found, skipped'); return; }
+    var lastRow = sheet.getLastRow();
+    if (lastRow > 1) {
+      sheet.deleteRows(2, lastRow - 1);
+      report.push(name + ': deleted ' + (lastRow - 1) + ' rows');
+    } else {
+      report.push(name + ': already empty');
+    }
+  });
+
+  // Delete all calendar events that were created by the booking system
+  // (looks for events with "Masszázs -" in the title within the last 2 years)
+  var deletedEvents = 0;
+  try {
+    var cal = CalendarApp.getDefaultCalendar();
+    var from = new Date();
+    from.setFullYear(from.getFullYear() - 2);
+    var to = new Date();
+    to.setFullYear(to.getFullYear() + 2);
+    var events = cal.getEvents(from, to);
+    events.forEach(function(ev) {
+      var title = ev.getTitle();
+      if (title.indexOf('Masszázs -') === 0) {
+        ev.deleteEvent();
+        deletedEvents++;
+      }
+    });
+    report.push('Calendar: deleted ' + deletedEvents + ' events');
+  } catch(e) {
+    report.push('Calendar cleanup skipped: ' + e);
+  }
+
+  Logger.log('=== CLEANUP COMPLETE ===\n' + report.join('\n'));
+  SpreadsheetApp.getUi().alert('Cleanup complete!\n\n' + report.join('\n'));
+}
+
 function buildEventDescription(data, sessionNum, totalSessions, packageId, sessionNumber) {
   var desc = 'Kezelés: ' + data.service + '\n' +
              'Név: ' + data.name + '\n' +
