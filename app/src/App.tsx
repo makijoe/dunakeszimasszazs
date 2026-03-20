@@ -26,6 +26,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { toast, Toaster } from 'sonner';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 
 // Google Apps Script URL
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyNNnfTYIlEcuJFD2DaHJcPkv-ErX34TRaxmuc3mFxLVksuoYqs4_GLhilMxHmS3Eg/exec';
@@ -4294,6 +4295,7 @@ function App() {
         <BookingSection />
       </main>
       <FooterSection />
+      <SpeedInsights />
     </div>
   );
 }
