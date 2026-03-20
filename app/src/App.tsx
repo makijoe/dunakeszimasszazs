@@ -26,6 +26,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { toast, Toaster } from 'sonner';
+import { Analytics } from '@vercel/analytics/react';
 
 // Google Apps Script URL
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyNNnfTYIlEcuJFD2DaHJcPkv-ErX34TRaxmuc3mFxLVksuoYqs4_GLhilMxHmS3Eg/exec';
@@ -4262,19 +4263,39 @@ function App() {
   const isManagePage = hash === '#foglalaskezeles';
 
   if (isAdminPage) {
-    return <AdminPage />;
+    return (
+    <>
+      <AdminPage />
+      <Analytics />
+    </>
+  );
   }
 
   if (isManagePage) {
-    return <ManageBookingsPage />;
+    return (
+    <>
+      <ManageBookingsPage />
+      <Analytics />
+    </>
+  );
   }
 
   if (isBookingSuccess) {
-    return <BookingSuccessPage />;
+    return (
+    <>
+      <BookingSuccessPage />
+      <Analytics />
+    </>
+  );
   }
 
   if (isBookingCancel) {
-    return <BookingCancelPage />;
+    return (
+    <>
+      <BookingCancelPage />
+      <Analytics />
+    </>
+  );
   }
 
   return (
@@ -4294,6 +4315,7 @@ function App() {
         <BookingSection />
       </main>
       <FooterSection />
+      <Analytics />
     </div>
   );
 }
