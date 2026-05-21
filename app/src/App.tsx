@@ -273,6 +273,8 @@ function HeroSection() {
                   src="https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=800&h=1000&fit=crop"
                   alt="Relaxáló masszázs környezet az Angyali Szalonban"
                   className="w-full h-[500px] lg:h-[600px] object-cover"
+                  loading="eager"
+                  fetchPriority="high"
                 />
                 {/* Overlay Gradient */}
                 <div className="absolute inset-0 bg-gradient-to-t from-[#4A3F35]/30 via-transparent to-transparent" />
@@ -432,6 +434,7 @@ function ServiceModal({ service, isOpen, onClose }: { service: typeof services[0
             src={service.image}
             alt={service.name}
             className="w-full h-full object-cover"
+            loading="lazy"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
           <div className="absolute bottom-4 left-4 right-4">
@@ -478,11 +481,13 @@ function ServiceModal({ service, isOpen, onClose }: { service: typeof services[0
                           src={pair.before}
                           alt="Előtte"
                           className="w-full h-32 object-cover rounded-lg"
+                          loading="lazy"
                         />
                         <span className="absolute bottom-2 left-2 bg-[#8B9A7C]/80 text-white text-xs px-2 py-1 rounded">Utána</span>
                       </div>
                       <div className="relative">
                         <img
+                          loading="lazy"
                           src={pair.after}
                           alt="Utána"
                           className="w-full h-32 object-cover rounded-lg"
@@ -575,6 +580,7 @@ function ServicesSection() {
                   src={service.image}
                   alt={service.name}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  loading="lazy"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#4A3F35]/60 via-transparent to-transparent" />
                 <div className="absolute bottom-4 left-4 right-4">
@@ -662,7 +668,7 @@ const services = [
     shortDescription: 'Ősi, rendkívül pihentető technika, amely a fejen, nyakon és vállakon felhalmozódott feszültséget oldja.',
     description: 'Az indiai fejmasszázs egy ősi, gyengéd és rendkívül megnyugtató technika, amely segít oldani a fejben, nyakban és vállakban felhalmozódott feszültséget. Tökéletes választás stressz, túlterheltség vagy fejfájás esetén.',
     benefits: ['Fejfájás csökkentése', 'Mentális frissesség', 'Stresszoldás', 'Jobb koncentráció'],
-    image: '/images/indiai-fejmasszazs.png'
+    image: '/images/indiai-fejmasszazs.jpeg'
   },
   {
     id: 'nehezfem',
@@ -1190,6 +1196,7 @@ function OrganoCoffeeSection() {
               {/* Coffee Image */}
               <div className="relative rounded-2xl overflow-hidden shadow-warm">
                 <img
+                  loading="lazy"
                   src="/images/organo-kave.jpeg"
                   alt="Organo kávé választék - Fekete kávé, Gourmet Latte, Mocha Cappuccino, Forró csokoládé"
                   className="w-full h-64 object-cover"
@@ -1202,6 +1209,7 @@ function OrganoCoffeeSection() {
               {/* Green Tea Image */}
               <div className="relative rounded-2xl overflow-hidden shadow-warm">
                 <img
+                  loading="lazy"
                   src="/images/organo-zoldtea.jpeg"
                   alt="Organo Reishi Ganoderma zöld tea"
                   className="w-full h-64 object-cover"
@@ -1249,6 +1257,7 @@ function AboutSection() {
           <div className={`relative transition-all duration-700 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-10'}`}>
             <div className="relative rounded-3xl overflow-hidden shadow-warm-lg">
               <img
+                loading="lazy"
                 src="/images/edina.jpeg"
                 alt="Makra Edina - Masszőr, kineziológus"
                 className="w-full h-[400px] lg:h-[500px] object-cover"
@@ -1369,6 +1378,7 @@ function GallerySection() {
                   src={image.src}
                   alt={image.alt}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  loading="lazy"
                 />
               </div>
               <div className="absolute inset-0 bg-gradient-to-t from-[#4A3F35]/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -1422,6 +1432,7 @@ function ProductsSection() {
           {/* Product Image */}
           <div className="relative rounded-2xl overflow-hidden shadow-warm-lg">
             <img
+              loading="lazy"
               src="/images/professional-products.jpeg"
               alt="Professzionális kozmetikai termékek - Magic brand"
               className="w-full h-auto object-cover"
