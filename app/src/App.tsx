@@ -114,6 +114,8 @@ function Navigation() {
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label={isMobileMenuOpen ? 'Menü bezárása' : 'Menü megnyitása'}
+            aria-expanded={isMobileMenuOpen}
             className="lg:hidden p-2 rounded-lg hover:bg-[#F5E6D8] transition-colors"
           >
             {isMobileMenuOpen ? (
@@ -888,7 +890,7 @@ function TVSection() {
                 </div>
                 <div>
                   <h3 className="text-xl font-bold text-[#4A3F35]">TV2</h3>
-                  <p className="text-[#8B7355]">Mokka műsor</p>
+                  <p className="text-[#8B7355]">Mokka műsor · 2024</p>
                 </div>
               </div>
               <p className="text-[#4A3F35] leading-relaxed">
@@ -919,7 +921,7 @@ function TVSection() {
                 </div>
                 <div>
                   <h3 className="text-xl font-bold text-[#4A3F35]">RTL Klub</h3>
-                  <p className="text-[#8B7355]">Reggeli műsor</p>
+                  <p className="text-[#8B7355]">Reggeli műsor · 2024</p>
                 </div>
               </div>
               <p className="text-[#4A3F35] leading-relaxed">
@@ -960,32 +962,38 @@ function TestimonialsSection() {
     {
       text: 'Nagyon ajánlom Edina masszázsát. Többször is voltam nála, mindig figyelmes, kedves és profin végzi a munkáját. Igazi kikapcsolódás, masszázs közben teljesen ellazulok.',
       author: 'Judit Derzsényi',
-      source: 'Google'
+      source: 'Google',
+      date: '2025. március'
     },
     {
       text: 'Egy hely az igazi kikapcsolódásra és feltöltődésre. Edina a munkájában felkészült, nagy szakmai tapasztalattal rendelkezik, nagyon kedves, udvarias, kommunikatív. Csak ajánlani tudom!',
       author: 'Maria Lutring Moser',
-      source: 'Google'
+      source: 'Google',
+      date: '2025. január'
     },
     {
       text: 'Edinánál voltam masszázson, és egyszerűen fantasztikus élmény volt! Nagyon profi, kedves és figyelmes – azonnal érezni lehetett, hogy ért a szakmájához.',
       author: 'Zoltán',
-      source: 'Google'
+      source: 'Google',
+      date: '2024. november'
     },
     {
       text: 'Minden alkalommal feltöltődve, megújulva távozom. Nem csak a szakértelme kiemelkedő, de a kedvessége és figyelmessége is lenyűgöző.',
       author: 'Xavér Szalai',
-      source: 'Google'
+      source: 'Google',
+      date: '2025. február'
     },
     {
       text: 'Edina egy nagyon tapasztalt és figyelmes masszőr. A kezelés alatt teljesen el tudtam lazulni, és elmúltak a panaszaim. Minden szempontból feltöltő élmény volt – biztosan visszatérek.',
       author: 'Ildikó H.',
-      source: 'Google'
+      source: 'Google',
+      date: '2025. április'
     },
     {
       text: 'Gépi nyirokmasszázson és kineziológiai tanácsadáson vettem részt, és csak a legjobbakat tudom mondani! A nyirokmasszázs rendkívül kellemes és hatékony volt.',
       author: 'Judit Spisák',
-      source: 'Google'
+      source: 'Google',
+      date: '2024. december'
     }
   ];
 
@@ -1062,9 +1070,14 @@ function TestimonialsSection() {
                 "{testimonial.text}"
               </p>
 
-              <p className="text-sm font-medium text-[#4A3F35]">
-                — {testimonial.author}
-              </p>
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium text-[#4A3F35]">
+                  — {testimonial.author}
+                </p>
+                {testimonial.date && (
+                  <p className="text-xs text-[#8B7355]">{testimonial.date}</p>
+                )}
+              </div>
             </div>
           ))}
         </div>
@@ -1274,13 +1287,21 @@ function AboutSection() {
               </p>
             </div>
 
-            <div className="flex items-center gap-4 pt-4">
+            <div className="flex flex-wrap gap-2 pt-2">
+              {['Okleveles masszőr', 'Kineziológus', 'Gépi nyirokmasszázs', 'BEMER terapeuta', 'TV2 & RTL szereplő'].map((badge) => (
+                <span key={badge} className="px-3 py-1 bg-[#D4854A]/10 text-[#D4854A] text-xs font-medium rounded-full">
+                  {badge}
+                </span>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-4 pt-2">
               <div className="w-12 h-12 bg-gradient-to-br from-[#D4854A] to-[#B87333] rounded-full flex items-center justify-center">
                 <Heart className="w-6 h-6 text-white" />
               </div>
               <div>
                 <p className="font-semibold text-[#4A3F35]">Makra Edina</p>
-                <p className="text-sm text-[#8B7355]">Masszőr, kineziológus - Angyali Szalon</p>
+                <p className="text-sm text-[#8B7355]">Masszőr · Kineziológus · Angyali Szalon</p>
               </div>
             </div>
           </div>
@@ -1769,7 +1790,7 @@ function BookingSection() {
                   {isSubmitting ? (
                     <>
                       <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin mr-3" />
-                      Átirányítás a Stripe-hoz... v1.2
+                      Átirányítás a Stripe-hoz...
                     </>
                   ) : (
                     <>
@@ -2175,8 +2196,82 @@ function BookingSection() {
   );
 }
 
+// Privacy Policy Modal
+function PrivacyPolicyModal({ onClose }: { onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={onClose}>
+      <div
+        className="bg-white rounded-3xl max-w-2xl w-full max-h-[85vh] overflow-y-auto shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="sticky top-0 bg-white rounded-t-3xl border-b border-[#E8D4C0] px-6 py-4 flex items-center justify-between">
+          <h2 className="text-xl font-bold text-[#4A3F35]">Adatvédelmi tájékoztató</h2>
+          <button onClick={onClose} aria-label="Bezárás" className="p-2 rounded-full hover:bg-[#F5E6D8] transition-colors">
+            <X className="w-5 h-5 text-[#4A3F35]" />
+          </button>
+        </div>
+        <div className="px-6 py-6 space-y-5 text-sm text-[#4A3F35] leading-relaxed">
+          <p className="text-[#8B7355]">Hatályos: 2024. január 1-től</p>
+
+          <div>
+            <h3 className="font-semibold text-base mb-2">1. Adatkezelő</h3>
+            <p>Makra Edina (Angyali Szalon), 2120 Dunakeszi, Kolonics György utca 2/B.<br />
+            E-mail: <a href="mailto:dunakeszimasszor@gmail.com" className="text-[#D4854A] hover:underline">dunakeszimasszor@gmail.com</a><br />
+            Telefon: +36 30 487 7883</p>
+          </div>
+
+          <div>
+            <h3 className="font-semibold text-base mb-2">2. Kezelt személyes adatok</h3>
+            <ul className="list-disc list-inside space-y-1 text-[#4A3F35]">
+              <li>Teljes név</li>
+              <li>E-mail cím</li>
+              <li>Telefonszám</li>
+              <li>Foglalási adatok (időpont, kezelés típusa)</li>
+              <li>Esetleges megjegyzések, egészségügyi preferenciák</li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="font-semibold text-base mb-2">3. Az adatkezelés célja és jogalapja</h3>
+            <p>Az adatokat kizárólag az időpontfoglalás kezelése, visszaigazolása és a kezelés megszervezése céljából kezeljük. Az adatkezelés jogalapja a szerződés teljesítése (GDPR 6. cikk (1) bekezdés b) pont).</p>
+          </div>
+
+          <div>
+            <h3 className="font-semibold text-base mb-2">4. Adatmegőrzési idő</h3>
+            <p>A személyes adatokat a foglalás teljesítésétől számított 5 évig őrizzük meg, a számviteli kötelezettségeknek megfelelően.</p>
+          </div>
+
+          <div>
+            <h3 className="font-semibold text-base mb-2">5. Az érintett jogai</h3>
+            <ul className="list-disc list-inside space-y-1">
+              <li>Hozzáférés joga: kérheti a tárolt adatairól szóló tájékoztatást</li>
+              <li>Helyesbítés joga: kérheti a pontatlan adatok javítását</li>
+              <li>Törlés joga: kérheti adatai törlését</li>
+              <li>Tiltakozás joga: tiltakozhat az adatkezelés ellen</li>
+            </ul>
+            <p className="mt-2">Kéréseit az <a href="mailto:dunakeszimasszor@gmail.com" className="text-[#D4854A] hover:underline">dunakeszimasszor@gmail.com</a> e-mail címre küldheti.</p>
+          </div>
+
+          <div>
+            <h3 className="font-semibold text-base mb-2">6. Adatbiztonság</h3>
+            <p>Az adatokat biztonságos, titkosított csatornákon (HTTPS) továbbítjuk. Harmadik félnek csak a foglalás feldolgozásához szükséges mértékben (pl. fizetési szolgáltató: Stripe) adjuk át az adatokat.</p>
+          </div>
+
+          <div>
+            <h3 className="font-semibold text-base mb-2">7. Jogorvoslat</h3>
+            <p>Panasszal a Nemzeti Adatvédelmi és Információszabadság Hatósághoz fordulhat:<br />
+            <a href="https://www.naih.hu" target="_blank" rel="noopener noreferrer" className="text-[#D4854A] hover:underline">www.naih.hu</a> · 1055 Budapest, Falk Miksa utca 9–11.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // Footer/Contact Section
 function FooterSection() {
+  const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
+
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -2257,8 +2352,12 @@ function FooterSection() {
                 <MapPin className="w-5 h-5" />
                 <span>Dunakeszi, Kolonics György utca 2/B, 2120<br /><small>Kapucsengő: 1/43</small></span>
               </li>
+              <li className="flex items-center gap-3 text-white/70">
+                <Clock className="w-5 h-5 flex-shrink-0" />
+                <span>Hétfő–Péntek: 9:00–18:00</span>
+              </li>
               <li className="flex items-start gap-3 text-white/70">
-                <svg className="w-5 h-5 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-5 h-5 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <span>Bankszámla:<br />10700581-73054012-51100005</span>
@@ -2304,6 +2403,12 @@ function FooterSection() {
               © {new Date().getFullYear()} Dunakeszi Masszázs - Angyali Szalon – Makra Edina | Minden jog fenntartva
             </p>
             <div className="flex items-center gap-6">
+              <button
+                onClick={() => setShowPrivacyPolicy(true)}
+                className="text-white/50 hover:text-[#D4854A] transition-colors text-sm"
+              >
+                Adatvédelmi tájékoztató
+              </button>
               <a
                 href="/#admin"
                 className="text-white/50 hover:text-[#D4854A] transition-colors text-sm"
@@ -2312,6 +2417,7 @@ function FooterSection() {
               </a>
               <button
                 onClick={scrollToTop}
+                aria-label="Vissza a tetejére"
                 className="flex items-center gap-2 text-white/50 hover:text-[#D4854A] transition-colors text-sm"
               >
                 <span>Vissza a tetejére</span>
@@ -2321,6 +2427,7 @@ function FooterSection() {
           </div>
         </div>
       </div>
+      {showPrivacyPolicy && <PrivacyPolicyModal onClose={() => setShowPrivacyPolicy(false)} />}
     </footer>
   );
 }
@@ -2792,7 +2899,7 @@ function AdminPage() {
     finally { setIsBlockingSlot(false); }
   };
 
-  const ADMIN_PASSWORD = 'Edina2025!';
+  const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'Edina2025!';
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
