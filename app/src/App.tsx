@@ -1487,6 +1487,8 @@ function BookingSection() {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
   const [step, setStep] = useState<'form' | 'payment'>('form');
+  const [slotsForDate, setSlotsForDate] = useState<Record<string, boolean> | null>(null);
+  const [isLoadingSlots, setIsLoadingSlots] = useState(false);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -1505,6 +1507,18 @@ function BookingSection() {
 
     return () => observer.disconnect();
   }, []);
+
+  const loadSlotsForDate = async (date: string) => {
+    if (!date) { setSlotsForDate(null); return; }
+    setIsLoadingSlots(true);
+    try {
+      const res = await fetch(`${SCRIPT_URL}?action=getSlotsForDate&date=${date}`);
+      const data = await res.json();
+      if (data.success && data.data?.slots) setSlotsForDate(data.data.slots);
+      else setSlotsForDate(null);
+    } catch { setSlotsForDate(null); }
+    finally { setIsLoadingSlots(false); }
+  };
 
   const servicesList = [
     { name: 'Frissítő masszázs', price: 15000 },
@@ -1583,6 +1597,10 @@ function BookingSection() {
 
   const handleContinueToPayment = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.time) {
+      toast.error('Kérlek válassz időpontot!');
+      return;
+    }
     if (!acceptedTerms) {
       toast.error('Kérlek, fogadd el az általános szerződési feltételeket');
       return;
@@ -1934,7 +1952,7 @@ function BookingSection() {
                   <Label htmlFor="date" className="text-[#4A3F35]">
                     Dátum <span className="text-red-500">*</span>
                   </Label>
-                  <div className="relative max-w-[200px]">
+                  <div className="relative">
                     <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#8B7355]" />
                     <Input
                       id="date"
@@ -1942,35 +1960,59 @@ function BookingSection() {
                       min={minDate}
                       max={maxDateStr}
                       value={formData.date}
-                      onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                      onChange={(e) => {
+                        setFormData({ ...formData, date: e.target.value, time: '' });
+                        loadSlotsForDate(e.target.value);
+                      }}
                       required
                       className="pl-10 border-[#E8D4C0] focus:border-[#D4854A] focus:ring-[#D4854A]"
                     />
                   </div>
                 </div>
 
-                {/* Time - Fixed Dropdown */}
-                <div className="space-y-2">
-                  <Label htmlFor="time" className="text-[#4A3F35]">
+                {/* Time - Live Slot Availability */}
+                <div className="space-y-2 md:col-span-2">
+                  <Label className="text-[#4A3F35]">
                     Időpont <span className="text-red-500">*</span>
                   </Label>
-                  <div className="relative">
-                    <select
-                      id="time"
-                      value={formData.time}
-                      onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-                      required
-                      className="w-full h-10 pl-3 pr-12 border border-[#E8D4C0] rounded-md focus:border-[#D4854A] focus:ring-1 focus:ring-[#D4854A] bg-white text-[#4A3F35] appearance-none cursor-pointer"
-                    >
-                      <option value="">Válassz időpontot</option>
-                      {timeSlots.map((time) => (
-                        <option key={time} value={time}>
-                          {time}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#8B7355] pointer-events-none" />
-                  </div>
+                  {!formData.date ? (
+                    <p className="text-sm text-[#8B7355] py-2 italic">Először válassz dátumot az elérhető időpontok megtekintéséhez.</p>
+                  ) : isLoadingSlots ? (
+                    <div className="flex items-center gap-2 text-[#8B7355] py-2">
+                      <div className="w-4 h-4 border-2 border-[#D4854A]/30 border-t-[#D4854A] rounded-full animate-spin" />
+                      <span className="text-sm">Szabad időpontok betöltése...</span>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                      {timeSlots.map(slot => {
+                        const available = slotsForDate ? slotsForDate[slot] !== false : true;
+                        const selected = formData.time === slot;
+                        return (
+                          <button
+                            key={slot}
+                            type="button"
+                            disabled={!available}
+                            onClick={() => available && setFormData({ ...formData, time: slot })}
+                            className={`py-2 px-1 rounded-lg text-sm font-medium border-2 transition-all ${
+                              selected
+                                ? 'bg-[#D4854A] border-[#D4854A] text-white shadow-warm'
+                                : available
+                                  ? 'bg-white border-[#E8D4C0] text-[#4A3F35] hover:border-[#D4854A] hover:text-[#D4854A]'
+                                  : 'bg-[#F5E6D8]/50 border-[#E8D4C0] text-[#8B7355]/40 cursor-not-allowed line-through'
+                            }`}
+                          >
+                            {slot}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                  {formData.date && !isLoadingSlots && (
+                    <p className="text-xs text-[#8B7355] flex items-center gap-1">
+                      <span className="inline-block w-3 h-3 rounded border-2 border-[#E8D4C0] bg-[#F5E6D8]/50" />
+                      Áthúzott időpont = már foglalt
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -2354,7 +2396,7 @@ function FooterSection() {
               </li>
               <li className="flex items-center gap-3 text-white/70">
                 <Clock className="w-5 h-5 flex-shrink-0" />
-                <span>Hétfő–Péntek: 9:00–18:00</span>
+                <span>Hétfő–Szombat: 8:30–18:30</span>
               </li>
               <li className="flex items-start gap-3 text-white/70">
                 <svg className="w-5 h-5 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
