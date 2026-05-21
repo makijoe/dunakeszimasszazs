@@ -2033,7 +2033,7 @@ function sendBookingConfirmationToCustomer(data, recurringCount, recurringType, 
   
   if (recurringCount > 1) {
     customerBody += '⚠️ FONTOS INFORMÁCIÓ ISMÉTLŐDŐ FOGLALÁSHOZ:\n';
-    customerBody += '• Minden alkalom előtt 24 órával emlékeztetőt küldök\n';
+    customerBody += '• Minden alkalom előtt 24 órával automatikus emlékeztetőt küldünk\n';
     customerBody += '• Ha bármelyik alkalomra nem tudsz eljönni, kérem, 24 órával előtte jelezd\n';
     customerBody += '• Az időpontok módosíthatók 24 óra előtt ingyenesen\n';
     if (discountPercent > 0) {
@@ -2885,4 +2885,206 @@ function buildEventDescription(data, sessionNum, totalSessions, packageId, sessi
   }
   
   return desc;
+}
+
+// ============================================
+// 24-Hour Reminder System
+// Run setupDailyReminderTrigger() ONCE manually
+// to schedule sendDailyReminders() every morning at 9 AM.
+// ============================================
+
+// Call this ONCE from the Apps Script editor: Run → setupDailyReminderTrigger
+function setupDailyReminderTrigger() {
+  // Delete any existing reminder triggers to avoid duplicates
+  var triggers = ScriptApp.getProjectTriggers();
+  for (var i = 0; i < triggers.length; i++) {
+    if (triggers[i].getHandlerFunction() === 'sendDailyReminders') {
+      ScriptApp.deleteTrigger(triggers[i]);
+    }
+  }
+  // Create a new daily trigger at 9:00 AM Budapest time
+  ScriptApp.newTrigger('sendDailyReminders')
+    .timeBased()
+    .everyDays(1)
+    .atHour(9)
+    .inTimezone(TZ)
+    .create();
+  Logger.log('Daily reminder trigger set: sendDailyReminders runs every day at 9:00 AM Budapest time.');
+}
+
+// Sends reminder emails for all confirmed bookings scheduled for TOMORROW.
+// Also sends Edina a daily summary of tomorrow's full schedule.
+function sendDailyReminders() {
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var bookingsSheet = ss.getSheetByName(SHEETS.BOOKINGS);
+    var customersSheet = ss.getSheetByName(SHEETS.CUSTOMERS);
+
+    if (!bookingsSheet || !customersSheet) {
+      Logger.log('sendDailyReminders: required sheets not found.');
+      return;
+    }
+
+    // Build customer email + phone lookup map
+    var custData = customersSheet.getDataRange().getValues();
+    var customerMap = {};
+    for (var k = 1; k < custData.length; k++) {
+      customerMap[custData[k][0]] = {
+        email: custData[k][2],
+        phone: custData[k][3]
+      };
+    }
+
+    // Tomorrow's date string (yyyy-MM-dd)
+    var tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    var tomorrowStr = formatDate(tomorrow);
+    var tomorrowDisplay = Utilities.formatDate(tomorrow, TZ, 'yyyy. MMMM dd. (EEEE)');
+
+    var bookingsData = bookingsSheet.getDataRange().getValues();
+    var tomorrowBookings = [];
+
+    for (var i = 1; i < bookingsData.length; i++) {
+      var row = bookingsData[i];
+      var bookingId   = row[0];
+      var customerId  = row[1];
+      var customerName = row[2];
+      var service     = row[3];
+      var dateVal     = row[4];
+      var timeVal     = row[5];
+      var status      = row[6];
+
+      // Only confirmed bookings
+      if (!status || status.toString().toLowerCase() === 'cancelled') continue;
+
+      var dateStr = typeof dateVal === 'string' ? dateVal.slice(0, 10) : formatDate(new Date(dateVal));
+      if (dateStr !== tomorrowStr) continue;
+
+      var timeStr = formatTimeFromSheet(timeVal);
+      var custInfo = customerMap[customerId] || {};
+      var email = custInfo.email || '';
+
+      tomorrowBookings.push({
+        bookingId: bookingId,
+        customerName: customerName,
+        email: email,
+        phone: custInfo.phone || '',
+        service: service,
+        time: timeStr
+      });
+
+      // Send reminder to customer (only if we have an email)
+      if (email) {
+        sendReminderToCustomer(customerName, email, service, tomorrowStr, tomorrowDisplay, timeStr);
+      }
+    }
+
+    // Sort by time for the Edina summary
+    tomorrowBookings.sort(function(a, b) { return a.time.localeCompare(b.time); });
+
+    // Send daily schedule summary to Edina
+    sendDailyScheduleToEdina(tomorrowDisplay, tomorrowBookings);
+
+    Logger.log('sendDailyReminders: ' + tomorrowBookings.length + ' reminder(s) sent for ' + tomorrowStr);
+
+  } catch (e) {
+    logError('sendDailyReminders', e);
+  }
+}
+
+function sendReminderToCustomer(name, email, service, dateStr, dateDisplay, time) {
+  var subject = '⏰ Emlékeztető: holnap ' + time + '-kor masszázs az Angyali Szalonban';
+
+  var body = 'Kedves ' + name + '!\n\n';
+  body += 'Emlékeztetünk, hogy holnap időpontod van az Angyali Szalonban:\n\n';
+  body += '═══════════════════════════════════════\n';
+  body += '💆 KEZELÉS: ' + service + '\n';
+  body += '📅 DÁTUM: ' + dateDisplay + '\n';
+  body += '⏰ IDŐPONT: ' + time + '\n';
+  body += '📍 CÍM: Dunakeszi, Kolonics György utca 2/B, 2120\n';
+  body += '🔔 KAPUCSENGŐ: 1/43\n';
+  body += '═══════════════════════════════════════\n\n';
+  body += '⚠️ Ha nem tudsz eljönni, kérlek jelezd 24 óráig:\n';
+  body += '📞 +36 30 487 7883\n';
+  body += '📧 dunakeszimasszor@gmail.com\n\n';
+  body += 'Foglalásaidat online is kezelheted:\n';
+  body += '🔗 https://dunakeszimasszazs.hu/#foglalaskezeles\n\n';
+  body += 'Várlak szeretettel!\n\n';
+  body += 'Makra Edina\n';
+  body += 'Dunakeszi Masszázs - Angyali Szalon';
+
+  var html = buildSimpleHtml(
+    'Emlékeztető – holnapi időpontod',
+    '⏰',
+    '<table style="width:100%;border-collapse:collapse;font-size:14px;">' +
+      '<tr><td style="padding:8px 4px;color:#888;width:40%;">Kezelés</td><td style="padding:8px 4px;font-weight:bold;color:#333;">' + service + '</td></tr>' +
+      '<tr style="background:#faf7f4;"><td style="padding:8px 4px;color:#888;">Dátum</td><td style="padding:8px 4px;font-weight:bold;color:#333;">' + dateDisplay + '</td></tr>' +
+      '<tr><td style="padding:8px 4px;color:#888;">Időpont</td><td style="padding:8px 4px;font-weight:bold;color:#D4854A;font-size:18px;">' + time + '</td></tr>' +
+      '<tr style="background:#faf7f4;"><td style="padding:8px 4px;color:#888;">Cím</td><td style="padding:8px 4px;color:#333;">Dunakeszi, Kolonics György utca 2/B<br><small>Kapucsengő: 1/43</small></td></tr>' +
+    '</table>' +
+    '<div style="margin-top:20px;padding:14px;background:#fff8f4;border-left:3px solid #D4854A;border-radius:4px;font-size:13px;color:#666;">' +
+      '⚠️ Ha nem tudsz eljönni, kérlek 24 óráig jelezd: <strong>+36 30 487 7883</strong>' +
+    '</div>' +
+    '<div style="margin-top:16px;text-align:center;">' +
+      '<a href="https://dunakeszimasszazs.hu/#foglalaskezeles" style="display:inline-block;background:#D4854A;color:#fff;padding:10px 24px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:bold;">Foglalásaim kezelése</a>' +
+    '</div>'
+  );
+
+  sendEmail_({ to: email, subject: subject, body: body, htmlBody: html, name: 'Dunakeszi Masszázs - Angyali Szalon', replyTo: 'dunakeszimasszor@gmail.com' });
+}
+
+function sendDailyScheduleToEdina(dateDisplay, bookings) {
+  var subject = bookings.length > 0
+    ? '📅 Holnapi napirend – ' + bookings.length + ' vendég (' + dateDisplay + ')'
+    : '📅 Holnap nincs foglalás (' + dateDisplay + ')';
+
+  var body = 'Kedves Edina!\n\n';
+  body += 'Holnapi napirended (' + dateDisplay + '):\n\n';
+
+  if (bookings.length === 0) {
+    body += 'Holnapra nincs foglalás.\n';
+  } else {
+    body += '═══════════════════════════════════════\n';
+    for (var i = 0; i < bookings.length; i++) {
+      var b = bookings[i];
+      body += (i + 1) + '. ' + b.time + ' – ' + b.customerName + ' (' + b.service + ')\n';
+      if (b.phone) body += '   📞 ' + b.phone + '\n';
+      if (b.email) body += '   📧 ' + b.email + '\n';
+    }
+    body += '═══════════════════════════════════════\n';
+    body += '\nÖsszesen: ' + bookings.length + ' vendég\n';
+  }
+
+  body += '\nJó munkát kívánunk!\nDunakeszi Masszázs Rendszer';
+
+  var rows = '';
+  if (bookings.length === 0) {
+    rows = '<tr><td colspan="3" style="padding:16px;text-align:center;color:#888;font-style:italic;">Holnapra nincs foglalás</td></tr>';
+  } else {
+    for (var j = 0; j < bookings.length; j++) {
+      var bk = bookings[j];
+      var bg = j % 2 === 0 ? '#fff' : '#faf7f4';
+      rows += '<tr style="background:' + bg + ';">' +
+        '<td style="padding:10px 8px;font-weight:bold;color:#D4854A;font-size:16px;">' + bk.time + '</td>' +
+        '<td style="padding:10px 8px;font-weight:bold;color:#333;">' + bk.customerName + '</td>' +
+        '<td style="padding:10px 8px;color:#666;">' + bk.service + (bk.phone ? '<br><small>📞 ' + bk.phone + '</small>' : '') + '</td>' +
+      '</tr>';
+    }
+  }
+
+  var html = buildSimpleHtml(
+    'Holnapi napirend – ' + dateDisplay,
+    '📅',
+    '<table style="width:100%;border-collapse:collapse;font-size:14px;">' +
+      '<thead><tr style="background:#f0e8df;">' +
+        '<th style="padding:8px;text-align:left;color:#888;font-weight:600;">Időpont</th>' +
+        '<th style="padding:8px;text-align:left;color:#888;font-weight:600;">Vendég</th>' +
+        '<th style="padding:8px;text-align:left;color:#888;font-weight:600;">Kezelés</th>' +
+      '</tr></thead>' +
+      '<tbody>' + rows + '</tbody>' +
+    '</table>' +
+    (bookings.length > 0 ? '<p style="margin-top:14px;text-align:center;color:#888;font-size:13px;">Összesen: <strong>' + bookings.length + ' vendég</strong></p>' : '')
+  );
+
+  sendEmail_({ to: 'dunakeszimasszor@gmail.com', subject: subject, body: body, htmlBody: html, name: 'Dunakeszi Masszázs - Rendszer', replyTo: 'dunakeszimasszor@gmail.com' });
 }
