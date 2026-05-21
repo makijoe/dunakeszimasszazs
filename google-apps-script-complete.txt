@@ -2902,14 +2902,15 @@ function setupDailyReminderTrigger() {
       ScriptApp.deleteTrigger(triggers[i]);
     }
   }
-  // Create a new daily trigger at 9:00 AM Budapest time
+  // Create a new daily trigger at 8:00 AM Budapest time
+  // (Apps Script only supports whole hours — 8 AM is closest to the 8:30 first slot)
   ScriptApp.newTrigger('sendDailyReminders')
     .timeBased()
     .everyDays(1)
-    .atHour(9)
+    .atHour(8)
     .inTimezone(TZ)
     .create();
-  Logger.log('Daily reminder trigger set: sendDailyReminders runs every day at 9:00 AM Budapest time.');
+  Logger.log('Daily reminder trigger set: sendDailyReminders runs every day at 8:00 AM Budapest time.');
 }
 
 // Sends reminder emails for all confirmed bookings scheduled for TOMORROW.
