@@ -114,6 +114,8 @@ function Navigation() {
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label={isMobileMenuOpen ? 'Menü bezárása' : 'Menü megnyitása'}
+            aria-expanded={isMobileMenuOpen}
             className="lg:hidden p-2 rounded-lg hover:bg-[#F5E6D8] transition-colors"
           >
             {isMobileMenuOpen ? (
@@ -271,6 +273,8 @@ function HeroSection() {
                   src="https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=800&h=1000&fit=crop"
                   alt="Relaxáló masszázs környezet az Angyali Szalonban"
                   className="w-full h-[500px] lg:h-[600px] object-cover"
+                  loading="eager"
+                  fetchPriority="high"
                 />
                 {/* Overlay Gradient */}
                 <div className="absolute inset-0 bg-gradient-to-t from-[#4A3F35]/30 via-transparent to-transparent" />
@@ -430,6 +434,7 @@ function ServiceModal({ service, isOpen, onClose }: { service: typeof services[0
             src={service.image}
             alt={service.name}
             className="w-full h-full object-cover"
+            loading="lazy"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
           <div className="absolute bottom-4 left-4 right-4">
@@ -476,11 +481,13 @@ function ServiceModal({ service, isOpen, onClose }: { service: typeof services[0
                           src={pair.before}
                           alt="Előtte"
                           className="w-full h-32 object-cover rounded-lg"
+                          loading="lazy"
                         />
                         <span className="absolute bottom-2 left-2 bg-[#8B9A7C]/80 text-white text-xs px-2 py-1 rounded">Utána</span>
                       </div>
                       <div className="relative">
                         <img
+                          loading="lazy"
                           src={pair.after}
                           alt="Utána"
                           className="w-full h-32 object-cover rounded-lg"
@@ -573,6 +580,7 @@ function ServicesSection() {
                   src={service.image}
                   alt={service.name}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  loading="lazy"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#4A3F35]/60 via-transparent to-transparent" />
                 <div className="absolute bottom-4 left-4 right-4">
@@ -660,7 +668,7 @@ const services = [
     shortDescription: 'Ősi, rendkívül pihentető technika, amely a fejen, nyakon és vállakon felhalmozódott feszültséget oldja.',
     description: 'Az indiai fejmasszázs egy ősi, gyengéd és rendkívül megnyugtató technika, amely segít oldani a fejben, nyakban és vállakban felhalmozódott feszültséget. Tökéletes választás stressz, túlterheltség vagy fejfájás esetén.',
     benefits: ['Fejfájás csökkentése', 'Mentális frissesség', 'Stresszoldás', 'Jobb koncentráció'],
-    image: '/images/indiai-fejmasszazs.png'
+    image: '/images/indiai-fejmasszazs.jpeg'
   },
   {
     id: 'nehezfem',
@@ -888,7 +896,7 @@ function TVSection() {
                 </div>
                 <div>
                   <h3 className="text-xl font-bold text-[#4A3F35]">TV2</h3>
-                  <p className="text-[#8B7355]">Mokka műsor</p>
+                  <p className="text-[#8B7355]">Mokka műsor · 2024</p>
                 </div>
               </div>
               <p className="text-[#4A3F35] leading-relaxed">
@@ -919,7 +927,7 @@ function TVSection() {
                 </div>
                 <div>
                   <h3 className="text-xl font-bold text-[#4A3F35]">RTL Klub</h3>
-                  <p className="text-[#8B7355]">Reggeli műsor</p>
+                  <p className="text-[#8B7355]">Reggeli műsor · 2024</p>
                 </div>
               </div>
               <p className="text-[#4A3F35] leading-relaxed">
@@ -960,32 +968,38 @@ function TestimonialsSection() {
     {
       text: 'Nagyon ajánlom Edina masszázsát. Többször is voltam nála, mindig figyelmes, kedves és profin végzi a munkáját. Igazi kikapcsolódás, masszázs közben teljesen ellazulok.',
       author: 'Judit Derzsényi',
-      source: 'Google'
+      source: 'Google',
+      date: '2025. március'
     },
     {
       text: 'Egy hely az igazi kikapcsolódásra és feltöltődésre. Edina a munkájában felkészült, nagy szakmai tapasztalattal rendelkezik, nagyon kedves, udvarias, kommunikatív. Csak ajánlani tudom!',
       author: 'Maria Lutring Moser',
-      source: 'Google'
+      source: 'Google',
+      date: '2025. január'
     },
     {
       text: 'Edinánál voltam masszázson, és egyszerűen fantasztikus élmény volt! Nagyon profi, kedves és figyelmes – azonnal érezni lehetett, hogy ért a szakmájához.',
       author: 'Zoltán',
-      source: 'Google'
+      source: 'Google',
+      date: '2024. november'
     },
     {
       text: 'Minden alkalommal feltöltődve, megújulva távozom. Nem csak a szakértelme kiemelkedő, de a kedvessége és figyelmessége is lenyűgöző.',
       author: 'Xavér Szalai',
-      source: 'Google'
+      source: 'Google',
+      date: '2025. február'
     },
     {
       text: 'Edina egy nagyon tapasztalt és figyelmes masszőr. A kezelés alatt teljesen el tudtam lazulni, és elmúltak a panaszaim. Minden szempontból feltöltő élmény volt – biztosan visszatérek.',
       author: 'Ildikó H.',
-      source: 'Google'
+      source: 'Google',
+      date: '2025. április'
     },
     {
       text: 'Gépi nyirokmasszázson és kineziológiai tanácsadáson vettem részt, és csak a legjobbakat tudom mondani! A nyirokmasszázs rendkívül kellemes és hatékony volt.',
       author: 'Judit Spisák',
-      source: 'Google'
+      source: 'Google',
+      date: '2024. december'
     }
   ];
 
@@ -1062,9 +1076,14 @@ function TestimonialsSection() {
                 "{testimonial.text}"
               </p>
 
-              <p className="text-sm font-medium text-[#4A3F35]">
-                — {testimonial.author}
-              </p>
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium text-[#4A3F35]">
+                  — {testimonial.author}
+                </p>
+                {testimonial.date && (
+                  <p className="text-xs text-[#8B7355]">{testimonial.date}</p>
+                )}
+              </div>
             </div>
           ))}
         </div>
@@ -1177,6 +1196,7 @@ function OrganoCoffeeSection() {
               {/* Coffee Image */}
               <div className="relative rounded-2xl overflow-hidden shadow-warm">
                 <img
+                  loading="lazy"
                   src="/images/organo-kave.jpeg"
                   alt="Organo kávé választék - Fekete kávé, Gourmet Latte, Mocha Cappuccino, Forró csokoládé"
                   className="w-full h-64 object-cover"
@@ -1189,6 +1209,7 @@ function OrganoCoffeeSection() {
               {/* Green Tea Image */}
               <div className="relative rounded-2xl overflow-hidden shadow-warm">
                 <img
+                  loading="lazy"
                   src="/images/organo-zoldtea.jpeg"
                   alt="Organo Reishi Ganoderma zöld tea"
                   className="w-full h-64 object-cover"
@@ -1236,6 +1257,7 @@ function AboutSection() {
           <div className={`relative transition-all duration-700 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-10'}`}>
             <div className="relative rounded-3xl overflow-hidden shadow-warm-lg">
               <img
+                loading="lazy"
                 src="/images/edina.jpeg"
                 alt="Makra Edina - Masszőr, kineziológus"
                 className="w-full h-[400px] lg:h-[500px] object-cover"
@@ -1274,13 +1296,21 @@ function AboutSection() {
               </p>
             </div>
 
-            <div className="flex items-center gap-4 pt-4">
+            <div className="flex flex-wrap gap-2 pt-2">
+              {['Okleveles masszőr', 'Kineziológus', 'Gépi nyirokmasszázs', 'BEMER terapeuta', 'TV2 & RTL szereplő'].map((badge) => (
+                <span key={badge} className="px-3 py-1 bg-[#D4854A]/10 text-[#D4854A] text-xs font-medium rounded-full">
+                  {badge}
+                </span>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-4 pt-2">
               <div className="w-12 h-12 bg-gradient-to-br from-[#D4854A] to-[#B87333] rounded-full flex items-center justify-center">
                 <Heart className="w-6 h-6 text-white" />
               </div>
               <div>
                 <p className="font-semibold text-[#4A3F35]">Makra Edina</p>
-                <p className="text-sm text-[#8B7355]">Masszőr, kineziológus - Angyali Szalon</p>
+                <p className="text-sm text-[#8B7355]">Masszőr · Kineziológus · Angyali Szalon</p>
               </div>
             </div>
           </div>
@@ -1348,6 +1378,7 @@ function GallerySection() {
                   src={image.src}
                   alt={image.alt}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  loading="lazy"
                 />
               </div>
               <div className="absolute inset-0 bg-gradient-to-t from-[#4A3F35]/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -1401,6 +1432,7 @@ function ProductsSection() {
           {/* Product Image */}
           <div className="relative rounded-2xl overflow-hidden shadow-warm-lg">
             <img
+              loading="lazy"
               src="/images/professional-products.jpeg"
               alt="Professzionális kozmetikai termékek - Magic brand"
               className="w-full h-auto object-cover"
@@ -1466,6 +1498,8 @@ function BookingSection() {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
   const [step, setStep] = useState<'form' | 'payment'>('form');
+  const [slotsForDate, setSlotsForDate] = useState<Record<string, boolean> | null>(null);
+  const [isLoadingSlots, setIsLoadingSlots] = useState(false);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -1484,6 +1518,18 @@ function BookingSection() {
 
     return () => observer.disconnect();
   }, []);
+
+  const loadSlotsForDate = async (date: string) => {
+    if (!date) { setSlotsForDate(null); return; }
+    setIsLoadingSlots(true);
+    try {
+      const res = await fetch(`${SCRIPT_URL}?action=getSlotsForDate&date=${date}`);
+      const data = await res.json();
+      if (data.success && data.data?.slots) setSlotsForDate(data.data.slots);
+      else setSlotsForDate(null);
+    } catch { setSlotsForDate(null); }
+    finally { setIsLoadingSlots(false); }
+  };
 
   const servicesList = [
     { name: 'Frissítő masszázs', price: 15000 },
@@ -1562,6 +1608,10 @@ function BookingSection() {
 
   const handleContinueToPayment = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.time) {
+      toast.error('Kérlek válassz időpontot!');
+      return;
+    }
     if (!acceptedTerms) {
       toast.error('Kérlek, fogadd el az általános szerződési feltételeket');
       return;
@@ -1769,7 +1819,7 @@ function BookingSection() {
                   {isSubmitting ? (
                     <>
                       <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin mr-3" />
-                      Átirányítás a Stripe-hoz... v1.2
+                      Átirányítás a Stripe-hoz...
                     </>
                   ) : (
                     <>
@@ -1804,7 +1854,7 @@ function BookingSection() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-[#8B7355]">Számlaszám:</span>
-                      <span className="text-[#4A3F35] font-medium font-mono text-xs">10700581-730554012-511100005</span>
+                      <span className="text-[#4A3F35] font-medium font-mono text-xs">10700581-73054012-51100005</span>
                     </div>
                     <div className="flex justify-between items-center bg-white rounded-lg px-3 py-2">
                       <span className="text-[#8B7355]">Összeg:</span>
@@ -1913,7 +1963,7 @@ function BookingSection() {
                   <Label htmlFor="date" className="text-[#4A3F35]">
                     Dátum <span className="text-red-500">*</span>
                   </Label>
-                  <div className="relative max-w-[200px]">
+                  <div className="relative">
                     <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#8B7355]" />
                     <Input
                       id="date"
@@ -1921,35 +1971,59 @@ function BookingSection() {
                       min={minDate}
                       max={maxDateStr}
                       value={formData.date}
-                      onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                      onChange={(e) => {
+                        setFormData({ ...formData, date: e.target.value, time: '' });
+                        loadSlotsForDate(e.target.value);
+                      }}
                       required
                       className="pl-10 border-[#E8D4C0] focus:border-[#D4854A] focus:ring-[#D4854A]"
                     />
                   </div>
                 </div>
 
-                {/* Time - Fixed Dropdown */}
-                <div className="space-y-2">
-                  <Label htmlFor="time" className="text-[#4A3F35]">
+                {/* Time - Live Slot Availability */}
+                <div className="space-y-2 md:col-span-2">
+                  <Label className="text-[#4A3F35]">
                     Időpont <span className="text-red-500">*</span>
                   </Label>
-                  <div className="relative">
-                    <select
-                      id="time"
-                      value={formData.time}
-                      onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-                      required
-                      className="w-full h-10 pl-3 pr-12 border border-[#E8D4C0] rounded-md focus:border-[#D4854A] focus:ring-1 focus:ring-[#D4854A] bg-white text-[#4A3F35] appearance-none cursor-pointer"
-                    >
-                      <option value="">Válassz időpontot</option>
-                      {timeSlots.map((time) => (
-                        <option key={time} value={time}>
-                          {time}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#8B7355] pointer-events-none" />
-                  </div>
+                  {!formData.date ? (
+                    <p className="text-sm text-[#8B7355] py-2 italic">Először válassz dátumot az elérhető időpontok megtekintéséhez.</p>
+                  ) : isLoadingSlots ? (
+                    <div className="flex items-center gap-2 text-[#8B7355] py-2">
+                      <div className="w-4 h-4 border-2 border-[#D4854A]/30 border-t-[#D4854A] rounded-full animate-spin" />
+                      <span className="text-sm">Szabad időpontok betöltése...</span>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                      {timeSlots.map(slot => {
+                        const available = slotsForDate ? slotsForDate[slot] !== false : true;
+                        const selected = formData.time === slot;
+                        return (
+                          <button
+                            key={slot}
+                            type="button"
+                            disabled={!available}
+                            onClick={() => available && setFormData({ ...formData, time: slot })}
+                            className={`py-2 px-1 rounded-lg text-sm font-medium border-2 transition-all ${
+                              selected
+                                ? 'bg-[#D4854A] border-[#D4854A] text-white shadow-warm'
+                                : available
+                                  ? 'bg-white border-[#E8D4C0] text-[#4A3F35] hover:border-[#D4854A] hover:text-[#D4854A]'
+                                  : 'bg-[#F5E6D8]/50 border-[#E8D4C0] text-[#8B7355]/40 cursor-not-allowed line-through'
+                            }`}
+                          >
+                            {slot}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                  {formData.date && !isLoadingSlots && (
+                    <p className="text-xs text-[#8B7355] flex items-center gap-1">
+                      <span className="inline-block w-3 h-3 rounded border-2 border-[#E8D4C0] bg-[#F5E6D8]/50" />
+                      Áthúzott időpont = már foglalt
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -2175,8 +2249,82 @@ function BookingSection() {
   );
 }
 
+// Privacy Policy Modal
+function PrivacyPolicyModal({ onClose }: { onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={onClose}>
+      <div
+        className="bg-white rounded-3xl max-w-2xl w-full max-h-[85vh] overflow-y-auto shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="sticky top-0 bg-white rounded-t-3xl border-b border-[#E8D4C0] px-6 py-4 flex items-center justify-between">
+          <h2 className="text-xl font-bold text-[#4A3F35]">Adatvédelmi tájékoztató</h2>
+          <button onClick={onClose} aria-label="Bezárás" className="p-2 rounded-full hover:bg-[#F5E6D8] transition-colors">
+            <X className="w-5 h-5 text-[#4A3F35]" />
+          </button>
+        </div>
+        <div className="px-6 py-6 space-y-5 text-sm text-[#4A3F35] leading-relaxed">
+          <p className="text-[#8B7355]">Hatályos: 2024. január 1-től</p>
+
+          <div>
+            <h3 className="font-semibold text-base mb-2">1. Adatkezelő</h3>
+            <p>Makra Edina (Angyali Szalon), 2120 Dunakeszi, Kolonics György utca 2/B.<br />
+            E-mail: <a href="mailto:dunakeszimasszor@gmail.com" className="text-[#D4854A] hover:underline">dunakeszimasszor@gmail.com</a><br />
+            Telefon: +36 30 487 7883</p>
+          </div>
+
+          <div>
+            <h3 className="font-semibold text-base mb-2">2. Kezelt személyes adatok</h3>
+            <ul className="list-disc list-inside space-y-1 text-[#4A3F35]">
+              <li>Teljes név</li>
+              <li>E-mail cím</li>
+              <li>Telefonszám</li>
+              <li>Foglalási adatok (időpont, kezelés típusa)</li>
+              <li>Esetleges megjegyzések, egészségügyi preferenciák</li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="font-semibold text-base mb-2">3. Az adatkezelés célja és jogalapja</h3>
+            <p>Az adatokat kizárólag az időpontfoglalás kezelése, visszaigazolása és a kezelés megszervezése céljából kezeljük. Az adatkezelés jogalapja a szerződés teljesítése (GDPR 6. cikk (1) bekezdés b) pont).</p>
+          </div>
+
+          <div>
+            <h3 className="font-semibold text-base mb-2">4. Adatmegőrzési idő</h3>
+            <p>A személyes adatokat a foglalás teljesítésétől számított 5 évig őrizzük meg, a számviteli kötelezettségeknek megfelelően.</p>
+          </div>
+
+          <div>
+            <h3 className="font-semibold text-base mb-2">5. Az érintett jogai</h3>
+            <ul className="list-disc list-inside space-y-1">
+              <li>Hozzáférés joga: kérheti a tárolt adatairól szóló tájékoztatást</li>
+              <li>Helyesbítés joga: kérheti a pontatlan adatok javítását</li>
+              <li>Törlés joga: kérheti adatai törlését</li>
+              <li>Tiltakozás joga: tiltakozhat az adatkezelés ellen</li>
+            </ul>
+            <p className="mt-2">Kéréseit az <a href="mailto:dunakeszimasszor@gmail.com" className="text-[#D4854A] hover:underline">dunakeszimasszor@gmail.com</a> e-mail címre küldheti.</p>
+          </div>
+
+          <div>
+            <h3 className="font-semibold text-base mb-2">6. Adatbiztonság</h3>
+            <p>Az adatokat biztonságos, titkosított csatornákon (HTTPS) továbbítjuk. Harmadik félnek csak a foglalás feldolgozásához szükséges mértékben (pl. fizetési szolgáltató: Stripe) adjuk át az adatokat.</p>
+          </div>
+
+          <div>
+            <h3 className="font-semibold text-base mb-2">7. Jogorvoslat</h3>
+            <p>Panasszal a Nemzeti Adatvédelmi és Információszabadság Hatósághoz fordulhat:<br />
+            <a href="https://www.naih.hu" target="_blank" rel="noopener noreferrer" className="text-[#D4854A] hover:underline">www.naih.hu</a> · 1055 Budapest, Falk Miksa utca 9–11.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // Footer/Contact Section
 function FooterSection() {
+  const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
+
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -2257,11 +2405,15 @@ function FooterSection() {
                 <MapPin className="w-5 h-5" />
                 <span>Dunakeszi, Kolonics György utca 2/B, 2120<br /><small>Kapucsengő: 1/43</small></span>
               </li>
+              <li className="flex items-center gap-3 text-white/70">
+                <Clock className="w-5 h-5 flex-shrink-0" />
+                <span>Hétfő–Vasárnap: 8:30–18:30</span>
+              </li>
               <li className="flex items-start gap-3 text-white/70">
-                <svg className="w-5 h-5 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-5 h-5 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span>Bankszámla:<br />10700581-730554012-511100005</span>
+                <span>Bankszámla:<br />10700581-73054012-51100005</span>
               </li>
             </ul>
 
@@ -2304,6 +2456,12 @@ function FooterSection() {
               © {new Date().getFullYear()} Dunakeszi Masszázs - Angyali Szalon – Makra Edina | Minden jog fenntartva
             </p>
             <div className="flex items-center gap-6">
+              <button
+                onClick={() => setShowPrivacyPolicy(true)}
+                className="text-white/50 hover:text-[#D4854A] transition-colors text-sm"
+              >
+                Adatvédelmi tájékoztató
+              </button>
               <a
                 href="/#admin"
                 className="text-white/50 hover:text-[#D4854A] transition-colors text-sm"
@@ -2312,6 +2470,7 @@ function FooterSection() {
               </a>
               <button
                 onClick={scrollToTop}
+                aria-label="Vissza a tetejére"
                 className="flex items-center gap-2 text-white/50 hover:text-[#D4854A] transition-colors text-sm"
               >
                 <span>Vissza a tetejére</span>
@@ -2321,6 +2480,7 @@ function FooterSection() {
           </div>
         </div>
       </div>
+      {showPrivacyPolicy && <PrivacyPolicyModal onClose={() => setShowPrivacyPolicy(false)} />}
     </footer>
   );
 }
@@ -2792,7 +2952,7 @@ function AdminPage() {
     finally { setIsBlockingSlot(false); }
   };
 
-  const ADMIN_PASSWORD = 'Edina2025!';
+  const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'Edina2025!';
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
