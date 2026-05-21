@@ -2407,7 +2407,7 @@ function FooterSection() {
               </li>
               <li className="flex items-center gap-3 text-white/70">
                 <Clock className="w-5 h-5 flex-shrink-0" />
-                <span>Hétfő–Szombat: 8:30–18:30</span>
+                <span>Hétfő–Vasárnap: 8:30–18:30</span>
               </li>
               <li className="flex items-start gap-3 text-white/70">
                 <svg className="w-5 h-5 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
