@@ -1804,7 +1804,7 @@ function BookingSection() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-[#8B7355]">Számlaszám:</span>
-                      <span className="text-[#4A3F35] font-medium font-mono text-xs">10700581-730554012-511100005</span>
+                      <span className="text-[#4A3F35] font-medium font-mono text-xs">10700581-73054012-51100005</span>
                     </div>
                     <div className="flex justify-between items-center bg-white rounded-lg px-3 py-2">
                       <span className="text-[#8B7355]">Összeg:</span>
@@ -2261,7 +2261,7 @@ function FooterSection() {
                 <svg className="w-5 h-5 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span>Bankszámla:<br />10700581-730554012-511100005</span>
+                <span>Bankszámla:<br />10700581-73054012-51100005</span>
               </li>
             </ul>
 
