@@ -149,6 +149,10 @@ function doPost(e) {
         return createStripeCheckout(data);
       case 'createStripeCheckoutDebug':
         return createStripeCheckoutDebug(data);
+      case 'createBankTransferBooking':
+        return createBankTransferBooking(data);
+      case 'confirmBankTransfer':
+        return confirmBankTransferBooking(data);
       default:
         return createHtmlResponse('<h1>Hiba</h1><p>Ismeretlen művelet: ' + data.action + '</p>');
     }
@@ -735,8 +739,72 @@ const STRIPE_SECRET_KEY = PropertiesService.getScriptProperties().getProperty('S
 const STRIPE_PUBLISHABLE_KEY = PropertiesService.getScriptProperties().getProperty('STRIPE_PUBLISHABLE_KEY') || '';
 const STRIPE_WEBHOOK_SECRET = PropertiesService.getScriptProperties().getProperty('STRIPE_WEBHOOK_SECRET') || '';
 
+const BANK_ACCOUNT = {
+  HOLDER: 'Makra Edina',
+  ACCOUNT: '10700581-73054012-51100005',
+  BANK: 'CIB Bank'
+};
+
+function validateStripeKeys_() {
+  if (!STRIPE_SECRET_KEY || STRIPE_SECRET_KEY.indexOf('REPLACE') !== -1) {
+    return 'A Stripe titkos kulcs nincs beállítva. Nyisd meg a Google Apps Script → Projekt beállítások → Szkript tulajdonságai, és írd be a valódi STRIPE_SECRET_KEY értéket a Stripe Dashboardból.';
+  }
+  return null;
+}
+
+function generatePaymentReference_() {
+  var datePart = Utilities.formatDate(new Date(), TZ, 'yyyyMMdd');
+  var rand = Math.random().toString(36).substring(2, 6).toUpperCase();
+  return 'DM-' + datePart + '-' + rand;
+}
+
+function ensurePendingBookingsSheet_() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var pendingSheet = ss.getSheetByName('PendingBookings');
+  var headers = [
+    'Timestamp', 'Name', 'Email', 'Phone', 'Service', 'Date', 'Time',
+    'Notes', 'Recurring', 'RecurringType', 'RecurringCount', 'Amount',
+    'Status', 'PaymentMethod', 'ReferenceId'
+  ];
+
+  if (!pendingSheet) {
+    pendingSheet = ss.insertSheet('PendingBookings');
+    pendingSheet.appendRow(headers);
+    pendingSheet.getRange(1, 1, 1, headers.length).setFontWeight('bold');
+    return pendingSheet;
+  }
+
+  var lastCol = Math.max(pendingSheet.getLastColumn(), 1);
+  var existing = pendingSheet.getRange(1, 1, 1, lastCol).getValues()[0];
+  if (lastCol < 15 || existing[13] !== 'PaymentMethod') {
+    if (lastCol < 14) pendingSheet.getRange(1, 14).setValue('PaymentMethod');
+    if (lastCol < 15) pendingSheet.getRange(1, 15).setValue('ReferenceId');
+    pendingSheet.getRange(1, 1, 1, 15).setFontWeight('bold');
+  }
+  return pendingSheet;
+}
+
+function isSlotHeldByPending_(dateStr, timeStr) {
+  var pendingSheet = ensurePendingBookingsSheet_();
+  var data = pendingSheet.getDataRange().getValues();
+  var activeStatuses = ['pending', 'awaiting_bank_transfer'];
+  for (var i = 1; i < data.length; i++) {
+    var status = String(data[i][12] || '');
+    if (activeStatuses.indexOf(status) === -1) continue;
+    if (data[i][5] === dateStr && data[i][6] === timeStr) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function createStripeCheckout(data) {
   try {
+    var stripeKeyError = validateStripeKeys_();
+    if (stripeKeyError) {
+      return createResponse(false, stripeKeyError);
+    }
+
     // Validate required fields
     if (!data.name || !data.email) {
       return createHtmlResponse('<h1>Hiba</h1><p>Hiányzó kötelező mezők (név, email)</p>');
@@ -761,8 +829,13 @@ function createStripeCheckout(data) {
     Logger.log('Creating Stripe checkout with amount: ' + amount + ' Ft');
 
     // Check if the requested time slot is still available before charging the customer
-    if (data.date && data.time && !isTimeSlotAvailable(data.date, data.time)) {
-      return createResponse(false, 'Ez az időpont sajnos már foglalt. Kérjük válasszon másik időpontot!');
+    if (data.date && data.time) {
+      if (!isTimeSlotAvailable(data.date, data.time)) {
+        return createResponse(false, 'Ez az időpont sajnos már foglalt. Kérjük válasszon másik időpontot!');
+      }
+      if (isSlotHeldByPending_(data.date, data.time)) {
+        return createResponse(false, 'Ez az időpont jelenleg egy másik függő foglalás alatt van. Kérjük válassz másik időpontot!');
+      }
     }
     
     var serviceName = data.service || 'Masszázs kezelés';
@@ -806,6 +879,7 @@ function createStripeCheckout(data) {
     
     if (responseCode === 200 && result.url) {
       // Store pending booking data
+      data.paymentMethod = 'stripe';
       storePendingBooking(data);
       
       // Return JSON with the URL instead of HTML
@@ -906,19 +980,11 @@ function setStripeProperties() {
 }
 
 function storePendingBooking(data) {
-  // Store booking data temporarily until payment is confirmed
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var pendingSheet = ss.getSheetByName('PendingBookings');
-  
-  if (!pendingSheet) {
-    pendingSheet = ss.insertSheet('PendingBookings');
-    pendingSheet.appendRow([
-      'Timestamp', 'Name', 'Email', 'Phone', 'Service', 'Date', 'Time', 
-      'Notes', 'Recurring', 'RecurringType', 'RecurringCount', 'Amount', 'Status'
-    ]);
-    pendingSheet.getRange(1, 1, 1, 13).setFontWeight('bold');
-  }
-  
+  var pendingSheet = ensurePendingBookingsSheet_();
+  var status = data.status || 'pending';
+  var paymentMethod = data.paymentMethod || 'stripe';
+  var referenceId = data.referenceId || '';
+
   pendingSheet.appendRow([
     new Date(),
     data.name,
@@ -932,8 +998,234 @@ function storePendingBooking(data) {
     data.recurringType || '',
     data.recurringCount || 1,
     data.amount,
-    'pending'
+    status,
+    paymentMethod,
+    referenceId
   ]);
+}
+
+// ============================================
+// Bank Transfer Booking Flow
+// ============================================
+function createBankTransferBooking(data) {
+  try {
+    if (!data.name || !data.email || !data.service || !data.date || !data.time) {
+      return createResponse(false, 'Hiányzó kötelező mezők (név, email, kezelés, dátum, időpont)');
+    }
+
+    var amount = parseInt(data.amount);
+    if (!amount || isNaN(amount) || amount < 175) {
+      amount = 3000;
+    }
+    if (amount < 3000) {
+      amount = 3000;
+    }
+
+    if (!isTimeSlotAvailable(data.date, data.time)) {
+      return createResponse(false, 'Ez az időpont sajnos már foglalt. Kérjük válassz másik időpontot!');
+    }
+    if (isSlotHeldByPending_(data.date, data.time)) {
+      return createResponse(false, 'Ez az időpont jelenleg egy másik függő foglalás alatt van. Kérjük válassz másik időpontot!');
+    }
+
+    var referenceId = generatePaymentReference_();
+    data.amount = amount;
+    data.paymentMethod = 'bank_transfer';
+    data.referenceId = referenceId;
+    data.status = 'awaiting_bank_transfer';
+
+    storePendingBooking(data);
+    sendBankTransferNotificationToEdina_(data, referenceId, amount);
+    sendBankTransferInstructionsToCustomer_(data, referenceId, amount);
+
+    return createResponse(true, 'Banki átutalásos foglalás rögzítve', {
+      referenceId: referenceId,
+      amount: amount,
+      bankAccount: BANK_ACCOUNT,
+      booking: {
+        name: data.name,
+        email: data.email,
+        service: data.service,
+        date: data.date,
+        time: data.time,
+        amount: amount
+      }
+    });
+  } catch (error) {
+    logError('createBankTransferBooking', error);
+    return createResponse(false, 'Hiba a banki átutalásos foglalás során: ' + error.message);
+  }
+}
+
+function confirmBankTransferBooking(data) {
+  try {
+    if (!data.referenceId) {
+      return createResponse(false, 'Hiányzó közlemény azonosító (referenceId)');
+    }
+
+    var pendingSheet = ensurePendingBookingsSheet_();
+    var sheetData = pendingSheet.getDataRange().getValues();
+    var targetRow = -1;
+    var rowData = null;
+
+    for (var i = sheetData.length - 1; i >= 1; i--) {
+      if (sheetData[i][14] === data.referenceId && sheetData[i][12] === 'awaiting_bank_transfer') {
+        targetRow = i + 1;
+        rowData = sheetData[i];
+        break;
+      }
+    }
+
+    if (targetRow === -1) {
+      return createResponse(false, 'Nem található ilyen közlemény azonosítóval függő banki átutalás, vagy már megerősítve lett.');
+    }
+
+    var bookingData = {
+      name: rowData[1],
+      email: rowData[2],
+      phone: rowData[3],
+      service: rowData[4],
+      date: rowData[5],
+      time: rowData[6],
+      notes: rowData[7],
+      recurring: rowData[8],
+      recurringType: rowData[9],
+      recurringCount: rowData[10],
+      amount: rowData[11],
+      usePackage: 'false'
+    };
+
+    if (!isTimeSlotAvailable(bookingData.date, bookingData.time)) {
+      return createResponse(false, 'Az időpont már nem szabad a naptárban. Ellenőrizd a foglalást, és szükség esetén egyeztess az ügyféllel.');
+    }
+
+    var result = createBooking(bookingData);
+    var resultText = result.getContent();
+    var resultJson = JSON.parse(resultText);
+    if (!resultJson.success) {
+      return createResponse(false, resultJson.message || 'Hiba a foglalás létrehozásakor');
+    }
+
+    pendingSheet.getRange(targetRow, 13).setValue('confirmed');
+
+    recordTransaction(
+      new Date(),
+      'Payment',
+      '',
+      bookingData.name,
+      'Banki átutalás foglalási díj - ' + bookingData.service + ' (' + data.referenceId + ')',
+      parseInt(bookingData.amount) || 0,
+      'Bank Transfer',
+      data.referenceId
+    );
+
+    return createResponse(true, 'Banki átutalás megerősítve, foglalás létrehozva!', {
+      referenceId: data.referenceId,
+      bookingIds: resultJson.data ? resultJson.data.bookingIds : []
+    });
+  } catch (error) {
+    logError('confirmBankTransferBooking', error);
+    return createResponse(false, 'Hiba a banki átutalás megerősítésekor: ' + error.message);
+  }
+}
+
+function sendBankTransferNotificationToEdina_(data, referenceId, amount) {
+  var subject = '🏦 Új banki átutalásos foglalás - ' + data.name + ' (' + referenceId + ')';
+  var body = 'Kedves Edina!\n\n' +
+    'Új banki átutalásos foglalás érkezett a weboldalról.\n' +
+    'Az ügyfél értesítést kapott a közlemény azonosítóról.\n\n' +
+    '═══════════════════════════════════════\n' +
+    '👤 Név: ' + data.name + '\n' +
+    '📞 Telefon: ' + (data.phone || 'Nincs megadva') + '\n' +
+    '📧 Email: ' + data.email + '\n' +
+    '💆 Kezelés: ' + data.service + '\n' +
+    '📅 Dátum: ' + data.date + '\n' +
+    '⏰ Időpont: ' + data.time + '\n' +
+    '💰 Összeg: ' + amount.toLocaleString('hu-HU') + ' Ft\n' +
+    '🔖 Közlemény: ' + referenceId + '\n' +
+    '═══════════════════════════════════════\n\n' +
+    'Amikor megérkezik az átutalás, nyisd meg az admin felületet:\n' +
+    'https://dunakeszimasszazs.hu/#admin → Függőben → "Befizetés megerősítése"\n\n' +
+    'Addig az időpont függőben van, de még nincs a naptárban.';
+
+  var html = buildSimpleHtml('Új banki átutalásos foglalás', '🏦',
+    '<p style="font-size:14px;color:#555;">Kedves <strong>Edina</strong>! Új banki átutalásos foglalás érkezett.</p>' +
+    htmlRows([
+      ['👤 Név', data.name],
+      ['📞 Telefon', data.phone || 'Nincs megadva'],
+      ['📧 Email', data.email],
+      ['💆 Kezelés', data.service],
+      ['📅 Dátum', data.date],
+      ['⏰ Időpont', data.time],
+      ['💰 Összeg', amount.toLocaleString('hu-HU') + ' Ft'],
+      ['🔖 Közlemény', '<strong style="color:#D4854A;font-size:16px;">' + referenceId + '</strong>']
+    ]) +
+    '<p style="font-size:13px;background:#fff7ed;border:1px solid #fdba74;border-radius:6px;padding:10px;margin-top:12px;">' +
+    '⚠️ <strong>Fontos:</strong> A befizetés beérkezése után erősítsd meg az admin felületen: ' +
+    '<a href="https://dunakeszimasszazs.hu/#admin" style="color:#D4854A;">dunakeszimasszazs.hu/#admin</a> → Függőben → Befizetés megerősítése</p>'
+  );
+
+  sendEmail_({
+    to: 'dunakeszimasszor@gmail.com',
+    subject: subject,
+    body: body,
+    htmlBody: html,
+    name: 'Dunakeszi Masszázs - Admin',
+    replyTo: 'dunakeszimasszor@gmail.com'
+  });
+}
+
+function sendBankTransferInstructionsToCustomer_(data, referenceId, amount) {
+  var subject = 'Foglalás rögzítve - Banki átutalás szükséges (' + referenceId + ')';
+  var body = 'Kedves ' + data.name + '!\n\n' +
+    'Köszönöm a foglalást! A foglalásod rögzítve lett, és a véglegesítéshez kérjük a foglalási díj banki átutalását.\n\n' +
+    '═══════════════════════════════════════\n' +
+    '💆 Kezelés: ' + data.service + '\n' +
+    '📅 Dátum: ' + data.date + '\n' +
+    '⏰ Időpont: ' + data.time + '\n' +
+    '💰 Összeg: ' + amount.toLocaleString('hu-HU') + ' Ft\n' +
+    '═══════════════════════════════════════\n\n' +
+    'BANKI ÁTUTALÁS ADATAI:\n' +
+    'Számlatulajdonos: ' + BANK_ACCOUNT.HOLDER + '\n' +
+    'Számlaszám: ' + BANK_ACCOUNT.ACCOUNT + '\n' +
+    'Összeg: ' + amount.toLocaleString('hu-HU') + ' Ft\n' +
+    'Közlemény (KÖTELEZŐ!): ' + referenceId + '\n\n' +
+    '⚠️ Fontos: a közlemény mezőbe pontosan ezt írd be: ' + referenceId + '\n' +
+    'Így tudom azonosítani a befizetésedet.\n\n' +
+    'A foglalás a befizetés beérkezése után válik véglegessé. Visszaigazoló emailt küldök, amint megérkezik az összeg.\n\n' +
+    '📍 Dunakeszi, Kolonics György utca 2/B — Kapucsengő: 1/43\n' +
+    '📞 +36 30 487 7883\n\n' +
+    'Üdvözlettel,\nMakra Edina\nDunakeszi Masszázs - Angyali Szalon';
+
+  var html = buildSimpleHtml('Foglalás rögzítve – banki átutalás', '🏦',
+    '<p style="font-size:14px;color:#555;">Kedves <strong>' + data.name + '</strong>! Köszönöm a foglalást.</p>' +
+    htmlRows([
+      ['💆 Kezelés', data.service],
+      ['📅 Dátum', data.date],
+      ['⏰ Időpont', data.time],
+      ['💰 Összeg', amount.toLocaleString('hu-HU') + ' Ft']
+    ]) +
+    '<div style="background:#fff7ed;border:2px solid #D4854A;border-radius:8px;padding:16px;margin:16px 0;">' +
+    '<p style="margin:0 0 8px;font-weight:bold;color:#4A3F35;">Banki átutalás adatai</p>' +
+    htmlRows([
+      ['Számlatulajdonos', BANK_ACCOUNT.HOLDER],
+      ['Számlaszám', BANK_ACCOUNT.ACCOUNT],
+      ['Összeg', amount.toLocaleString('hu-HU') + ' Ft'],
+      ['Közlemény', '<strong style="color:#D4854A;font-size:18px;">' + referenceId + '</strong>']
+    ]) +
+    '</div>' +
+    '<p style="font-size:13px;color:#555;">⚠️ A közlemény mezőbe <strong>pontosan</strong> a fenti azonosítót írd be, hogy azonosítani tudjam a befizetést.</p>' +
+    '<p style="font-size:13px;color:#555;">A foglalás a befizetés beérkezése után válik véglegessé.</p>'
+  );
+
+  sendEmail_({
+    to: data.email,
+    subject: subject,
+    body: body,
+    htmlBody: html,
+    name: 'Dunakeszi Masszázs - Angyali Szalon',
+    replyTo: 'dunakeszimasszor@gmail.com'
+  });
 }
 
 // ============================================
@@ -972,13 +1264,14 @@ function getAllBookings_() {
 }
 
 function getPendingBookings_() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var pendingSheet = ss.getSheetByName('PendingBookings');
-  if (!pendingSheet) return createResponse(true, 'Nincs függő foglálás', { bookings: [] });
+  var pendingSheet = ensurePendingBookingsSheet_();
   var data = pendingSheet.getDataRange().getValues();
   var bookings = [];
   for (var i = 1; i < data.length; i++) {
+    var status = data[i][12];
+    if (status === 'confirmed' || status === 'cancelled') continue;
     bookings.push({
+      rowIndex: i + 1,
       timestamp: data[i][0],
       name: data[i][1],
       email: data[i][2],
@@ -988,12 +1281,15 @@ function getPendingBookings_() {
       time: data[i][6],
       notes: data[i][7],
       recurring: data[i][8],
+      recurringType: data[i][9],
       recurringCount: data[i][10],
       amount: data[i][11],
-      status: data[i][12]
+      status: status,
+      paymentMethod: data[i][13] || 'stripe',
+      referenceId: data[i][14] || ''
     });
   }
-  return createResponse(true, 'Függő foglálások', { bookings: bookings.reverse() });
+  return createResponse(true, 'Függő foglalások', { bookings: bookings.reverse() });
 }
 
 // ============================================
@@ -2187,14 +2483,13 @@ function handleStripeWebhook(event) {
 }
 
 function updatePendingBookingStatus(email, status) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var pendingSheet = ss.getSheetByName('PendingBookings');
+  var pendingSheet = ensurePendingBookingsSheet_();
   if (!pendingSheet) return;
 
   var data = pendingSheet.getDataRange().getValues();
   // Search from the bottom so we update the most recent pending entry
   for (var i = data.length - 1; i >= 1; i--) {
-    if (data[i][2] === email && data[i][12] === 'pending') {
+    if (data[i][2] === email && (data[i][12] === 'pending' || data[i][12] === 'awaiting_bank_transfer')) {
       pendingSheet.getRange(i + 1, 13).setValue(status);
       Logger.log('Updated pending booking for ' + email + ' to ' + status);
       break;

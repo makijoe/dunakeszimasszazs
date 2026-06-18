@@ -27,8 +27,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { toast, Toaster } from 'sonner';
 
-// Google Apps Script URL
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyNNnfTYIlEcuJFD2DaHJcPkv-ErX34TRaxmuc3mFxLVksuoYqs4_GLhilMxHmS3Eg/exec';
+// Google Apps Script URL (override via VITE_SCRIPT_URL in Vercel)
+const SCRIPT_URL = import.meta.env.VITE_SCRIPT_URL || 'https://script.google.com/macros/s/AKfycbyNNnfTYIlEcuJFD2DaHJcPkv-ErX34TRaxmuc3mFxLVksuoYqs4_GLhilMxHmS3Eg/exec';
+
+const BANK_ACCOUNT = {
+  holder: 'Makra Edina',
+  account: '10700581-73054012-51100005',
+};
 
 // Navigation Component
 function Navigation() {
@@ -1619,7 +1624,7 @@ function BookingSection() {
     setStep('payment');
   };
 
-  const handlePayment = async () => {
+  const submitBookingRequest = async (action: 'createStripeCheckout' | 'createBankTransferBooking') => {
     setIsSubmitting(true);
 
     try {
@@ -1644,7 +1649,7 @@ function BookingSection() {
       // Use fetch to call Google Apps Script, read the Stripe URL from the
       // JSON response, then redirect the user to Stripe Checkout.
       const params = new URLSearchParams();
-      params.append('action', 'createStripeCheckout');
+      params.append('action', action);
       params.append('name', formData.name);
       params.append('email', formData.email);
       params.append('phone', formData.phone || '');
@@ -1667,21 +1672,38 @@ function BookingSection() {
 
       const result = await response.json();
 
-      if (result.success && result.data?.url) {
-        // Redirect the current tab to Stripe Checkout
-        window.location.href = result.data.url;
-        // No need to reset isSubmitting – the page navigates away
-        return;
-      } else {
+      if (action === 'createStripeCheckout') {
+        if (result.success && result.data?.url) {
+          window.location.href = result.data.url;
+          return;
+        }
         throw new Error(result.message || 'Ismeretlen hiba a fizetési folyamatban');
       }
 
+      if (result.success && result.data?.referenceId) {
+        sessionStorage.setItem('bankTransferBooking', JSON.stringify({
+          referenceId: result.data.referenceId,
+          amount: result.data.amount,
+          name: formData.name,
+          service: formData.service,
+          date: formData.date,
+          time: formData.time,
+          bankAccount: result.data.bankAccount || BANK_ACCOUNT,
+        }));
+        window.location.hash = '#booking-bank-pending';
+        return;
+      }
+
+      throw new Error(result.message || 'Ismeretlen hiba a foglalás rögzítésekor');
     } catch (error) {
       console.error('Payment error:', error);
-      toast.error('Hiba történt a fizetés során: ' + (error instanceof Error ? error.message : 'Ismeretlen hiba'));
+      toast.error('Hiba történt: ' + (error instanceof Error ? error.message : 'Ismeretlen hiba'));
       setIsSubmitting(false);
     }
   };
+
+  const handleBankTransfer = () => submitBookingRequest('createBankTransferBooking');
+  const handlePayment = () => submitBookingRequest('createStripeCheckout');
 
   // Get minimum date (tomorrow)
   const tomorrow = new Date();
@@ -1810,29 +1832,34 @@ function BookingSection() {
               <div className="space-y-4">
                 <p className="text-sm text-[#8B7355] text-center">Válassz fizetési módot:</p>
 
-                {/* Stripe Payment Button - PRIMARY */}
+                {/* Bank Transfer - PRIMARY (most used) */}
                 <Button
-                  onClick={handlePayment}
+                  onClick={handleBankTransfer}
                   disabled={isSubmitting}
-                  className="w-full bg-gradient-to-r from-[#D4854A] to-[#B87333] hover:from-[#B87333] hover:to-[#D4854A] text-white py-5 rounded-xl text-xl font-bold shadow-warm-lg hover:shadow-warm-xl transition-all duration-300 disabled:opacity-50 border-2 border-[#D4854A]"
+                  className="w-full bg-gradient-to-r from-[#8B9A7C] to-[#6B7F5E] hover:from-[#6B7F5E] hover:to-[#8B9A7C] text-white py-5 rounded-xl text-xl font-bold shadow-warm-lg hover:shadow-warm-xl transition-all duration-300 disabled:opacity-50 border-2 border-[#8B9A7C]"
                 >
                   {isSubmitting ? (
                     <>
                       <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin mr-3" />
-                      Átirányítás a Stripe-hoz...
+                      Foglalás rögzítése...
                     </>
                   ) : (
                     <>
-                      <Lock className="w-6 h-6 mr-3" />
-                      {getFinalDepositAmount().toLocaleString()} Ft - Biztonságos fizetés
+                      <CreditCard className="w-6 h-6 mr-3" />
+                      {getFinalDepositAmount().toLocaleString()} Ft - Banki átutalással foglalok
                     </>
                   )}
                 </Button>
 
-                <p className="text-xs text-center text-[#8B7355] flex items-center justify-center gap-1">
-                  <Lock className="w-3 h-3" />
-                  256-bit SSL titkosítás - Stripe biztonságos fizetés
-                </p>
+                <div className="bg-[#F9F1EA] rounded-xl p-4 text-sm">
+                  <p className="text-[#4A3F35] font-medium mb-2">Banki átutalás lépései:</p>
+                  <ol className="list-decimal list-inside space-y-1 text-[#8B7355]">
+                    <li>Kattints a gombra – kapsz egy egyedi <strong>közlemény azonosítót</strong></li>
+                    <li>Utald át a foglalási díjat a megadott számlára</li>
+                    <li>A közleménybe írd be pontosan az azonosítót</li>
+                    <li>Emailben értesítünk, amint megérkezett a befizetés</li>
+                  </ol>
+                </div>
 
                 {/* Divider */}
                 <div className="relative py-2">
@@ -1844,27 +1871,27 @@ function BookingSection() {
                   </div>
                 </div>
 
-                {/* Bank Transfer Option - SECONDARY */}
-                <div className="bg-[#F9F1EA] rounded-xl p-4">
-                  <h4 className="font-semibold text-[#4A3F35] mb-3 text-base">Banki átutalás</h4>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-[#8B7355]">Számlatulajdonos:</span>
-                      <span className="text-[#4A3F35] font-medium">Makra Edina</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-[#8B7355]">Számlaszám:</span>
-                      <span className="text-[#4A3F35] font-medium font-mono text-xs">10700581-73054012-51100005</span>
-                    </div>
-                    <div className="flex justify-between items-center bg-white rounded-lg px-3 py-2">
-                      <span className="text-[#8B7355]">Összeg:</span>
-                      <span className="text-[#D4854A] text-xl font-bold">{getFinalDepositAmount().toLocaleString()} Ft</span>
-                    </div>
-                  </div>
-                  <p className="text-xs text-[#8B7355] mt-3 bg-white/50 rounded-lg p-2">
-                    <strong>Fontos:</strong> A foglalás a befizetés beérkezése után válik véglegessé.
-                  </p>
-                </div>
+                {/* Stripe Payment - SECONDARY */}
+                <Button
+                  onClick={handlePayment}
+                  disabled={isSubmitting}
+                  variant="outline"
+                  className="w-full border-2 border-[#D4854A] text-[#D4854A] hover:bg-[#D4854A]/10 py-4 rounded-xl text-lg font-semibold disabled:opacity-50"
+                >
+                  {isSubmitting ? (
+                    'Átirányítás a Stripe-hoz...'
+                  ) : (
+                    <>
+                      <Lock className="w-5 h-5 mr-2" />
+                      {getFinalDepositAmount().toLocaleString()} Ft - Bankkártyás fizetés (Stripe)
+                    </>
+                  )}
+                </Button>
+
+                <p className="text-xs text-center text-[#8B7355] flex items-center justify-center gap-1">
+                  <Lock className="w-3 h-3" />
+                  256-bit SSL titkosítás - Stripe biztonságos fizetés
+                </p>
 
                 <Button
                   onClick={() => setStep('form')}
@@ -3015,6 +3042,42 @@ function AdminPage() {
     }
   };
 
+  const [confirmingReference, setConfirmingReference] = useState<string | null>(null);
+
+  const confirmBankTransfer = async (referenceId: string, customerName: string) => {
+    if (!referenceId) return;
+    if (!confirm(`Megerősíted, hogy megérkezett a banki átutalás?\n\nÜgyfél: ${customerName}\nKözlemény: ${referenceId}\n\nEz létrehozza a naptárbejegyzést és elküldi a visszaigazoló emailt.`)) {
+      return;
+    }
+    setConfirmingReference(referenceId);
+    try {
+      const params = new URLSearchParams();
+      params.append('action', 'confirmBankTransfer');
+      params.append('referenceId', referenceId);
+      const response = await fetch(SCRIPT_URL, { method: 'POST', body: params, redirect: 'follow' });
+      const result = await response.json();
+      if (result.success) {
+        toast.success('Befizetés megerősítve! Foglalás létrehozva és email elküldve.');
+        loadPendingBookings();
+        loadAllBookings();
+        loadDashboardData();
+      } else {
+        toast.error(result.message || 'Hiba a megerősítés során');
+      }
+    } catch {
+      toast.error('Hiba a megerősítés során. Próbáld újra!');
+    } finally {
+      setConfirmingReference(null);
+    }
+  };
+
+  const getPendingStatusLabel = (booking: { status: string; paymentMethod?: string }) => {
+    if (booking.status === 'awaiting_bank_transfer') return '🏦 Átutalásra vár';
+    if (booking.status === 'paid') return '✓ Stripe fizetve';
+    if (booking.paymentMethod === 'bank_transfer') return '🏦 Banki átutalás';
+    return '⏳ Stripe függőben';
+  };
+
   const loadAllPackages = async () => {
     try {
       const response = await fetch(`${SCRIPT_URL}?action=allPackages`);
@@ -3506,7 +3569,10 @@ function AdminPage() {
               <h2 className="text-2xl font-bold text-[#4A3F35]">Függőben lévő foglalások</h2>
               <button onClick={loadPendingBookings} className="px-4 py-2 bg-[#D4854A] text-white rounded-lg text-sm hover:bg-[#B87333]">Frissítés</button>
             </div>
-            <p className="text-sm text-[#8B7355]">Ezek a Stripe-on keresztül elindított, de még meg nem erősített (vagy meg nem fizetett) foglalások.</p>
+            <p className="text-sm text-[#8B7355]">
+              Banki átutalások: amikor megérkezik a befizetés a bankszámlára, kattints a <strong>Befizetés megerősítése</strong> gombra.
+              Stripe foglalások automatikusan megerősülnek fizetés után.
+            </p>
             <div className="bg-white rounded-2xl shadow-warm overflow-hidden">
               {pendingBookings.length === 0 ? (
                 <div className="p-8 text-center text-[#8B7355]">Nincs függőben lévő foglalás.</div>
@@ -3515,7 +3581,7 @@ function AdminPage() {
                   <table className="w-full text-sm">
                     <thead className="bg-[#F9F1EA]">
                       <tr>
-                        {['Név', 'Email', 'Kezelés', 'Dátum', 'Időpont', 'Összeg', 'Státusz', 'Időbélyeg'].map(h => (
+                        {['Név', 'Email', 'Kezelés', 'Dátum', 'Időpont', 'Összeg', 'Fizetés', 'Közlemény', 'Státusz', 'Művelet'].map(h => (
                           <th key={h} className="px-4 py-3 text-left text-[#4A3F35] font-semibold">{h}</th>
                         ))}
                       </tr>
@@ -3529,11 +3595,28 @@ function AdminPage() {
                           <td className="px-4 py-3 text-[#8B7355]">{b.date}</td>
                           <td className="px-4 py-3 text-[#8B7355]">{b.time}</td>
                           <td className="px-4 py-3 text-[#8B7355]">{b.amount ? Number(b.amount).toLocaleString() + ' Ft' : '-'}</td>
+                          <td className="px-4 py-3 text-[#8B7355]">{b.paymentMethod === 'bank_transfer' ? '🏦 Átutalás' : '💳 Stripe'}</td>
+                          <td className="px-4 py-3 font-mono text-xs text-[#D4854A] font-bold">{b.referenceId || '-'}</td>
                           <td className="px-4 py-3">
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${b.status === 'paid' ? 'bg-[#8B9A7C]/15 text-[#4A7C59]' : 'bg-orange-100 text-orange-700'
-                              }`}>{b.status === 'paid' ? '✓ Fizetve' : '⏳ Függőben'}</span>
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              b.status === 'paid' ? 'bg-[#8B9A7C]/15 text-[#4A7C59]' :
+                              b.status === 'awaiting_bank_transfer' ? 'bg-amber-100 text-amber-800' :
+                              'bg-orange-100 text-orange-700'
+                            }`}>{getPendingStatusLabel(b)}</span>
                           </td>
-                          <td className="px-4 py-3 text-[#8B7355] text-xs">{b.timestamp ? new Date(b.timestamp).toLocaleString('hu-HU') : '-'}</td>
+                          <td className="px-4 py-3">
+                            {b.status === 'awaiting_bank_transfer' && b.referenceId ? (
+                              <button
+                                onClick={() => confirmBankTransfer(b.referenceId, b.name)}
+                                disabled={confirmingReference === b.referenceId}
+                                className="px-3 py-1.5 bg-[#8B9A7C] hover:bg-[#6B7F5E] text-white rounded-lg text-xs font-medium disabled:opacity-50"
+                              >
+                                {confirmingReference === b.referenceId ? '...' : '✓ Befizetés megerősítése'}
+                              </button>
+                            ) : (
+                              <span className="text-xs text-[#8B7355]">—</span>
+                            )}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -4351,6 +4434,96 @@ function AdminPage() {
   );
 }
 
+// Bank Transfer Pending Page
+function BookingBankPendingPage() {
+  const [booking, setBooking] = useState<{
+    referenceId: string;
+    amount: number;
+    name: string;
+    service: string;
+    date: string;
+    time: string;
+    bankAccount: { holder: string; account: string };
+  } | null>(null);
+
+  useEffect(() => {
+    const raw = sessionStorage.getItem('bankTransferBooking');
+    if (raw) {
+      try {
+        setBooking(JSON.parse(raw));
+      } catch {
+        setBooking(null);
+      }
+    }
+  }, []);
+
+  const copyReference = () => {
+    if (!booking?.referenceId) return;
+    navigator.clipboard.writeText(booking.referenceId);
+    toast.success('Közlemény azonosító másolva!');
+  };
+
+  if (!booking) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-[#FFFBF7] to-[#F5E6D8] flex items-center justify-center p-4">
+        <div className="bg-white rounded-3xl shadow-warm-lg p-8 max-w-lg w-full text-center">
+          <h1 className="text-2xl font-bold text-[#4A3F35] mb-4">Foglalás rögzítve</h1>
+          <p className="text-[#8B7355] mb-6">Ellenőrizd az emailed a banki átutalás adataiért és a közlemény azonosítóért.</p>
+          <a href="/" className="inline-block bg-[#D4854A] text-white px-8 py-3 rounded-xl">Vissza a főoldalra</a>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-[#FFFBF7] to-[#F5E6D8] flex items-center justify-center p-4">
+      <div className="bg-white rounded-3xl shadow-warm-lg p-8 sm:p-12 max-w-lg w-full">
+        <div className="text-center mb-6">
+          <div className="w-20 h-20 bg-[#8B9A7C]/15 rounded-full flex items-center justify-center mx-auto mb-4">
+            <CreditCard className="w-10 h-10 text-[#8B9A7C]" />
+          </div>
+          <h1 className="text-3xl font-bold text-[#4A3F35] mb-2">Foglalás rögzítve! 🏦</h1>
+          <p className="text-[#8B7355]">Köszönöm, {booking.name}! A foglalásod rögzítve lett.</p>
+        </div>
+
+        <div className="bg-[#F9F1EA] rounded-2xl p-5 mb-5 space-y-2 text-sm">
+          <div className="flex justify-between"><span className="text-[#8B7355]">Kezelés</span><span className="font-medium">{booking.service}</span></div>
+          <div className="flex justify-between"><span className="text-[#8B7355]">Dátum</span><span className="font-medium">{booking.date}</span></div>
+          <div className="flex justify-between"><span className="text-[#8B7355]">Időpont</span><span className="font-medium">{booking.time}</span></div>
+        </div>
+
+        <div className="border-2 border-[#D4854A] rounded-2xl p-5 mb-5">
+          <p className="font-bold text-[#4A3F35] mb-3">Banki átutalás adatai</p>
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between"><span className="text-[#8B7355]">Számlatulajdonos</span><span>{booking.bankAccount.holder}</span></div>
+            <div className="flex justify-between"><span className="text-[#8B7355]">Számlaszám</span><span className="font-mono text-xs">{booking.bankAccount.account}</span></div>
+            <div className="flex justify-between"><span className="text-[#8B7355]">Összeg</span><span className="text-xl font-bold text-[#D4854A]">{booking.amount.toLocaleString()} Ft</span></div>
+          </div>
+          <div className="mt-4 bg-white rounded-xl p-4 text-center">
+            <p className="text-xs text-[#8B7355] mb-1">Közlemény (kötelező!)</p>
+            <p className="text-2xl font-black text-[#D4854A] tracking-wider">{booking.referenceId}</p>
+            <Button onClick={copyReference} variant="outline" className="mt-3 border-[#D4854A] text-[#D4854A]">
+              Azonosító másolása
+            </Button>
+          </div>
+        </div>
+
+        <p className="text-sm text-[#8B7355] mb-6">
+          Emailben is elküldtük ezeket az adatokat. A foglalás a befizetés beérkezése után válik véglegessé, és küldünk visszaigazolást.
+        </p>
+
+        <a
+          href="/"
+          onClick={() => { window.location.hash = ''; }}
+          className="block text-center bg-[#D4854A] hover:bg-[#B87333] text-white font-semibold px-8 py-3 rounded-xl transition-colors"
+        >
+          Vissza a főoldalra
+        </a>
+      </div>
+    </div>
+  );
+}
+
 // Booking Success Page
 function BookingSuccessPage() {
   return (
@@ -4414,11 +4587,18 @@ function BookingCancelPage() {
 
 // Main App Component
 function App() {
-  // Check if we're on the admin page using hash routing for static deployment
-  const hash = window.location.hash;
+  const [hash, setHash] = useState(window.location.hash);
+
+  useEffect(() => {
+    const onHashChange = () => setHash(window.location.hash);
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
+
   const isAdminPage = hash === '#admin' || window.location.search.includes('admin');
   const isBookingSuccess = hash === '#booking-success';
   const isBookingCancel = hash === '#booking-cancel';
+  const isBookingBankPending = hash === '#booking-bank-pending';
   const isManagePage = hash === '#foglalaskezeles';
 
   if (isAdminPage) {
@@ -4427,6 +4607,10 @@ function App() {
 
   if (isManagePage) {
     return <ManageBookingsPage />;
+  }
+
+  if (isBookingBankPending) {
+    return <BookingBankPendingPage />;
   }
 
   if (isBookingSuccess) {
