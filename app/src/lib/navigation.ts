@@ -18,8 +18,8 @@ export function getAppRoute(): AppRoute {
 
   if (path === ROUTES.admin || hash === '#admin') return 'admin';
   if (path === ROUTES.manage || hash === '#foglalaskezeles') return 'manage';
-  if (hash === '#booking-success') return 'booking-success';
-  if (hash === '#booking-cancel') return 'booking-cancel';
+  if (path === '/booking-success' || hash === '#booking-success') return 'booking-success';
+  if (path === '/booking-cancel' || hash === '#booking-cancel') return 'booking-cancel';
   if (hash === '#booking-bank-pending') return 'booking-bank-pending';
 
   return 'home';

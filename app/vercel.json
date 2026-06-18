@@ -3,6 +3,8 @@
   "outputDirectory": "dist",
   "rewrites": [
     { "source": "/admin", "destination": "/index.html" },
-    { "source": "/foglalasaim", "destination": "/index.html" }
+    { "source": "/foglalasaim", "destination": "/index.html" },
+    { "source": "/booking-success", "destination": "/index.html" },
+    { "source": "/booking-cancel", "destination": "/index.html" }
   ]
 }

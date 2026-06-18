@@ -1662,8 +1662,8 @@ function BookingSection() {
       params.append('recurringType', formData.recurringType);
       params.append('recurringCount', String(formData.recurringCount));
       params.append('amount', String(depositAmount));
-      params.append('successUrl', window.location.origin + '/#booking-success');
-      params.append('cancelUrl', window.location.origin + '/#booking-cancel');
+      params.append('successUrl', window.location.origin + '/booking-success');
+      params.append('cancelUrl', window.location.origin + '/booking-cancel');
 
       const response = await fetch(SCRIPT_URL, {
         method: 'POST',
@@ -1872,18 +1872,20 @@ function BookingSection() {
                   </div>
                 </div>
 
-                {/* Stripe Payment - SECONDARY */}
+                {/* Stripe Payment */}
                 <Button
                   onClick={handlePayment}
                   disabled={isSubmitting}
-                  variant="outline"
-                  className="w-full border-2 border-[#D4854A] text-[#D4854A] hover:bg-[#D4854A]/10 py-4 rounded-xl text-lg font-semibold disabled:opacity-50"
+                  className="w-full bg-gradient-to-r from-[#D4854A] to-[#B87333] hover:from-[#B87333] hover:to-[#D4854A] text-white py-5 rounded-xl text-xl font-bold shadow-warm-lg hover:shadow-warm-xl transition-all duration-300 disabled:opacity-50 border-2 border-[#D4854A]"
                 >
                   {isSubmitting ? (
-                    'Átirányítás a Stripe-hoz...'
+                    <>
+                      <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin mr-3" />
+                      Átirányítás a Stripe-hoz...
+                    </>
                   ) : (
                     <>
-                      <Lock className="w-5 h-5 mr-2" />
+                      <Lock className="w-6 h-6 mr-3" />
                       {getFinalDepositAmount().toLocaleString()} Ft - Bankkártyás fizetés (Stripe)
                     </>
                   )}
@@ -4556,21 +4558,23 @@ function BookingSuccessPage() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <h1 className="text-3xl font-bold text-[#4A3F35] mb-3">Sikeres fizetés! 🎉</h1>
+        <h1 className="text-3xl font-bold text-[#4A3F35] mb-3">Foglalás visszaigazolva! 🎉</h1>
         <p className="text-[#8B7355] text-lg mb-6">
-          Köszönöm a foglalást! A fizetés sikeresen megtörtént.
-          Hamarosan küldök egy visszaigazoló emailt a foglalás részleteivel.
+          Köszönöm a foglalást! A foglalási díj befizetése sikeresen megtörtént,
+          és az időpontod <strong className="text-[#4A3F35]">visszaigazolva</strong> lett.
+          A részleteket emailben is elküldtük.
         </p>
         <div className="bg-[#F9F1EA] rounded-2xl p-5 mb-8 text-left space-y-2">
-          <p className="text-[#4A3F35] font-semibold">📅 Mi a következő lépés?</p>
-          <p className="text-[#8B7355] text-sm">• Ellenőrizd az emailed a visszaigazoláshoz</p>
+          <p className="text-[#4A3F35] font-semibold">📅 Fontos tudnivalók</p>
+          <p className="text-[#8B7355] text-sm">• ✅ A foglalási díj (20%) megérkezett — foglalásod aktív</p>
           <p className="text-[#8B7355] text-sm">• A fennmaradó összeget a kezelésnél kell kifizetni</p>
+          <p className="text-[#8B7355] text-sm">• Foglalásaidat itt kezelheted: <a href="/foglalasaim" className="text-[#D4854A] font-medium hover:underline">dunakeszimasszazs.hu/foglalasaim</a></p>
           <p className="text-[#8B7355] text-sm">• 📍 Dunakeszi, Kolonics György utca 2/B — Kapucsengő: 1/43</p>
           <p className="text-[#8B7355] text-sm">• 📞 +36 30 487 7883</p>
         </div>
         <a
           href="/"
-          onClick={() => { window.location.hash = ''; window.location.href = '/'; }}
+          onClick={(e) => { e.preventDefault(); navigateTo(ROUTES.home); }}
           className="inline-block bg-[#D4854A] hover:bg-[#B87333] text-white font-semibold px-8 py-3 rounded-xl transition-colors duration-200"
         >
           Vissza a főoldalra

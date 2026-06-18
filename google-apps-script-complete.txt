@@ -853,8 +853,8 @@ function createStripeCheckout(data) {
       '&line_items[0][price_data][unit_amount]=' + (amount * 100) + // HUF is two-decimal: send fillér (Ft × 100)
       '&line_items[0][quantity]=1' +
       '&customer_email=' + encodeURIComponent(data.email) +
-      '&success_url=' + encodeURIComponent(data.successUrl || 'https://dunakeszimasszazs.hu/#booking-success') +
-      '&cancel_url=' + encodeURIComponent(data.cancelUrl || 'https://dunakeszimasszazs.hu/#booking-cancel') +
+      '&success_url=' + encodeURIComponent(data.successUrl || 'https://www.dunakeszimasszazs.hu/booking-success') +
+      '&cancel_url=' + encodeURIComponent(data.cancelUrl || 'https://www.dunakeszimasszazs.hu/booking-cancel') +
       '&metadata[customer_name]=' + encodeURIComponent(data.name) +
       '&metadata[customer_email]=' + encodeURIComponent(data.email) +
       '&metadata[service]=' + encodeURIComponent(data.service || '') +
@@ -933,8 +933,8 @@ function createStripeCheckoutDebug(data) {
       '&line_items[0][price_data][unit_amount]=' + (amount * 100) + // HUF is two-decimal: send fillér (Ft × 100)
       '&line_items[0][quantity]=1' +
       '&customer_email=' + encodeURIComponent(data.email) +
-      '&success_url=' + encodeURIComponent(data.successUrl || 'https://dunakeszimasszazs.hu/#booking-success') +
-      '&cancel_url=' + encodeURIComponent(data.cancelUrl || 'https://dunakeszimasszazs.hu/#booking-cancel') +
+      '&success_url=' + encodeURIComponent(data.successUrl || 'https://www.dunakeszimasszazs.hu/booking-success') +
+      '&cancel_url=' + encodeURIComponent(data.cancelUrl || 'https://www.dunakeszimasszazs.hu/booking-cancel') +
       '&metadata[customer_name]=' + encodeURIComponent(data.name || '') +
       '&metadata[customer_email]=' + encodeURIComponent(data.email || '') +
       '&metadata[service]=' + encodeURIComponent(data.service || '') +
