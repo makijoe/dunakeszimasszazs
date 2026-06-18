@@ -2987,6 +2987,7 @@ function AdminPage() {
       setIsAuthenticated(true);
       toast.success('Sikeres bejelentkezés!');
       loadDashboardData();
+      loadPendingBookings();
     } else {
       toast.error('Hibás jelszó!');
     }
@@ -3036,13 +3037,25 @@ function AdminPage() {
     try {
       const response = await fetch(`${SCRIPT_URL}?action=pendingBookings`);
       const data = await response.json();
-      if (data.success) setPendingBookings(data.data.bookings || []);
+      if (data.success) {
+        const bookings = data.data.bookings || [];
+        setPendingBookings(bookings);
+        setPendingCount(bookings.length);
+      }
     } catch (error) {
       console.error('Error loading pending bookings:', error);
     }
   };
 
+  const [pendingCount, setPendingCount] = useState(0);
   const [confirmingReference, setConfirmingReference] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    loadPendingBookings();
+    const interval = setInterval(loadPendingBookings, 60000);
+    return () => clearInterval(interval);
+  }, [isAuthenticated]);
 
   const confirmBankTransfer = async (referenceId: string, customerName: string) => {
     if (!referenceId) return;
@@ -3379,7 +3392,14 @@ function AdminPage() {
                   }`}
               >
                 <span>{tab.icon}</span>
-                <span>{tab.label}</span>
+                <span className="relative inline-flex items-center gap-1.5">
+                  {tab.label}
+                  {tab.id === 'pending' && pendingCount > 0 && (
+                    <span className="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 text-[10px] font-bold text-white bg-[#D4854A] rounded-full leading-none">
+                      {pendingCount > 99 ? '99+' : pendingCount}
+                    </span>
+                  )}
+                </span>
               </button>
             ))}
           </nav>
@@ -3581,7 +3601,7 @@ function AdminPage() {
                   <table className="w-full text-sm">
                     <thead className="bg-[#F9F1EA]">
                       <tr>
-                        {['Név', 'Email', 'Kezelés', 'Dátum', 'Időpont', 'Összeg', 'Fizetés', 'Közlemény', 'Státusz', 'Művelet'].map(h => (
+                        {['Név', 'Email', 'Kezelés', 'Dátum', 'Időpont', 'Összeg', 'Fizetés', 'Közl.', 'Státusz', 'Művelet'].map(h => (
                           <th key={h} className="px-4 py-3 text-left text-[#4A3F35] font-semibold">{h}</th>
                         ))}
                       </tr>
@@ -3596,7 +3616,7 @@ function AdminPage() {
                           <td className="px-4 py-3 text-[#8B7355]">{b.time}</td>
                           <td className="px-4 py-3 text-[#8B7355]">{b.amount ? Number(b.amount).toLocaleString() + ' Ft' : '-'}</td>
                           <td className="px-4 py-3 text-[#8B7355]">{b.paymentMethod === 'bank_transfer' ? '🏦 Átutalás' : '💳 Stripe'}</td>
-                          <td className="px-4 py-3 font-mono text-xs text-[#D4854A] font-bold">{b.referenceId || '-'}</td>
+                          <td className="px-4 py-3 font-mono text-sm text-[#D4854A] font-bold tracking-wide">{b.referenceId || '-'}</td>
                           <td className="px-4 py-3">
                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                               b.status === 'paid' ? 'bg-[#8B9A7C]/15 text-[#4A7C59]' :

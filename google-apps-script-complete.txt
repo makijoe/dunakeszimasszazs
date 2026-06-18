@@ -753,9 +753,9 @@ function validateStripeKeys_() {
 }
 
 function generatePaymentReference_() {
-  var datePart = Utilities.formatDate(new Date(), TZ, 'yyyyMMdd');
-  var rand = Math.random().toString(36).substring(2, 6).toUpperCase();
-  return 'DM-' + datePart + '-' + rand;
+  // Short code for bank transfer közlemény field (e.g. DM3K9F2)
+  var rand = Math.random().toString(36).substring(2, 7).toUpperCase();
+  return 'DM' + rand;
 }
 
 function ensurePendingBookingsSheet_() {
@@ -1277,8 +1277,8 @@ function getPendingBookings_() {
       email: data[i][2],
       phone: data[i][3],
       service: data[i][4],
-      date: data[i][5],
-      time: data[i][6],
+      date: typeof data[i][5] === 'string' ? data[i][5].slice(0, 10) : formatDate(new Date(data[i][5])),
+      time: formatTimeFromSheet(data[i][6]),
       notes: data[i][7],
       recurring: data[i][8],
       recurringType: data[i][9],
