@@ -1145,7 +1145,7 @@ function sendBankTransferNotificationToEdina_(data, referenceId, amount) {
     '🔖 Közlemény: ' + referenceId + '\n' +
     '═══════════════════════════════════════\n\n' +
     'Amikor megérkezik az átutalás, nyisd meg az admin felületet:\n' +
-    'https://dunakeszimasszazs.hu/#admin → Függőben → "Befizetés megerősítése"\n\n' +
+    'https://www.dunakeszimasszazs.hu/admin → Függőben → "Befizetés megerősítése"\n\n' +
     'Addig az időpont függőben van, de még nincs a naptárban.';
 
   var html = buildSimpleHtml('Új banki átutalásos foglalás', '🏦',
@@ -1162,7 +1162,7 @@ function sendBankTransferNotificationToEdina_(data, referenceId, amount) {
     ]) +
     '<p style="font-size:13px;background:#fff7ed;border:1px solid #fdba74;border-radius:6px;padding:10px;margin-top:12px;">' +
     '⚠️ <strong>Fontos:</strong> A befizetés beérkezése után erősítsd meg az admin felületen: ' +
-    '<a href="https://dunakeszimasszazs.hu/#admin" style="color:#D4854A;">dunakeszimasszazs.hu/#admin</a> → Függőben → Befizetés megerősítése</p>'
+    '<a href="https://www.dunakeszimasszazs.hu/admin" style="color:#D4854A;">dunakeszimasszazs.hu/admin</a> → Függőben → Befizetés megerősítése</p>'
   );
 
   sendEmail_({
@@ -2341,7 +2341,7 @@ function sendBookingConfirmationToCustomer(data, recurringCount, recurringType, 
   customerBody += '═══════════════════════════════════════\n';
   customerBody += '🔗 FOGLALÁSAIDAT TE IS KEZELHETED ONLINE:\n';
   customerBody += '═══════════════════════════════════════\n';
-  customerBody += '1️⃣  Nyisd meg: https://dunakeszimasszazs.hu/#foglalaskezeles\n';
+  customerBody += '1️⃣  Nyisd meg: https://www.dunakeszimasszazs.hu/foglalasaim\n';
   customerBody += '2️⃣  Íd be ezt az email címet: ' + data.email + '\n';
   customerBody += '3️⃣  Megjelennek az összes közelgő foglalásaid\n';
   customerBody += '4️⃣  Minden alkalom mellé találsz ”Időpont módosítása” és ”Lemondas” gombot\n\n';
@@ -2671,7 +2671,7 @@ function buildCustomerConfirmationHtml(data, recurringCount, recurringType, recu
   html += '<li>Minden alkalom mellé találsz <b>Módosítás</b> és <b>Lemondás</b> gombot</li>';
   html += '</ol>';
   html += '<div style="text-align:center;margin:12px 0 8px;">';
-  html += '<a href="https://dunakeszimasszazs.hu/#foglalaskezeles" style="display:inline-block;background:#D4854A;color:white;text-decoration:none;padding:12px 28px;border-radius:20px;font-size:14px;font-weight:bold;">Foglalásaim kezelése &rarr;</a>';
+  html += '<a href="https://www.dunakeszimasszazs.hu/foglalasaim" style="display:inline-block;background:#D4854A;color:white;text-decoration:none;padding:12px 28px;border-radius:20px;font-size:14px;font-weight:bold;">Foglalásaim kezelése &rarr;</a>';
   html += '</div>';
   html += '<p style="margin:8px 0 0;font-size:11px;color:#6B7280;text-align:center;">&#9888;&#65039; Ingyenes lemondas / módosítás kérés 24 órával az alkalom előtt lehetkérni</p>';
   html += '</div>';

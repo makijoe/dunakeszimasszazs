@@ -26,6 +26,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { toast, Toaster } from 'sonner';
+import { getAppRoute, navigateTo, ROUTES, type AppRoute } from '@/lib/navigation';
 
 // Google Apps Script URL (override via VITE_SCRIPT_URL in Vercel)
 const SCRIPT_URL = import.meta.env.VITE_SCRIPT_URL || 'https://script.google.com/macros/s/AKfycbyNNnfTYIlEcuJFD2DaHJcPkv-ErX34TRaxmuc3mFxLVksuoYqs4_GLhilMxHmS3Eg/exec';
@@ -107,8 +108,8 @@ function Navigation() {
               </a>
             ))}
             <a
-              href="/#foglalaskezeles"
-              onClick={(e) => { e.preventDefault(); window.location.href = '/#foglalaskezeles'; }}
+              href={ROUTES.manage}
+              onClick={(e) => { e.preventDefault(); navigateTo(ROUTES.manage); }}
               className="px-4 py-2 rounded-full text-sm font-medium text-[#4A3F35] hover:bg-[#F5E6D8] hover:text-[#D4854A] transition-all duration-300 flex items-center gap-1.5"
             >
               <Calendar className="w-3.5 h-3.5" />
@@ -149,8 +150,8 @@ function Navigation() {
                 </a>
               ))}
               <a
-                href="/#foglalaskezeles"
-                onClick={(e) => { e.preventDefault(); window.location.href = '/#foglalaskezeles'; }}
+                href={ROUTES.manage}
+                onClick={(e) => { e.preventDefault(); navigateTo(ROUTES.manage); }}
                 className="px-4 py-3 rounded-xl text-sm font-medium text-[#4A3F35] hover:bg-[#F5E6D8] flex items-center gap-2"
               >
                 <Calendar className="w-4 h-4 text-[#D4854A]" />
@@ -1690,7 +1691,7 @@ function BookingSection() {
           time: formData.time,
           bankAccount: result.data.bankAccount || BANK_ACCOUNT,
         }));
-        window.location.hash = '#booking-bank-pending';
+        navigateTo('/', '#booking-bank-pending');
         return;
       }
 
@@ -2490,7 +2491,8 @@ function FooterSection() {
                 Adatvédelmi tájékoztató
               </button>
               <a
-                href="/#admin"
+                href={ROUTES.admin}
+                onClick={(e) => { e.preventDefault(); navigateTo(ROUTES.admin); }}
                 className="text-white/50 hover:text-[#D4854A] transition-colors text-sm"
               >
                 Admin
@@ -2662,14 +2664,14 @@ function ManageBookingsPage() {
       {/* Header */}
       <header className="bg-white shadow-sm py-4 px-4">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <a href="/" onClick={(e) => { e.preventDefault(); window.location.href = '/'; }} className="flex items-center gap-2">
+          <a href={ROUTES.home} onClick={(e) => { e.preventDefault(); navigateTo(ROUTES.home); }} className="flex items-center gap-2">
             <img src="/images/logo.png" alt="Logo" className="w-10 h-10 rounded-full object-cover" />
             <div>
               <p className="font-semibold text-[#4A3F35] text-sm">Dunakeszi Masszázs</p>
               <p className="text-xs text-[#8B7355]">Angyali Szalon</p>
             </div>
           </a>
-          <a href="/" onClick={(e) => { e.preventDefault(); window.location.href = '/'; }} className="text-sm text-[#8B7355] hover:text-[#D4854A] transition-colors">
+          <a href={ROUTES.home} onClick={(e) => { e.preventDefault(); navigateTo(ROUTES.home); }} className="text-sm text-[#8B7355] hover:text-[#D4854A] transition-colors">
             ← Főoldalra
           </a>
         </div>
@@ -4607,37 +4609,35 @@ function BookingCancelPage() {
 
 // Main App Component
 function App() {
-  const [hash, setHash] = useState(window.location.hash);
+  const [route, setRoute] = useState<AppRoute>(getAppRoute);
 
   useEffect(() => {
-    const onHashChange = () => setHash(window.location.hash);
-    window.addEventListener('hashchange', onHashChange);
-    return () => window.removeEventListener('hashchange', onHashChange);
+    const onRouteChange = () => setRoute(getAppRoute());
+    window.addEventListener('hashchange', onRouteChange);
+    window.addEventListener('popstate', onRouteChange);
+    return () => {
+      window.removeEventListener('hashchange', onRouteChange);
+      window.removeEventListener('popstate', onRouteChange);
+    };
   }, []);
 
-  const isAdminPage = hash === '#admin' || window.location.search.includes('admin');
-  const isBookingSuccess = hash === '#booking-success';
-  const isBookingCancel = hash === '#booking-cancel';
-  const isBookingBankPending = hash === '#booking-bank-pending';
-  const isManagePage = hash === '#foglalaskezeles';
-
-  if (isAdminPage) {
+  if (route === 'admin') {
     return <AdminPage />;
   }
 
-  if (isManagePage) {
+  if (route === 'manage') {
     return <ManageBookingsPage />;
   }
 
-  if (isBookingBankPending) {
+  if (route === 'booking-bank-pending') {
     return <BookingBankPendingPage />;
   }
 
-  if (isBookingSuccess) {
+  if (route === 'booking-success') {
     return <BookingSuccessPage />;
   }
 
-  if (isBookingCancel) {
+  if (route === 'booking-cancel') {
     return <BookingCancelPage />;
   }
 
