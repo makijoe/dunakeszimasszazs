@@ -2962,15 +2962,6 @@ function AdminPage() {
   const [pnlData, setPnlData] = useState<any>(null);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const [pnlView, setPnlView] = useState<'day' | 'week' | 'month'>('month');
-  const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().slice(0, 10));
-  const [selectedWeekStart, setSelectedWeekStart] = useState(() => {
-    const d = new Date();
-    const dow = d.getDay();
-    const diff = dow === 0 ? -6 : 1 - dow;
-    d.setDate(d.getDate() + diff);
-    return d.toISOString().slice(0, 10);
-  });
   const [cancelSearch, setCancelSearch] = useState('');
   const [searchEmail, setSearchEmail] = useState('');
   const [customerProfile, setCustomerProfile] = useState<any>(null);
@@ -3028,16 +3019,9 @@ function AdminPage() {
     }
   };
 
-  const loadPnLData = async (view = pnlView, date = selectedDate, weekStart = selectedWeekStart, month = selectedMonth, year = selectedYear) => {
+  const loadPnLData = async (month = selectedMonth, year = selectedYear) => {
     try {
-      let url = `${SCRIPT_URL}?action=pnl`;
-      if (view === 'day') {
-        url += `&mode=day&date=${date}`;
-      } else if (view === 'week') {
-        url += `&mode=week&weekStart=${weekStart}`;
-      } else {
-        url += `&mode=month&month=${month}&year=${year}`;
-      }
+      const url = `${SCRIPT_URL}?action=pnl&mode=month&month=${month}&year=${year}`;
       const response = await fetch(url);
       const data = await response.json();
       if (data.success) setPnlData(data.data);
@@ -3075,7 +3059,7 @@ function AdminPage() {
   const [confirmedReferences, setConfirmedReferences] = useState<Set<string>>(new Set());
   const [deletingPendingKey, setDeletingPendingKey] = useState<string | null>(null);
   const [deletingBookingId, setDeletingBookingId] = useState<string | null>(null);
-  const [isReconcilingPnL, setIsReconcilingPnL] = useState(false);
+
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -3137,24 +3121,6 @@ function AdminPage() {
     }
   };
 
-  const reconcilePnL = async () => {
-    setIsReconcilingPnL(true);
-    try {
-      const result = await callScriptAction('reconcilePnL');
-      if (result.success) {
-        toast.success(result.message || 'P&L frissítve.');
-        loadPnLData();
-        loadDashboardData();
-      } else {
-        toast.error(result.message || 'Hiba a P&L egyeztetésekor');
-      }
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Hiba a P&L egyeztetésekor');
-    } finally {
-      setIsReconcilingPnL(false);
-    }
-  };
-
   const deleteBooking = async (booking: { bookingId: string; customerName: string; date?: string; time?: string; service?: string }) => {
     if (!booking.bookingId) return;
     const when = [formatBookingDate(booking.date), formatBookingTime(booking.time)].filter((v) => v !== '–').join(' ');
@@ -3168,9 +3134,7 @@ function AdminPage() {
         setAllBookings((prev) =>
           prev.map((b) => (b.bookingId === booking.bookingId ? { ...b, status: 'Cancelled' } : b))
         );
-        toast.success(result.data?.paymentReversed
-          ? 'Foglalás törölve, befizetés levonva a P&L-ből.'
-          : 'Foglalás törölve.');
+        toast.success('Foglalás törölve.');
         loadAllBookings();
         loadDashboardData();
         loadPnLData();
@@ -3547,9 +3511,9 @@ function AdminPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
-                <p className="text-[#8B7355] text-sm">Havi befolyt összeg</p>
-                <p className="text-3xl font-bold text-[#4A3F35]">{dashboardData?.monthlyPnL?.totalIncome?.toLocaleString() || 0} Ft</p>
-                <p className="text-xs text-[#8B7355] mt-1">foglalók &amp; fizetések</p>
+                <p className="text-[#8B7355] text-sm">Beérkezett foglalók (hónap)</p>
+                <p className="text-3xl font-bold text-[#4A3F35]">{dashboardData?.monthlyPnL?.depositsReceived?.toLocaleString() || dashboardData?.monthlyPnL?.totalIncome?.toLocaleString() || 0} Ft</p>
+                <p className="text-xs text-[#8B7355] mt-1">csak valós befizetések</p>
               </div>
             </div>
 
@@ -4142,170 +4106,97 @@ function AdminPage() {
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
               <div>
-                <h2 className="text-2xl font-bold text-[#4A3F35]">P&L Kimutatás</h2>
-                <p className="text-sm text-[#8B7355] mt-1">Törölt foglalások befizetéseit a „P&L egyeztetés” vonja le.</p>
+                <h2 className="text-2xl font-bold text-[#4A3F35]">Bevétel áttekintés</h2>
+                <p className="text-sm text-[#8B7355] mt-1">Csak valóban beérkezett foglalók és aktív foglalások — nincs mínusz, nincs visszavonás sor.</p>
               </div>
-              <div className="flex flex-wrap items-center gap-2 self-start">
+              <div className="bg-white rounded-2xl shadow-warm px-4 py-3 flex flex-wrap items-center gap-3">
                 <button
                   type="button"
-                  onClick={reconcilePnL}
-                  disabled={isReconcilingPnL}
-                  className="px-4 py-2 bg-[#8B9A7C] hover:bg-[#6B7F5E] text-white rounded-lg text-sm font-medium disabled:opacity-50"
+                  onClick={() => {
+                    let m = selectedMonth - 1;
+                    let y = selectedYear;
+                    if (m < 1) { m = 12; y -= 1; }
+                    setSelectedMonth(m);
+                    setSelectedYear(y);
+                    loadPnLData(m, y);
+                  }}
+                  className="w-9 h-9 flex items-center justify-center rounded-lg border border-[#E8D4C0] hover:bg-[#F9F1EA] text-[#4A3F35]"
+                >‹</button>
+                <span className="text-sm font-semibold text-[#4A3F35] min-w-[140px] text-center">
+                  {new Date(selectedYear, selectedMonth - 1, 1).toLocaleDateString('hu-HU', { year: 'numeric', month: 'long' })}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    let m = selectedMonth + 1;
+                    let y = selectedYear;
+                    if (m > 12) { m = 1; y += 1; }
+                    setSelectedMonth(m);
+                    setSelectedYear(y);
+                    loadPnLData(m, y);
+                  }}
+                  className="w-9 h-9 flex items-center justify-center rounded-lg border border-[#E8D4C0] hover:bg-[#F9F1EA] text-[#4A3F35]"
+                >›</button>
+                <Button
+                  onClick={() => loadPnLData(selectedMonth, selectedYear)}
+                  className="bg-[#D4854A] hover:bg-[#B87333] text-white h-9"
                 >
-                  {isReconcilingPnL ? 'Egyeztetés...' : '↻ P&L egyeztetés'}
-                </button>
-              {/* View toggle */}
-              <div className="flex rounded-xl border border-[#E8D4C0] overflow-hidden">
-                {(['day', 'week', 'month'] as const).map((v) => (
-                  <button
-                    key={v}
-                    onClick={() => { setPnlView(v); setPnlData(null); loadPnLData(v); }}
-                    className={`px-4 py-2 text-sm font-medium transition-colors ${pnlView === v ? 'bg-[#D4854A] text-white' : 'bg-white text-[#8B7355] hover:bg-[#F9F1EA]'}`}
-                  >
-                    {v === 'day' ? 'Nap' : v === 'week' ? 'Hét' : 'Hónap'}
-                  </button>
-                ))}
-              </div>
+                  Frissítés
+                </Button>
               </div>
             </div>
 
-            {/* Filter row */}
-            <div className="bg-white rounded-2xl shadow-warm p-4 flex flex-wrap gap-3 items-center">
-              {pnlView === 'day' && (
-                <>
-                  <Input
-                    type="date"
-                    value={selectedDate}
-                    onChange={(e) => setSelectedDate(e.target.value)}
-                    className="h-10 border-[#E8D4C0] focus:border-[#D4854A] w-44"
-                  />
-                  <Button onClick={() => loadPnLData('day', selectedDate)} className="bg-[#D4854A] hover:bg-[#B87333] text-white h-10">Betöltés</Button>
-                </>
-              )}
-              {pnlView === 'week' && (
-                <>
-                  <button
-                    onClick={() => {
-                      const d = new Date(selectedWeekStart); d.setDate(d.getDate() - 7);
-                      const s = d.toISOString().slice(0, 10); setSelectedWeekStart(s);
-                    }}
-                    className="w-10 h-10 flex items-center justify-center rounded-lg border border-[#E8D4C0] hover:bg-[#F9F1EA] text-[#4A3F35]"
-                  >‹</button>
-                  <span className="text-sm font-medium text-[#4A3F35] min-w-[200px] text-center">
-                    {new Date(selectedWeekStart).toLocaleDateString('hu-HU', { month: 'short', day: 'numeric' })}
-                    {' – '}
-                    {(() => { const e = new Date(selectedWeekStart); e.setDate(e.getDate() + 6); return e.toLocaleDateString('hu-HU', { month: 'short', day: 'numeric', year: 'numeric' }); })()}
-                  </span>
-                  <button
-                    onClick={() => {
-                      const d = new Date(selectedWeekStart); d.setDate(d.getDate() + 7);
-                      const s = d.toISOString().slice(0, 10); setSelectedWeekStart(s);
-                    }}
-                    className="w-10 h-10 flex items-center justify-center rounded-lg border border-[#E8D4C0] hover:bg-[#F9F1EA] text-[#4A3F35]"
-                  >›</button>
-                  <Button onClick={() => loadPnLData('week', selectedDate, selectedWeekStart)} className="bg-[#D4854A] hover:bg-[#B87333] text-white h-10 ml-2">Betöltés</Button>
-                </>
-              )}
-              {pnlView === 'month' && (
-                <>
-                  <select
-                    value={selectedMonth}
-                    onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-                    className="h-10 pl-3 pr-10 border border-[#E8D4C0] rounded-md focus:border-[#D4854A] bg-white text-[#4A3F35]"
-                  >
-                    {Array.from({ length: 12 }, (_, i) => (
-                      <option key={i + 1} value={i + 1}>{i + 1}. hónap</option>
-                    ))}
-                  </select>
-                  <select
-                    value={selectedYear}
-                    onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                    className="h-10 pl-3 pr-10 border border-[#E8D4C0] rounded-md focus:border-[#D4854A] bg-white text-[#4A3F35]"
-                  >
-                    {[2024, 2025, 2026].map((year) => (
-                      <option key={year} value={year}>{year}</option>
-                    ))}
-                  </select>
-                  <Button onClick={() => loadPnLData('month', selectedDate, selectedWeekStart, selectedMonth, selectedYear)} className="bg-[#D4854A] hover:bg-[#B87333] text-white h-10">Betöltés</Button>
-                </>
-              )}
-            </div>
-
-            {pnlData && (
+            {pnlData ? (
               <>
-                {/* Summary Cards */}
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                  <div className="bg-white rounded-2xl p-5 shadow-warm">
-                    <p className="text-[#8B7355] text-xs mb-1">Befolyt összeg</p>
-                    <p className="text-xl font-bold text-[#4A3F35]">{pnlData.totalIncome?.toLocaleString() || 0} Ft</p>
-                    <p className="text-[10px] text-[#8B7355] mt-1">foglalók &amp; fizetések</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="bg-white rounded-2xl p-6 shadow-warm border border-[#E8D4C0]/50">
+                    <p className="text-[#8B7355] text-sm mb-1">💰 Beérkezett foglalók</p>
+                    <p className="text-3xl font-bold text-[#4A3F35]">{(pnlData.depositsReceived ?? pnlData.totalIncome ?? 0).toLocaleString('hu-HU')} Ft</p>
+                    <p className="text-xs text-[#8B7355] mt-2">Ténylegesen befizetett összeg ebben a hónapban</p>
                   </div>
-                  <div className="bg-white rounded-2xl p-5 shadow-warm">
-                    <p className="text-[#8B7355] text-xs mb-1">Becsült forgalom</p>
-                    <p className="text-xl font-bold text-[#4A7C59]">{pnlData.estimatedFullRevenue?.toLocaleString() || 0} Ft</p>
-                    <p className="text-[10px] text-[#8B7355] mt-1">teljes kezelési érték</p>
+                  <div className="bg-white rounded-2xl p-6 shadow-warm border border-[#E8D4C0]/50">
+                    <p className="text-[#8B7355] text-sm mb-1">📅 Aktív foglalások</p>
+                    <p className="text-3xl font-bold text-[#8B9A7C]">{pnlData.activeBookings ?? pnlData.sessionsCompleted ?? 0}</p>
+                    <p className="text-xs text-[#8B7355] mt-2">Megerősített időpontok ebben a hónapban</p>
                   </div>
-                  <div className="bg-white rounded-2xl p-5 shadow-warm">
-                    <p className="text-[#8B7355] text-xs mb-1">Bérlet foglalók</p>
-                    <p className="text-xl font-bold text-[#D4854A]">{pnlData.totalDeposits?.toLocaleString() || 0} Ft</p>
-                    <p className="text-[10px] text-[#8B7355] mt-1">bérlet foglaló (Deposit)</p>
+                  <div className="bg-white rounded-2xl p-6 shadow-warm border border-[#E8D4C0]/50">
+                    <p className="text-[#8B7355] text-sm mb-1">📈 Várható bevétel</p>
+                    <p className="text-3xl font-bold text-[#4A7C59]">{(pnlData.estimatedFullRevenue ?? 0).toLocaleString('hu-HU')} Ft</p>
+                    <p className="text-xs text-[#8B7355] mt-2">Teljes kezelési díj az aktív foglalásoknál</p>
                   </div>
-                  <div className="bg-white rounded-2xl p-5 shadow-warm">
-                    <p className="text-[#8B7355] text-xs mb-1">Bérlet hátralék</p>
-                    <p className="text-xl font-bold text-red-500">{pnlData.outstanding?.toLocaleString() || 0} Ft</p>
-                    <p className="text-[10px] text-[#8B7355] mt-1">befolyt − bérlet foglaló</p>
-                  </div>
-                  <div className="bg-white rounded-2xl p-5 shadow-warm">
-                    <p className="text-[#8B7355] text-xs mb-1">Kezelések</p>
-                    <p className="text-xl font-bold text-[#8B9A7C]">{pnlData.sessionsCompleted || 0}</p>
-                  </div>
-                  <div className="bg-white rounded-2xl p-5 shadow-warm">
-                    <p className="text-[#8B7355] text-xs mb-1">Átlag / kezelés</p>
-                    <p className="text-xl font-bold text-[#4A7C59]">
-                      {pnlData.sessionsCompleted > 0
-                        ? Math.round((pnlData.estimatedFullRevenue || pnlData.totalIncome || 0) / pnlData.sessionsCompleted).toLocaleString()
-                        : 0} Ft
-                    </p>
+                  <div className="bg-white rounded-2xl p-6 shadow-warm border border-[#E8D4C0]/50">
+                    <p className="text-[#8B7355] text-sm mb-1">⏳ Hátralék kezeléskor</p>
+                    <p className="text-3xl font-bold text-[#D4854A]">{(pnlData.remainingAtSession ?? pnlData.outstanding ?? 0).toLocaleString('hu-HU')} Ft</p>
+                    <p className="text-xs text-[#8B7355] mt-2">Amit még a vendég a kezelésnél fizet</p>
                   </div>
                 </div>
 
-                {/* Transactions Table */}
                 {pnlData.transactions?.length > 0 ? (
-                  <div className="bg-white rounded-2xl shadow-warm p-6">
+                  <div className="bg-white rounded-2xl shadow-warm p-6 border border-[#E8D4C0]/50">
                     <div className="flex items-center justify-between mb-4">
-                      <h3 className="font-semibold text-[#4A3F35]">Tranzakciók</h3>
-                      <span className="text-sm text-[#8B7355]">{pnlData.transactions.length} tétel</span>
+                      <h3 className="font-semibold text-[#4A3F35]">Befizetések</h3>
+                      <span className="text-sm text-[#8B7355]">{pnlData.transactions.length} befizetés</span>
                     </div>
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm">
                         <thead>
-                          <tr className="border-b border-[#E8D4C0]">
-                            <th className="text-left py-2 text-[#8B7355] font-medium">Dátum</th>
-                            <th className="text-left py-2 text-[#8B7355] font-medium">Típus</th>
-                            <th className="text-left py-2 text-[#8B7355] font-medium">Vásárló</th>
-                            <th className="text-left py-2 text-[#8B7355] font-medium">Leírás</th>
-                            <th className="text-right py-2 text-[#8B7355] font-medium">Összeg</th>
+                          <tr className="border-b border-[#E8D4C0] bg-[#F9F1EA]/60">
+                            <th className="text-left py-3 px-3 text-[#4A3F35] font-semibold">Dátum</th>
+                            <th className="text-left py-3 px-3 text-[#4A3F35] font-semibold">Vendég</th>
+                            <th className="text-left py-3 px-3 text-[#4A3F35] font-semibold">Kezelés / fizetés</th>
+                            <th className="text-right py-3 px-3 text-[#4A3F35] font-semibold">Összeg</th>
                           </tr>
                         </thead>
                         <tbody>
                           {pnlData.transactions.map((txn: any, i: number) => (
-                            <tr key={i} className="border-b border-[#F9F1EA]">
-                              <td className="py-3 text-[#4A3F35]">{typeof txn.date === 'string' ? txn.date : new Date(txn.date).toLocaleDateString('hu-HU')}</td>
-                              <td className="py-3">
-                                <span className={`px-2 py-1 rounded text-xs ${
-                                  txn.type === 'Refund'
-                                    ? 'bg-red-100 text-red-700'
-                                    : txn.type === 'Income' || txn.type === 'Payment'
-                                  ? 'bg-[#8B9A7C]/20 text-[#8B9A7C]'
-                                  : 'bg-[#D4854A]/20 text-[#D4854A]'
-                                  }`}>
-                                  {txn.type === 'Refund' ? 'Visszavonás' : txn.type === 'Income' ? 'Bevétel' : txn.type === 'Payment' ? 'Fizetés' : 'Foglaló'}
-                                </span>
+                            <tr key={i} className="border-b border-[#F9F1EA] hover:bg-[#FFFBF7]">
+                              <td className="py-3 px-3 text-[#4A3F35] whitespace-nowrap">
+                                {typeof txn.date === 'string' ? txn.date.slice(0, 10) : new Date(txn.date).toLocaleDateString('hu-HU')}
                               </td>
-                              <td className="py-3 text-[#4A3F35]">{txn.customer}</td>
-                              <td className="py-3 text-[#8B7355]">{txn.description}</td>
-                              <td className={`py-3 text-right font-medium ${txn.type === 'Refund' || (typeof txn.amount === 'number' && txn.amount < 0) ? 'text-red-600' : 'text-[#4A3F35]'}`}>
-                                {(txn.type === 'Refund' && txn.amount > 0 ? '-' : '')}{Math.abs(txn.amount || 0).toLocaleString()} Ft
+                              <td className="py-3 px-3 font-medium text-[#4A3F35]">{txn.customer}</td>
+                              <td className="py-3 px-3 text-[#8B7355]">{txn.description}</td>
+                              <td className="py-3 px-3 text-right font-semibold text-[#4A7C59] whitespace-nowrap">
+                                +{Number(txn.amount || 0).toLocaleString('hu-HU')} Ft
                               </td>
                             </tr>
                           ))}
@@ -4314,9 +4205,13 @@ function AdminPage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="bg-white rounded-2xl shadow-warm p-8 text-center text-[#8B7355]">Nincs tranzakció ebben az időszakban.</div>
+                  <div className="bg-white rounded-2xl shadow-warm p-10 text-center text-[#8B7355] border border-[#E8D4C0]/50">
+                    Ebben a hónapban még nincs befizetés rögzítve.
+                  </div>
                 )}
               </>
+            ) : (
+              <div className="bg-white rounded-2xl shadow-warm p-10 text-center text-[#8B7355]">Adatok betöltése...</div>
             )}
           </div>
         )}

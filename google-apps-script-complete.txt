@@ -1463,20 +1463,64 @@ function isFinancialRowVoid_(notes) {
   return String(notes || '').toUpperCase() === 'VOID';
 }
 
-function applyFinancialAmountToPnL_(type, amount, incomeRef, revenueRef, depositsRef) {
-  if (type === 'Income' || type === 'Payment') {
-    incomeRef.val += amount;
-    if (type === 'Payment') {
-      revenueRef.val += amount * 5;
-    } else {
-      revenueRef.val += amount;
-    }
-  } else if (type === 'Deposit') {
-    depositsRef.val += amount;
-  } else if (type === 'Refund') {
-    incomeRef.val -= amount;
-    revenueRef.val -= amount * 5;
+function estimateServicePrice_(serviceName) {
+  var s = String(serviceName || '').toLowerCase();
+  if (s.indexOf('arany') !== -1 || s.indexOf('bemer') !== -1) return 30000;
+  return 15000;
+}
+
+function simplifyPaymentDescription_(description, paymentMethod) {
+  var svc = parseServiceFromPaymentDescription_(description);
+  var method = String(paymentMethod || '').toLowerCase();
+  var methodLabel = method.indexOf('bank') !== -1 ? 'Átutalás' : (method.indexOf('stripe') !== -1 ? 'Stripe' : 'Fizetés');
+  if (svc) return methodLabel + ' · ' + svc;
+  return String(description || '');
+}
+
+// Hide refund rows and void payments without a matching active booking
+function silentReconcileFinancial_() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var financialSheet = ss.getSheetByName(SHEETS.FINANCIAL);
+  var bookingsSheet = ss.getSheetByName(SHEETS.BOOKINGS);
+  if (!financialSheet || !bookingsSheet) return 0;
+
+  var finData = financialSheet.getDataRange().getValues();
+  var bookData = bookingsSheet.getDataRange().getValues();
+  var confirmedCounts = {};
+  var voided = 0;
+
+  for (var j = 1; j < bookData.length; j++) {
+    if (bookData[j][6] !== 'Confirmed') continue;
+    var key = String(bookData[j][2]) + '|' + String(bookData[j][3]);
+    confirmedCounts[key] = (confirmedCounts[key] || 0) + 1;
   }
+
+  var paymentRows = {};
+  for (var i = 1; i < finData.length; i++) {
+    if (finData[i][2] === 'Refund') {
+      financialSheet.getRange(i + 1, 10).setValue('VOID');
+      voided++;
+      continue;
+    }
+    if (finData[i][2] !== 'Payment' && finData[i][2] !== 'Income') continue;
+    if (isFinancialRowVoid_(finData[i][9])) continue;
+    var svc = parseServiceFromPaymentDescription_(finData[i][5]);
+    var pKey = String(finData[i][4]) + '|' + svc;
+    if (!paymentRows[pKey]) paymentRows[pKey] = [];
+    paymentRows[pKey].push(i + 1);
+  }
+
+  for (var k in paymentRows) {
+    var allowed = confirmedCounts[k] || 0;
+    var rows = paymentRows[k];
+    while (rows.length > allowed) {
+      financialSheet.getRange(rows.pop(), 10).setValue('VOID');
+      voided++;
+    }
+  }
+
+  if (voided > 0) SpreadsheetApp.flush();
+  return voided;
 }
 
 function reverseFinancialTransactionForBooking_(customerName, service, bookingId) {
@@ -1494,83 +1538,22 @@ function reverseFinancialTransactionForBooking_(customerName, service, bookingId
     if (txnService && txnService !== service) continue;
     if (!txnService && String(data[i][5]).indexOf(service) === -1) continue;
 
-    var amount = parseInt(data[i][6], 10) || 0;
     financialSheet.getRange(i + 1, 10).setValue('VOID');
-    recordTransaction(
-      new Date(),
-      'Refund',
-      '',
-      customerName,
-      'Törölt foglalás - ' + service + ' (' + bookingId + ')',
-      amount,
-      'Admin',
-      bookingId
-    );
     SpreadsheetApp.flush();
     return true;
   }
   return false;
 }
 
-// Voids payment rows that no longer have a matching Confirmed booking
 function adminReconcilePnL_() {
   try {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var financialSheet = ss.getSheetByName(SHEETS.FINANCIAL);
-    var bookingsSheet = ss.getSheetByName(SHEETS.BOOKINGS);
-    if (!financialSheet || !bookingsSheet) {
-      return createResponse(false, 'Hiányzó Financial vagy Bookings munkalap');
-    }
-
-    var finData = financialSheet.getDataRange().getValues();
-    var bookData = bookingsSheet.getDataRange().getValues();
-    var confirmedCounts = {};
-
-    for (var j = 1; j < bookData.length; j++) {
-      if (bookData[j][6] !== 'Confirmed') continue;
-      var key = String(bookData[j][2]) + '|' + String(bookData[j][3]);
-      confirmedCounts[key] = (confirmedCounts[key] || 0) + 1;
-    }
-
-    var paymentRows = {};
-    for (var i = 1; i < finData.length; i++) {
-      if (finData[i][2] !== 'Payment' && finData[i][2] !== 'Income') continue;
-      if (isFinancialRowVoid_(finData[i][9])) continue;
-      var svc = parseServiceFromPaymentDescription_(finData[i][5]);
-      var pKey = String(finData[i][4]) + '|' + svc;
-      if (!paymentRows[pKey]) paymentRows[pKey] = [];
-      paymentRows[pKey].push(i + 1);
-    }
-
-    var voided = 0;
-    for (var k in paymentRows) {
-      var allowed = confirmedCounts[k] || 0;
-      var rows = paymentRows[k];
-      while (rows.length > allowed) {
-        var rowNum = rows.pop();
-        var rowIdx = rowNum - 1;
-        var amount = parseInt(finData[rowIdx][6], 10) || 0;
-        financialSheet.getRange(rowNum, 10).setValue('VOID');
-        recordTransaction(
-          new Date(),
-          'Refund',
-          '',
-          finData[rowIdx][4],
-          'P&L egyeztetés - törölt foglalás fizetése (' + finData[rowIdx][5] + ')',
-          amount,
-          'Admin',
-          ''
-        );
-        voided++;
-      }
-    }
-
+    var voided = silentReconcileFinancial_();
     return createResponse(true, voided > 0
-      ? (voided + ' felesleges fizetés levonva a P&L-ből')
-      : 'A P&L már egyezik az aktív foglalásokkal', { voided: voided });
+      ? 'P&L frissítve (' + voided + ' régi tétel elrejtve)'
+      : 'P&L rendben — csak valós befizetések számítanak', { voided: voided });
   } catch (error) {
     logError('adminReconcilePnL_', error);
-    return createResponse(false, 'Hiba a P&L egyeztetésekor: ' + error.message);
+    return createResponse(false, 'Hiba a P&L frissítésekor: ' + error.message);
   }
 }
 
@@ -2085,128 +2068,82 @@ function flagCalendarEventForChange_(calendarEventId, bookingDate, bookingTime, 
 }
 
 // ============================================
-// P&L Dashboard
+// P&L Dashboard — simple, real-money view only
 // ============================================
-// Internal helper – returns a plain object (no ContentService wrapping).
-// Used by both getPnL() and getDashboardData().
-function getPnLData_(month, year) {
+function buildPnLReport_(startDate, endDate, meta) {
+  silentReconcileFinancial_();
+
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var financialSheet = ss.getSheetByName(SHEETS.FINANCIAL);
-  var txnData = financialSheet.getDataRange().getValues();
-  
-  var monthlyIncome = 0;
-  var monthlyDeposits = 0;
-  var estimatedFullRevenue = 0;
-  
-  var transactions = [];
-  
-  for (var i = 1; i < txnData.length; i++) {
-    if (isFinancialRowVoid_(txnData[i][9])) continue;
-    var txnDate = new Date(txnData[i][1]);
-    if (txnDate.getMonth() + 1 === parseInt(month) && txnDate.getFullYear() === parseInt(year)) {
-      var amount = txnData[i][6];
-      var type = txnData[i][2];
-      var incomeRef = { val: monthlyIncome };
-      var revenueRef = { val: estimatedFullRevenue };
-      var depositsRef = { val: monthlyDeposits };
-      applyFinancialAmountToPnL_(type, amount, incomeRef, revenueRef, depositsRef);
-      monthlyIncome = incomeRef.val;
-      estimatedFullRevenue = revenueRef.val;
-      monthlyDeposits = depositsRef.val;
-
-      transactions.push({
-        date: txnData[i][1],
-        type: type,
-        customer: txnData[i][4],
-        description: txnData[i][5],
-        amount: type === 'Refund' ? -amount : amount
-      });
-    }
-  }
-  
-  // Get session stats
   var bookingsSheet = ss.getSheetByName(SHEETS.BOOKINGS);
-  var bookingsData = bookingsSheet.getDataRange().getValues();
-  var sessionsCompleted = 0;
-  
-  for (var j = 1; j < bookingsData.length; j++) {
-    var bookingDate = new Date(bookingsData[j][4]);
-    if (bookingDate.getMonth() + 1 === parseInt(month) && 
-        bookingDate.getFullYear() === parseInt(year) &&
-        bookingsData[j][6] === 'Confirmed') {
-      sessionsCompleted++;
-    }
+  var finData = financialSheet.getDataRange().getValues();
+  var bookData = bookingsSheet.getDataRange().getValues();
+
+  var rangeStart = new Date(startDate);
+  rangeStart.setHours(0, 0, 0, 0);
+  var rangeEnd = new Date(endDate);
+  rangeEnd.setHours(23, 59, 59, 999);
+
+  var depositsReceived = 0;
+  var transactions = [];
+
+  for (var i = 1; i < finData.length; i++) {
+    if (isFinancialRowVoid_(finData[i][9])) continue;
+    if (finData[i][2] !== 'Payment' && finData[i][2] !== 'Income') continue;
+    var txnDate = new Date(finData[i][1]);
+    if (txnDate < rangeStart || txnDate > rangeEnd) continue;
+
+    var amount = parseInt(finData[i][6], 10) || 0;
+    depositsReceived += amount;
+    transactions.push({
+      date: finData[i][1],
+      type: finData[i][2] === 'Payment' ? 'Foglaló' : 'Bevétel',
+      customer: finData[i][4],
+      description: simplifyPaymentDescription_(finData[i][5], finData[i][7]),
+      amount: amount,
+      paymentMethod: finData[i][7] || ''
+    });
   }
-  
-  return {
-    month: month,
-    year: year,
-    totalIncome: monthlyIncome,
-    totalDeposits: monthlyDeposits,
-    estimatedFullRevenue: estimatedFullRevenue,
-    outstanding: monthlyIncome - monthlyDeposits,
-    sessionsCompleted: sessionsCompleted,
+
+  var activeBookings = 0;
+  var expectedAtSession = 0;
+  for (var j = 1; j < bookData.length; j++) {
+    if (bookData[j][6] !== 'Confirmed') continue;
+    var bookingDate = new Date(bookData[j][4]);
+    if (bookingDate < rangeStart || bookingDate > rangeEnd) continue;
+    activeBookings++;
+    expectedAtSession += estimateServicePrice_(bookData[j][3]);
+  }
+
+  var remainingAtSession = Math.max(0, expectedAtSession - depositsReceived);
+  transactions.reverse();
+
+  var report = {
+    depositsReceived: depositsReceived,
+    totalIncome: depositsReceived,
+    totalDeposits: 0,
+    estimatedFullRevenue: expectedAtSession,
+    outstanding: remainingAtSession,
+    remainingAtSession: remainingAtSession,
+    sessionsCompleted: activeBookings,
+    activeBookings: activeBookings,
     transactions: transactions
   };
+  if (meta) {
+    if (meta.month) report.month = meta.month;
+    if (meta.year) report.year = meta.year;
+  }
+  return report;
 }
 
-// Range-based P&L (used for day and week views)
+function getPnLData_(month, year) {
+  var start = new Date(parseInt(year), parseInt(month) - 1, 1);
+  var end = new Date(parseInt(year), parseInt(month), 0);
+  return buildPnLReport_(start, end, { month: parseInt(month), year: parseInt(year) });
+}
+
 function getPnLDataRange_(startDateStr, endDateStr) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var financialSheet = ss.getSheetByName(SHEETS.FINANCIAL);
-  var txnData = financialSheet.getDataRange().getValues();
-
-  var startDate = new Date(startDateStr);
-  startDate.setHours(0, 0, 0, 0);
-  var endDate = new Date(endDateStr);
-  endDate.setHours(23, 59, 59, 999);
-
-  var totalIncome = 0;
-  var totalDeposits = 0;
-  var estimatedFullRevenue = 0;
-  var transactions = [];
-
-  for (var i = 1; i < txnData.length; i++) {
-    if (isFinancialRowVoid_(txnData[i][9])) continue;
-    var txnDate = new Date(txnData[i][1]);
-    if (txnDate >= startDate && txnDate <= endDate) {
-      var amount = txnData[i][6];
-      var type = txnData[i][2];
-      var incomeRef = { val: totalIncome };
-      var revenueRef = { val: estimatedFullRevenue };
-      var depositsRef = { val: totalDeposits };
-      applyFinancialAmountToPnL_(type, amount, incomeRef, revenueRef, depositsRef);
-      totalIncome = incomeRef.val;
-      estimatedFullRevenue = revenueRef.val;
-      totalDeposits = depositsRef.val;
-      transactions.push({
-        date: txnData[i][1],
-        type: type,
-        customer: txnData[i][4],
-        description: txnData[i][5],
-        amount: type === 'Refund' ? -amount : amount
-      });
-    }
-  }
-
-  var bookingsSheet = ss.getSheetByName(SHEETS.BOOKINGS);
-  var bookingsData = bookingsSheet.getDataRange().getValues();
-  var sessionsCompleted = 0;
-  for (var j = 1; j < bookingsData.length; j++) {
-    var bookingDate = new Date(bookingsData[j][4]);
-    if (bookingDate >= startDate && bookingDate <= endDate && bookingsData[j][6] === 'Confirmed') {
-      sessionsCompleted++;
-    }
-  }
-
-  return {
-    totalIncome: totalIncome,
-    totalDeposits: totalDeposits,
-    estimatedFullRevenue: estimatedFullRevenue,
-    outstanding: totalIncome - totalDeposits,
-    sessionsCompleted: sessionsCompleted,
-    transactions: transactions
-  };
+  return buildPnLReport_(new Date(startDateStr), new Date(endDateStr), null);
 }
 
 function getPnL(data) {
