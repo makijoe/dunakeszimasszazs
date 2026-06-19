@@ -19,7 +19,8 @@ import {
   MessageSquare,
   X as XIcon,
   CreditCard,
-  Lock
+  Lock,
+  Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -83,6 +84,30 @@ function enrichCustomersWithBookings(customers: any[], bookings: any[]) {
       nextBookingTime: customer.nextBookingTime || next?.time || '',
     };
   });
+}
+
+function AdminTabLoader({ active, label }: { active: boolean; label?: string }) {
+  if (!active) return null;
+  return (
+    <div className="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b border-[#E8D4C0]/60">
+      <div className="h-1.5 bg-[#F5E6D8] overflow-hidden relative">
+        <div
+          className="absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-transparent via-[#D4854A] to-transparent"
+          style={{ animation: 'adminTabLoad 1.1s ease-in-out infinite' }}
+        />
+      </div>
+      <div className="px-4 py-2.5 text-sm text-[#8B7355] flex items-center justify-center gap-2">
+        <Loader2 className="w-4 h-4 text-[#D4854A] animate-spin shrink-0" />
+        <span>{label || 'Betöltés…'}</span>
+      </div>
+      <style>{`
+        @keyframes adminTabLoad {
+          0% { transform: translateX(-120%); }
+          100% { transform: translateX(420%); }
+        }
+      `}</style>
+    </div>
+  );
 }
 
 function formatGuestNextBooking(guest: { activeBookings?: number; nextBookingDate?: string; nextBookingTime?: string }): string {
@@ -3007,6 +3032,8 @@ function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
   const [activeTab, setActiveTab] = useState<'dashboard' | 'bookings' | 'pending' | 'customers' | 'packages' | 'pnl' | 'cancel' | 'notify' | 'blockslot'>('dashboard');
+  const [tabLoading, setTabLoading] = useState(false);
+  const [tabLoadingLabel, setTabLoadingLabel] = useState('');
   const [formData, setFormData] = useState({
     clientName: '',
     clientEmail: '',
@@ -3070,13 +3097,19 @@ function AdminPage() {
 
   const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'Edina2025!';
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password === ADMIN_PASSWORD) {
       setIsAuthenticated(true);
       toast.success('Sikeres bejelentkezés!');
-      loadDashboardData();
-      loadPendingBookings();
+      setTabLoading(true);
+      setTabLoadingLabel('Áttekintés betöltése…');
+      try {
+        await Promise.all([loadDashboardData(), loadPendingBookings()]);
+      } finally {
+        setTabLoading(false);
+        setTabLoadingLabel('');
+      }
     } else {
       toast.error('Hibás jelszó!');
     }
@@ -3092,6 +3125,50 @@ function AdminPage() {
       }
     } catch (error) {
       console.error('Error loading dashboard:', error);
+    }
+  };
+
+  const runWithTabLoading = async (label: string, task: () => Promise<void>) => {
+    if (tabLoading) return;
+    setTabLoading(true);
+    setTabLoadingLabel(label);
+    try {
+      await task();
+    } finally {
+      setTabLoading(false);
+      setTabLoadingLabel('');
+    }
+  };
+
+  const switchTab = async (tabId: typeof activeTab) => {
+    if (tabLoading) return;
+    setActiveTab(tabId);
+
+    const loaders: Partial<Record<typeof activeTab, { label: string; run: () => Promise<void> }>> = {
+      dashboard: { label: 'Áttekintés betöltése…', run: loadDashboardData },
+      bookings: { label: 'Foglalások betöltése…', run: loadAllBookings },
+      pending: { label: 'Függő foglalások betöltése…', run: loadPendingBookings },
+      customers: { label: 'Vendégek betöltése…', run: loadAllCustomers },
+      packages: { label: 'Bérletek betöltése…', run: loadAllPackages },
+      pnl: { label: 'Bevétel betöltése…', run: () => loadPnLData() },
+      cancel: {
+        label: 'Foglalások betöltése…',
+        run: async () => {
+          if (allBookings.length === 0) await loadAllBookings();
+        },
+      },
+    };
+
+    const loader = loaders[tabId];
+    if (!loader) return;
+
+    setTabLoading(true);
+    setTabLoadingLabel(loader.label);
+    try {
+      await loader.run();
+    } finally {
+      setTabLoading(false);
+      setTabLoadingLabel('');
     }
   };
 
@@ -3654,17 +3731,10 @@ function AdminPage() {
             ].map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => {
-                  setActiveTab(tab.id as any);
-                  if (tab.id === 'dashboard') loadDashboardData();
-                  if (tab.id === 'bookings') loadAllBookings();
-                  if (tab.id === 'customers') loadAllCustomers();
-                  if (tab.id === 'pending') loadPendingBookings();
-                  if (tab.id === 'pnl') loadPnLData();
-                  if (tab.id === 'packages') loadAllPackages();
-                  if (tab.id === 'cancel' && allBookings.length === 0) loadAllBookings();
-                }}
-                className={`flex items-center gap-2 px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === tab.id
+                type="button"
+                disabled={tabLoading}
+                onClick={() => switchTab(tab.id as typeof activeTab)}
+                className={`flex items-center gap-2 px-6 py-4 font-medium whitespace-nowrap transition-colors disabled:opacity-60 ${activeTab === tab.id
                   ? 'text-[#D4854A] border-b-2 border-[#D4854A]'
                   : 'text-[#8B7355] hover:text-[#4A3F35]'
                   }`}
@@ -3682,10 +3752,11 @@ function AdminPage() {
             ))}
           </nav>
         </div>
+        <AdminTabLoader active={tabLoading} label={tabLoadingLabel} />
       </div>
 
       {/* Main Content */}
-      <main className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className={`max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 transition-opacity duration-200 ${tabLoading ? 'opacity-50 pointer-events-none' : ''}`}>
         {/* DASHBOARD TAB */}
         {activeTab === 'dashboard' && (() => {
           const monthlyDeposits = Math.max(0, Number(dashboardData?.monthlyPnL?.depositsReceived ?? dashboardData?.monthlyPnL?.totalIncome ?? 0));
@@ -3726,8 +3797,11 @@ function AdminPage() {
               </div>
               <button
                 type="button"
-                onClick={() => { loadDashboardData(); loadPendingBookings(); }}
-                className="px-4 py-2 bg-[#D4854A] hover:bg-[#B87333] text-white rounded-lg text-sm font-medium self-start"
+                disabled={tabLoading}
+                onClick={() => runWithTabLoading('Frissítés…', async () => {
+                  await Promise.all([loadDashboardData(), loadPendingBookings()]);
+                })}
+                className="px-4 py-2 bg-[#D4854A] hover:bg-[#B87333] text-white rounded-lg text-sm font-medium self-start disabled:opacity-60"
               >
                 Frissítés
               </button>
@@ -3810,7 +3884,7 @@ function AdminPage() {
                   <h3 className="font-semibold text-[#4A3F35]">Következő foglalások</h3>
                   <button
                     type="button"
-                    onClick={() => { setActiveTab('bookings'); loadAllBookings(); }}
+                    onClick={() => switchTab('bookings')}
                     className="text-xs text-[#D4854A] hover:underline font-medium"
                   >
                     Összes →
@@ -3842,7 +3916,7 @@ function AdminPage() {
             <div className="grid sm:grid-cols-3 gap-4">
               {[
                 { href: 'https://calendar.google.com', external: true, icon: <Calendar className="w-6 h-6 text-[#8B9A7C]" />, bg: 'bg-[#8B9A7C]/10', title: 'Google Naptár', desc: 'Foglalások kezelése' },
-                { href: 'mailto:dunakeszimasszor@gmail.com', external: false, icon: <Mail className="w-6 h-6 text-[#D4854A]" />, bg: 'bg-[#D4854A]/10', title: 'Gmail', desc: 'Emailek kezelése' },
+                { href: 'https://mail.google.com/mail/u/0/#inbox', external: true, icon: <Mail className="w-6 h-6 text-[#D4854A]" />, bg: 'bg-[#D4854A]/10', title: 'Gmail', desc: 'Bejövő levelek megnyitása' },
                 { href: '/', external: false, onClick: () => { window.location.hash = ''; }, icon: (
                   <svg className="w-6 h-6 text-[#4A3F35]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -3884,7 +3958,7 @@ function AdminPage() {
                   </p>
                 )}
               </div>
-              <button onClick={loadAllBookings} className="px-4 py-2 bg-[#D4854A] text-white rounded-lg text-sm hover:bg-[#B87333]">Frissítés</button>
+              <button type="button" disabled={tabLoading} onClick={() => runWithTabLoading('Foglalások betöltése…', loadAllBookings)} className="px-4 py-2 bg-[#D4854A] text-white rounded-lg text-sm hover:bg-[#B87333] disabled:opacity-60">Frissítés</button>
             </div>
             <div className="bg-white rounded-2xl shadow-warm overflow-hidden">
               {allBookings.length === 0 ? (
@@ -3966,7 +4040,7 @@ function AdminPage() {
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold text-[#4A3F35]">Függőben lévő foglalások</h2>
-              <button onClick={loadPendingBookings} className="px-4 py-2 bg-[#D4854A] text-white rounded-lg text-sm hover:bg-[#B87333]">Frissítés</button>
+              <button type="button" disabled={tabLoading} onClick={() => runWithTabLoading('Függő foglalások betöltése…', loadPendingBookings)} className="px-4 py-2 bg-[#D4854A] text-white rounded-lg text-sm hover:bg-[#B87333] disabled:opacity-60">Frissítés</button>
             </div>
             <p className="text-sm text-[#8B7355]">
               Banki átutalások: amikor megérkezik a befizetés a bankszámlára, kattints a <strong>Befizetés megerősítése</strong> gombra.
@@ -4115,7 +4189,7 @@ function AdminPage() {
                 >
                   {showAddGuest ? 'Mégse' : '+ Új vendég'}
                 </button>
-                <button onClick={loadAllCustomers} className="px-4 py-2 bg-[#D4854A] text-white rounded-lg text-sm hover:bg-[#B87333]">Frissítés</button>
+                <button type="button" disabled={tabLoading} onClick={() => runWithTabLoading('Vendégek betöltése…', loadAllCustomers)} className="px-4 py-2 bg-[#D4854A] text-white rounded-lg text-sm hover:bg-[#B87333] disabled:opacity-60">Frissítés</button>
               </div>
             </div>
 
@@ -4305,7 +4379,7 @@ function AdminPage() {
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold text-[#4A3F35]">Bérletek</h2>
-              <button onClick={loadAllPackages} className="px-4 py-2 bg-[#D4854A] text-white rounded-lg text-sm hover:bg-[#B87333]">Frissítés</button>
+              <button type="button" disabled={tabLoading} onClick={() => runWithTabLoading('Bérletek betöltése…', loadAllPackages)} className="px-4 py-2 bg-[#D4854A] text-white rounded-lg text-sm hover:bg-[#B87333] disabled:opacity-60">Frissítés</button>
             </div>
 
             {/* Active Packages List */}
@@ -4555,8 +4629,9 @@ function AdminPage() {
                   className="w-9 h-9 flex items-center justify-center rounded-lg border border-[#E8D4C0] hover:bg-[#F9F1EA] text-[#4A3F35]"
                 >›</button>
                 <Button
-                  onClick={() => loadPnLData(selectedMonth, selectedYear)}
-                  className="bg-[#D4854A] hover:bg-[#B87333] text-white h-9"
+                  disabled={tabLoading}
+                  onClick={() => runWithTabLoading('Bevétel betöltése…', () => loadPnLData(selectedMonth, selectedYear))}
+                  className="bg-[#D4854A] hover:bg-[#B87333] text-white h-9 disabled:opacity-60"
                 >
                   Frissítés
                 </Button>
