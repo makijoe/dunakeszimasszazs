@@ -2183,30 +2183,63 @@ function getDashboardData() {
     }
   }
   
-  // Get today's bookings
+  // Get today's and upcoming bookings
   var bookingsSheet = ss.getSheetByName(SHEETS.BOOKINGS);
   var bookingsData = bookingsSheet.getDataRange().getValues();
   var today = formatDate(new Date());
+  var todayMs = new Date(today + 'T12:00:00').getTime();
   var todaysBookings = [];
-  
+  var upcomingBookings = [];
+  var activeBookingsTotal = 0;
+
   for (var j = 1; j < bookingsData.length; j++) {
-    if (bookingsData[j][4] === today) {
-      todaysBookings.push({
-        customer: bookingsData[j][2],
-        service: bookingsData[j][3],
-        time: bookingsData[j][5]
-      });
+    if (bookingsData[j][6] !== 'Confirmed') continue;
+    activeBookingsTotal++;
+    var bDate = normalizeBookingDate_(bookingsData[j][4]);
+    var bTime = formatTimeFromSheet(bookingsData[j][5]);
+    var entry = {
+      customer: bookingsData[j][2],
+      service: bookingsData[j][3],
+      date: bDate,
+      time: bTime
+    };
+    if (bDate === today) {
+      todaysBookings.push(entry);
+    }
+    var bookingMs = new Date(bDate + 'T12:00:00').getTime();
+    if (bookingMs >= todayMs) {
+      upcomingBookings.push(entry);
     }
   }
-  
+
+  upcomingBookings.sort(function(a, b) {
+    var aMs = new Date(a.date + 'T' + a.time + ':00').getTime();
+    var bMs = new Date(b.date + 'T' + b.time + ':00').getTime();
+    return aMs - bMs;
+  });
+  upcomingBookings = upcomingBookings.slice(0, 6);
+
+  var pendingCount = 0;
+  var pendingSheet = ss.getSheetByName('PendingBookings');
+  if (pendingSheet && pendingSheet.getLastRow() > 1) {
+    var pendingData = pendingSheet.getDataRange().getValues();
+    for (var p = 1; p < pendingData.length; p++) {
+      var pStatus = String(pendingData[p][12] || '');
+      if (pStatus !== 'confirmed' && pStatus !== 'cancelled') pendingCount++;
+    }
+  }
+
   // Get current month P&L
   var pnlData = getPnLData_(new Date().getMonth() + 1, new Date().getFullYear());
-  
+
   return createResponse(true, 'Dashboard adatok', {
     customerCount: customerCount,
     activePackages: activePackages,
     totalSessionsRemaining: totalSessionsRemaining,
+    activeBookingsTotal: activeBookingsTotal,
+    pendingCount: pendingCount,
     todaysBookings: todaysBookings,
+    upcomingBookings: upcomingBookings,
     monthlyPnL: pnlData
   });
 }

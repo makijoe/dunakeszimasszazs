@@ -3473,112 +3473,166 @@ function AdminPage() {
       {/* Main Content */}
       <main className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* DASHBOARD TAB */}
-        {activeTab === 'dashboard' && (
+        {activeTab === 'dashboard' && (() => {
+          const monthlyDeposits = Math.max(0, Number(dashboardData?.monthlyPnL?.depositsReceived ?? dashboardData?.monthlyPnL?.totalIncome ?? 0));
+          const monthlyBookings = dashboardData?.monthlyPnL?.activeBookings ?? dashboardData?.monthlyPnL?.sessionsCompleted ?? 0;
+          const expectedRevenue = Math.max(0, Number(dashboardData?.monthlyPnL?.estimatedFullRevenue ?? 0));
+          const todayLabel = new Date().toLocaleDateString('hu-HU', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+          return (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-[#4A3F35]">Áttekintés</h2>
-
-            {/* Stats Cards */}
-            <div className="grid md:grid-cols-4 gap-4">
-              <div className="bg-white rounded-2xl p-6 shadow-warm">
-                <div className="w-12 h-12 bg-[#8B9A7C]/10 rounded-xl flex items-center justify-center mb-4">
-                  <User className="w-6 h-6 text-[#8B9A7C]" />
-                </div>
-                <p className="text-[#8B7355] text-sm">Összes vásárló</p>
-                <p className="text-3xl font-bold text-[#4A3F35]">{dashboardData?.customerCount || 0}</p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-2xl font-bold text-[#4A3F35]">Áttekintés</h2>
+                <p className="text-sm text-[#8B7355] mt-1 capitalize">{todayLabel}</p>
               </div>
-
-              <div className="bg-white rounded-2xl p-6 shadow-warm">
-                <div className="w-12 h-12 bg-[#D4854A]/10 rounded-xl flex items-center justify-center mb-4">
-                  <svg className="w-6 h-6 text-[#D4854A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
-                  </svg>
-                </div>
-                <p className="text-[#8B7355] text-sm">Aktív bérletek</p>
-                <p className="text-3xl font-bold text-[#4A3F35]">{dashboardData?.activePackages || 0}</p>
-              </div>
-
-              <div className="bg-white rounded-2xl p-6 shadow-warm">
-                <div className="w-12 h-12 bg-[#4A7C59]/10 rounded-xl flex items-center justify-center mb-4">
-                  <Calendar className="w-6 h-6 text-[#4A7C59]" />
-                </div>
-                <p className="text-[#8B7355] text-sm">Hátralévő alkalmak</p>
-                <p className="text-3xl font-bold text-[#4A3F35]">{dashboardData?.totalSessionsRemaining || 0}</p>
-              </div>
-
-              <div className="bg-white rounded-2xl p-6 shadow-warm">
-                <div className="w-12 h-12 bg-[#8B4513]/10 rounded-xl flex items-center justify-center mb-4">
-                  <svg className="w-6 h-6 text-[#8B4513]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <p className="text-[#8B7355] text-sm">Beérkezett foglalók (hónap)</p>
-                <p className="text-3xl font-bold text-[#4A3F35]">{dashboardData?.monthlyPnL?.depositsReceived?.toLocaleString() || dashboardData?.monthlyPnL?.totalIncome?.toLocaleString() || 0} Ft</p>
-                <p className="text-xs text-[#8B7355] mt-1">csak valós befizetések</p>
-              </div>
+              <button
+                type="button"
+                onClick={() => { loadDashboardData(); loadPendingBookings(); }}
+                className="px-4 py-2 bg-[#D4854A] hover:bg-[#B87333] text-white rounded-lg text-sm font-medium self-start"
+              >
+                Frissítés
+              </button>
             </div>
 
-            {/* Today's Bookings */}
-            <div className="bg-white rounded-2xl shadow-warm p-6">
-              <h3 className="font-semibold text-[#4A3F35] mb-4">Mai foglalások</h3>
-              {dashboardData?.todaysBookings?.length > 0 ? (
-                <div className="space-y-2">
-                  {dashboardData.todaysBookings.map((booking: any, i: number) => (
-                    <div key={i} className="flex justify-between items-center p-3 bg-[#F9F1EA] rounded-lg">
-                      <div>
-                        <p className="font-medium text-[#4A3F35]">{booking.customer}</p>
-                        <p className="text-sm text-[#8B7355]">{booking.service}</p>
-                      </div>
-                      <span className="text-[#D4854A] font-medium">{booking.time}</span>
+            <div className="grid lg:grid-cols-3 gap-4">
+              <div className="lg:col-span-2 bg-gradient-to-br from-[#D4854A] to-[#B87333] rounded-2xl p-6 sm:p-8 text-white shadow-warm-lg">
+                <p className="text-white/80 text-sm mb-1">Beérkezett foglalók · {new Date().toLocaleDateString('hu-HU', { month: 'long', year: 'numeric' })}</p>
+                <p className="text-4xl sm:text-5xl font-bold tracking-tight">{monthlyDeposits.toLocaleString('hu-HU')} Ft</p>
+                <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-white/20">
+                  <div>
+                    <p className="text-white/70 text-xs">Aktív foglalás (hónap)</p>
+                    <p className="text-2xl font-bold mt-1">{monthlyBookings}</p>
+                  </div>
+                  <div>
+                    <p className="text-white/70 text-xs">Várható bevétel</p>
+                    <p className="text-2xl font-bold mt-1">{expectedRevenue.toLocaleString('hu-HU')} Ft</p>
+                  </div>
+                  <div>
+                    <p className="text-white/70 text-xs">Függőben</p>
+                    <p className="text-2xl font-bold mt-1">{dashboardData?.pendingCount ?? pendingCount}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { label: 'Vásárlók', value: dashboardData?.customerCount || 0, icon: <User className="w-5 h-5 text-[#8B9A7C]" />, bg: 'bg-[#8B9A7C]/10' },
+                  { label: 'Aktív foglalás', value: dashboardData?.activeBookingsTotal || 0, icon: <Calendar className="w-5 h-5 text-[#D4854A]" />, bg: 'bg-[#D4854A]/10' },
+                  { label: 'Bérletek', value: dashboardData?.activePackages || 0, icon: <CreditCard className="w-5 h-5 text-[#4A7C59]" />, bg: 'bg-[#4A7C59]/10' },
+                  { label: 'Alkalmak', value: dashboardData?.totalSessionsRemaining || 0, icon: <Sparkles className="w-5 h-5 text-[#8B7355]" />, bg: 'bg-[#F5E6D8]' },
+                ].map((stat) => (
+                  <div key={stat.label} className="bg-white rounded-2xl p-4 shadow-warm border border-[#E8D4C0]/50">
+                    <div className={`w-10 h-10 ${stat.bg} rounded-xl flex items-center justify-center mb-3`}>
+                      {stat.icon}
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-[#8B7355]">Nincs foglalás mára</p>
-              )}
+                    <p className="text-[#8B7355] text-xs">{stat.label}</p>
+                    <p className="text-2xl font-bold text-[#4A3F35] mt-0.5">{stat.value}</p>
+                  </div>
+                ))}
+              </div>
             </div>
 
-            {/* Quick Links */}
-            <div className="grid md:grid-cols-3 gap-4">
-              <a
-                href="https://calendar.google.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-white rounded-2xl p-6 shadow-warm hover:shadow-warm-lg transition-shadow"
-              >
-                <div className="w-12 h-12 bg-[#8B9A7C]/10 rounded-xl flex items-center justify-center mb-4">
-                  <Calendar className="w-6 h-6 text-[#8B9A7C]" />
+            <div className="grid lg:grid-cols-2 gap-4">
+              <div className="bg-white rounded-2xl shadow-warm p-6 border border-[#E8D4C0]/50">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold text-[#4A3F35]">Mai foglalások</h3>
+                  <span className="text-xs font-medium text-[#D4854A] bg-[#D4854A]/10 px-2.5 py-1 rounded-full">
+                    {dashboardData?.todaysBookings?.length || 0} db
+                  </span>
                 </div>
-                <h3 className="font-semibold text-[#4A3F35]">Google Naptár</h3>
-                <p className="text-sm text-[#8B7355]">Foglalások kezelése</p>
-              </a>
+                {dashboardData?.todaysBookings?.length > 0 ? (
+                  <div className="space-y-3">
+                    {dashboardData.todaysBookings.map((booking: any, i: number) => (
+                      <div key={i} className="flex justify-between items-center p-4 bg-[#FFF8F2] border border-[#F5E6D8] rounded-xl">
+                        <div>
+                          <p className="font-semibold text-[#4A3F35]">{booking.customer}</p>
+                          <p className="text-sm text-[#8B7355] mt-0.5">{booking.service}</p>
+                        </div>
+                        <div className="text-right">
+                          <span className="inline-flex items-center gap-1 text-[#D4854A] font-semibold">
+                            <Clock className="w-4 h-4" />
+                            {formatBookingTime(booking.time)}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-10 px-4 bg-[#FFFBF7] rounded-xl border border-dashed border-[#E8D4C0]">
+                    <Calendar className="w-10 h-10 text-[#D4854A]/40 mx-auto mb-3" />
+                    <p className="text-[#4A3F35] font-medium">Ma nincs foglalás</p>
+                    <p className="text-sm text-[#8B7355] mt-1">Szabad nap — pihenj vagy foglalj be magadnak időt!</p>
+                  </div>
+                )}
+              </div>
 
-              <a
-                href="mailto:dunakeszimasszor@gmail.com"
-                className="bg-white rounded-2xl p-6 shadow-warm hover:shadow-warm-lg transition-shadow"
-              >
-                <div className="w-12 h-12 bg-[#D4854A]/10 rounded-xl flex items-center justify-center mb-4">
-                  <Mail className="w-6 h-6 text-[#D4854A]" />
+              <div className="bg-white rounded-2xl shadow-warm p-6 border border-[#E8D4C0]/50">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold text-[#4A3F35]">Következő foglalások</h3>
+                  <button
+                    type="button"
+                    onClick={() => { setActiveTab('bookings'); loadAllBookings(); }}
+                    className="text-xs text-[#D4854A] hover:underline font-medium"
+                  >
+                    Összes →
+                  </button>
                 </div>
-                <h3 className="font-semibold text-[#4A3F35]">Gmail</h3>
-                <p className="text-sm text-[#8B7355]">Emailek kezelése</p>
-              </a>
+                {dashboardData?.upcomingBookings?.length > 0 ? (
+                  <div className="space-y-3">
+                    {dashboardData.upcomingBookings.map((booking: any, i: number) => (
+                      <div key={i} className="flex justify-between items-center p-4 bg-[#FFFBF7] border border-[#F5E6D8] rounded-xl">
+                        <div className="min-w-0">
+                          <p className="font-semibold text-[#4A3F35] truncate">{booking.customer}</p>
+                          <p className="text-sm text-[#8B7355] truncate">{booking.service}</p>
+                        </div>
+                        <div className="text-right shrink-0 ml-3">
+                          <p className="text-sm font-medium text-[#4A3F35]">{formatBookingDate(booking.date)}</p>
+                          <p className="text-sm text-[#D4854A] font-semibold">{formatBookingTime(booking.time)}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-10 px-4 bg-[#FFFBF7] rounded-xl border border-dashed border-[#E8D4C0]">
+                    <p className="text-[#8B7355]">Nincs közelgő foglalás</p>
+                  </div>
+                )}
+              </div>
+            </div>
 
-              <a
-                href="/"
-                onClick={() => window.location.hash = ''}
-                className="bg-white rounded-2xl p-6 shadow-warm hover:shadow-warm-lg transition-shadow"
-              >
-                <div className="w-12 h-12 bg-[#4A3F35]/10 rounded-xl flex items-center justify-center mb-4">
+            <div className="grid sm:grid-cols-3 gap-4">
+              {[
+                { href: 'https://calendar.google.com', external: true, icon: <Calendar className="w-6 h-6 text-[#8B9A7C]" />, bg: 'bg-[#8B9A7C]/10', title: 'Google Naptár', desc: 'Foglalások kezelése' },
+                { href: 'mailto:dunakeszimasszor@gmail.com', external: false, icon: <Mail className="w-6 h-6 text-[#D4854A]" />, bg: 'bg-[#D4854A]/10', title: 'Gmail', desc: 'Emailek kezelése' },
+                { href: '/', external: false, onClick: () => { window.location.hash = ''; }, icon: (
                   <svg className="w-6 h-6 text-[#4A3F35]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                   </svg>
-                </div>
-                <h3 className="font-semibold text-[#4A3F35]">Weboldal</h3>
-                <p className="text-sm text-[#8B7355]">Vissza a főoldalra</p>
-              </a>
+                ), bg: 'bg-[#4A3F35]/10', title: 'Weboldal', desc: 'Vissza a főoldalra' },
+              ].map((link) => (
+                <a
+                  key={link.title}
+                  href={link.href}
+                  target={link.external ? '_blank' : undefined}
+                  rel={link.external ? 'noopener noreferrer' : undefined}
+                  onClick={link.onClick}
+                  className="group bg-white rounded-2xl p-5 shadow-warm border border-[#E8D4C0]/50 hover:border-[#D4854A]/40 hover:shadow-warm-lg transition-all flex items-center gap-4"
+                >
+                  <div className={`w-12 h-12 ${link.bg} rounded-xl flex items-center justify-center shrink-0`}>
+                    {link.icon}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-[#4A3F35] group-hover:text-[#D4854A] transition-colors">{link.title}</h3>
+                    <p className="text-sm text-[#8B7355]">{link.desc}</p>
+                  </div>
+                  <ArrowRight className="w-5 h-5 text-[#D4854A]/0 group-hover:text-[#D4854A] transition-colors shrink-0" />
+                </a>
+              ))}
             </div>
           </div>
-        )}
+          );
+        })()}
 
         {/* BOOKINGS TAB */}
         {activeTab === 'bookings' && (
