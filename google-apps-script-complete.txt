@@ -157,6 +157,8 @@ function doPost(e) {
         return adminDeletePendingBooking_(data);
       case 'adminDeleteBooking':
         return adminDeleteBooking_(data);
+      case 'reconcilePnL':
+        return adminReconcilePnL_();
       default:
         return createHtmlResponse('<h1>Hiba</h1><p>Ismeretlen művelet: ' + data.action + '</p>');
     }
@@ -200,6 +202,8 @@ function doGet(e) {
         return adminDeletePendingBooking_(e.parameter);
       case 'adminDeleteBooking':
         return adminDeleteBooking_(e.parameter);
+      case 'reconcilePnL':
+        return adminReconcilePnL_();
       default:
         return createResponse(true, 'API is running', { 
           endpoints: ['dashboard', 'customer', 'pnl'] 
@@ -1396,13 +1400,16 @@ function adminDeleteBooking_(data) {
       Logger.log('adminDeleteBooking_ calendar: ' + calErr);
     }
 
+    var paymentReversed = reverseFinancialTransactionForBooking_(customerName, bookingService, data.bookingId);
+
     return createResponse(true, 'Foglalás törölve', {
       bookingId: data.bookingId,
       customerName: customerName,
       service: bookingService,
       date: bookingDate,
       time: bookingTime,
-      calendarDeleted: calendarDeleted
+      calendarDeleted: calendarDeleted,
+      paymentReversed: paymentReversed
     });
   } catch (error) {
     logError('adminDeleteBooking_', error);
@@ -1441,6 +1448,132 @@ function recordBooking(customerId, customerName, service, date, time, packageId,
 // ============================================
 // Financial Tracking
 // ============================================
+function parseServiceFromPaymentDescription_(description) {
+  var d = String(description || '');
+  if (d.indexOf('Stripe foglalási díj - ') === 0) {
+    return d.replace('Stripe foglalási díj - ', '').trim();
+  }
+  if (d.indexOf('Banki átutalás foglalási díj - ') === 0) {
+    return d.replace('Banki átutalás foglalási díj - ', '').split(' (')[0].trim();
+  }
+  return '';
+}
+
+function isFinancialRowVoid_(notes) {
+  return String(notes || '').toUpperCase() === 'VOID';
+}
+
+function applyFinancialAmountToPnL_(type, amount, incomeRef, revenueRef, depositsRef) {
+  if (type === 'Income' || type === 'Payment') {
+    incomeRef.val += amount;
+    if (type === 'Payment') {
+      revenueRef.val += amount * 5;
+    } else {
+      revenueRef.val += amount;
+    }
+  } else if (type === 'Deposit') {
+    depositsRef.val += amount;
+  } else if (type === 'Refund') {
+    incomeRef.val -= amount;
+    revenueRef.val -= amount * 5;
+  }
+}
+
+function reverseFinancialTransactionForBooking_(customerName, service, bookingId) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var financialSheet = ss.getSheetByName(SHEETS.FINANCIAL);
+  if (!financialSheet || financialSheet.getLastRow() < 2) return false;
+  var data = financialSheet.getDataRange().getValues();
+
+  for (var i = data.length - 1; i >= 1; i--) {
+    if (data[i][2] !== 'Payment' && data[i][2] !== 'Income') continue;
+    if (isFinancialRowVoid_(data[i][9])) continue;
+    if (String(data[i][4]) !== String(customerName)) continue;
+
+    var txnService = parseServiceFromPaymentDescription_(data[i][5]);
+    if (txnService && txnService !== service) continue;
+    if (!txnService && String(data[i][5]).indexOf(service) === -1) continue;
+
+    var amount = parseInt(data[i][6], 10) || 0;
+    financialSheet.getRange(i + 1, 10).setValue('VOID');
+    recordTransaction(
+      new Date(),
+      'Refund',
+      '',
+      customerName,
+      'Törölt foglalás - ' + service + ' (' + bookingId + ')',
+      amount,
+      'Admin',
+      bookingId
+    );
+    SpreadsheetApp.flush();
+    return true;
+  }
+  return false;
+}
+
+// Voids payment rows that no longer have a matching Confirmed booking
+function adminReconcilePnL_() {
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var financialSheet = ss.getSheetByName(SHEETS.FINANCIAL);
+    var bookingsSheet = ss.getSheetByName(SHEETS.BOOKINGS);
+    if (!financialSheet || !bookingsSheet) {
+      return createResponse(false, 'Hiányzó Financial vagy Bookings munkalap');
+    }
+
+    var finData = financialSheet.getDataRange().getValues();
+    var bookData = bookingsSheet.getDataRange().getValues();
+    var confirmedCounts = {};
+
+    for (var j = 1; j < bookData.length; j++) {
+      if (bookData[j][6] !== 'Confirmed') continue;
+      var key = String(bookData[j][2]) + '|' + String(bookData[j][3]);
+      confirmedCounts[key] = (confirmedCounts[key] || 0) + 1;
+    }
+
+    var paymentRows = {};
+    for (var i = 1; i < finData.length; i++) {
+      if (finData[i][2] !== 'Payment' && finData[i][2] !== 'Income') continue;
+      if (isFinancialRowVoid_(finData[i][9])) continue;
+      var svc = parseServiceFromPaymentDescription_(finData[i][5]);
+      var pKey = String(finData[i][4]) + '|' + svc;
+      if (!paymentRows[pKey]) paymentRows[pKey] = [];
+      paymentRows[pKey].push(i + 1);
+    }
+
+    var voided = 0;
+    for (var k in paymentRows) {
+      var allowed = confirmedCounts[k] || 0;
+      var rows = paymentRows[k];
+      while (rows.length > allowed) {
+        var rowNum = rows.pop();
+        var rowIdx = rowNum - 1;
+        var amount = parseInt(finData[rowIdx][6], 10) || 0;
+        financialSheet.getRange(rowNum, 10).setValue('VOID');
+        recordTransaction(
+          new Date(),
+          'Refund',
+          '',
+          finData[rowIdx][4],
+          'P&L egyeztetés - törölt foglalás fizetése (' + finData[rowIdx][5] + ')',
+          amount,
+          'Admin',
+          ''
+        );
+        voided++;
+      }
+    }
+
+    return createResponse(true, voided > 0
+      ? (voided + ' felesleges fizetés levonva a P&L-ből')
+      : 'A P&L már egyezik az aktív foglalásokkal', { voided: voided });
+  } catch (error) {
+    logError('adminReconcilePnL_', error);
+    return createResponse(false, 'Hiba a P&L egyeztetésekor: ' + error.message);
+  }
+}
+
 function recordTransaction(date, type, customerId, customerName, description, amount, paymentMethod, relatedId) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var financialSheet = ss.getSheetByName(SHEETS.FINANCIAL);
@@ -1968,29 +2101,25 @@ function getPnLData_(month, year) {
   var transactions = [];
   
   for (var i = 1; i < txnData.length; i++) {
+    if (isFinancialRowVoid_(txnData[i][9])) continue;
     var txnDate = new Date(txnData[i][1]);
     if (txnDate.getMonth() + 1 === parseInt(month) && txnDate.getFullYear() === parseInt(year)) {
       var amount = txnData[i][6];
       var type = txnData[i][2];
-      
-      if (type === 'Income' || type === 'Payment') {
-        monthlyIncome += amount;
-        // Payment = 20% deposit → estimate full session value
-        if (type === 'Payment') {
-          estimatedFullRevenue += amount * 5;
-        } else {
-          estimatedFullRevenue += amount;
-        }
-      } else if (type === 'Deposit') {
-        monthlyDeposits += amount;
-      }
-      
+      var incomeRef = { val: monthlyIncome };
+      var revenueRef = { val: estimatedFullRevenue };
+      var depositsRef = { val: monthlyDeposits };
+      applyFinancialAmountToPnL_(type, amount, incomeRef, revenueRef, depositsRef);
+      monthlyIncome = incomeRef.val;
+      estimatedFullRevenue = revenueRef.val;
+      monthlyDeposits = depositsRef.val;
+
       transactions.push({
         date: txnData[i][1],
         type: type,
         customer: txnData[i][4],
         description: txnData[i][5],
-        amount: amount
+        amount: type === 'Refund' ? -amount : amount
       });
     }
   }
@@ -2038,26 +2167,24 @@ function getPnLDataRange_(startDateStr, endDateStr) {
   var transactions = [];
 
   for (var i = 1; i < txnData.length; i++) {
+    if (isFinancialRowVoid_(txnData[i][9])) continue;
     var txnDate = new Date(txnData[i][1]);
     if (txnDate >= startDate && txnDate <= endDate) {
       var amount = txnData[i][6];
       var type = txnData[i][2];
-      if (type === 'Income' || type === 'Payment') {
-        totalIncome += amount;
-        if (type === 'Payment') {
-          estimatedFullRevenue += amount * 5;
-        } else {
-          estimatedFullRevenue += amount;
-        }
-      } else if (type === 'Deposit') {
-        totalDeposits += amount;
-      }
+      var incomeRef = { val: totalIncome };
+      var revenueRef = { val: estimatedFullRevenue };
+      var depositsRef = { val: totalDeposits };
+      applyFinancialAmountToPnL_(type, amount, incomeRef, revenueRef, depositsRef);
+      totalIncome = incomeRef.val;
+      estimatedFullRevenue = revenueRef.val;
+      totalDeposits = depositsRef.val;
       transactions.push({
         date: txnData[i][1],
         type: type,
         customer: txnData[i][4],
         description: txnData[i][5],
-        amount: amount
+        amount: type === 'Refund' ? -amount : amount
       });
     }
   }

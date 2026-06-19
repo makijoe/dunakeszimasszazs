@@ -3075,6 +3075,7 @@ function AdminPage() {
   const [confirmedReferences, setConfirmedReferences] = useState<Set<string>>(new Set());
   const [deletingPendingKey, setDeletingPendingKey] = useState<string | null>(null);
   const [deletingBookingId, setDeletingBookingId] = useState<string | null>(null);
+  const [isReconcilingPnL, setIsReconcilingPnL] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -3136,7 +3137,25 @@ function AdminPage() {
     }
   };
 
-  const deleteBooking = async (booking: { bookingId: string; customerName: string; date?: string; time?: string }) => {
+  const reconcilePnL = async () => {
+    setIsReconcilingPnL(true);
+    try {
+      const result = await callScriptAction('reconcilePnL');
+      if (result.success) {
+        toast.success(result.message || 'P&L frissítve.');
+        loadPnLData();
+        loadDashboardData();
+      } else {
+        toast.error(result.message || 'Hiba a P&L egyeztetésekor');
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Hiba a P&L egyeztetésekor');
+    } finally {
+      setIsReconcilingPnL(false);
+    }
+  };
+
+  const deleteBooking = async (booking: { bookingId: string; customerName: string; date?: string; time?: string; service?: string }) => {
     if (!booking.bookingId) return;
     const when = [formatBookingDate(booking.date), formatBookingTime(booking.time)].filter((v) => v !== '–').join(' ');
     if (!confirm(`Törlöd ezt a foglalást?\n\nÜgyfél: ${booking.customerName}${when ? `\nIdőpont: ${when}` : ''}\n\nA naptárbejegyzés is törlődik.`)) {
@@ -3149,9 +3168,12 @@ function AdminPage() {
         setAllBookings((prev) =>
           prev.map((b) => (b.bookingId === booking.bookingId ? { ...b, status: 'Cancelled' } : b))
         );
-        toast.success('Foglalás törölve.');
+        toast.success(result.data?.paymentReversed
+          ? 'Foglalás törölve, befizetés levonva a P&L-ből.'
+          : 'Foglalás törölve.');
         loadAllBookings();
         loadDashboardData();
+        loadPnLData();
       } else {
         toast.error(result.message || 'Hiba a törlés során');
       }
@@ -3658,6 +3680,7 @@ function AdminPage() {
                                     customerName: b.customerName,
                                     date: b.date,
                                     time: b.time,
+                                    service: b.service,
                                   })}
                                   disabled={deletingBookingId === b.bookingId}
                                   className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded-lg text-xs font-semibold disabled:opacity-50 whitespace-nowrap"
@@ -4118,9 +4141,21 @@ function AdminPage() {
         {activeTab === 'pnl' && (
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
-              <h2 className="text-2xl font-bold text-[#4A3F35]">P&L Kimutatás</h2>
+              <div>
+                <h2 className="text-2xl font-bold text-[#4A3F35]">P&L Kimutatás</h2>
+                <p className="text-sm text-[#8B7355] mt-1">Törölt foglalások befizetéseit a „P&L egyeztetés” vonja le.</p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2 self-start">
+                <button
+                  type="button"
+                  onClick={reconcilePnL}
+                  disabled={isReconcilingPnL}
+                  className="px-4 py-2 bg-[#8B9A7C] hover:bg-[#6B7F5E] text-white rounded-lg text-sm font-medium disabled:opacity-50"
+                >
+                  {isReconcilingPnL ? 'Egyeztetés...' : '↻ P&L egyeztetés'}
+                </button>
               {/* View toggle */}
-              <div className="flex rounded-xl border border-[#E8D4C0] overflow-hidden self-start">
+              <div className="flex rounded-xl border border-[#E8D4C0] overflow-hidden">
                 {(['day', 'week', 'month'] as const).map((v) => (
                   <button
                     key={v}
@@ -4130,6 +4165,7 @@ function AdminPage() {
                     {v === 'day' ? 'Nap' : v === 'week' ? 'Hét' : 'Hónap'}
                   </button>
                 ))}
+              </div>
               </div>
             </div>
 
@@ -4256,16 +4292,21 @@ function AdminPage() {
                             <tr key={i} className="border-b border-[#F9F1EA]">
                               <td className="py-3 text-[#4A3F35]">{typeof txn.date === 'string' ? txn.date : new Date(txn.date).toLocaleDateString('hu-HU')}</td>
                               <td className="py-3">
-                                <span className={`px-2 py-1 rounded text-xs ${txn.type === 'Income' || txn.type === 'Payment'
+                                <span className={`px-2 py-1 rounded text-xs ${
+                                  txn.type === 'Refund'
+                                    ? 'bg-red-100 text-red-700'
+                                    : txn.type === 'Income' || txn.type === 'Payment'
                                   ? 'bg-[#8B9A7C]/20 text-[#8B9A7C]'
                                   : 'bg-[#D4854A]/20 text-[#D4854A]'
                                   }`}>
-                                  {txn.type === 'Income' ? 'Bevétel' : txn.type === 'Payment' ? 'Fizetés' : 'Foglaló'}
+                                  {txn.type === 'Refund' ? 'Visszavonás' : txn.type === 'Income' ? 'Bevétel' : txn.type === 'Payment' ? 'Fizetés' : 'Foglaló'}
                                 </span>
                               </td>
                               <td className="py-3 text-[#4A3F35]">{txn.customer}</td>
                               <td className="py-3 text-[#8B7355]">{txn.description}</td>
-                              <td className="py-3 text-right font-medium text-[#4A3F35]">{txn.amount?.toLocaleString()} Ft</td>
+                              <td className={`py-3 text-right font-medium ${txn.type === 'Refund' || (typeof txn.amount === 'number' && txn.amount < 0) ? 'text-red-600' : 'text-[#4A3F35]'}`}>
+                                {(txn.type === 'Refund' && txn.amount > 0 ? '-' : '')}{Math.abs(txn.amount || 0).toLocaleString()} Ft
+                              </td>
                             </tr>
                           ))}
                         </tbody>
