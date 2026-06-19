@@ -27,7 +27,20 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { toast, Toaster } from 'sonner';
 import { getAppRoute, navigateTo, ROUTES, type AppRoute } from '@/lib/navigation';
-import { formatBookingDate, formatBookingTime, getTodayInBudapest } from '@/lib/utils';
+import { formatBookingDate, formatBookingTime, formatPhoneDisplay, formatPhoneLink, getTodayInBudapest } from '@/lib/utils';
+
+function PhoneLink({ phone, className = '' }: { phone?: string | number; className?: string }) {
+  const tel = formatPhoneLink(phone);
+  const display = formatPhoneDisplay(phone);
+  if (!tel || display === '–') {
+    return <span className={`text-[#B5A08A] ${className}`}>–</span>;
+  }
+  return (
+    <a href={tel} className={`text-[#D4854A] hover:underline font-medium whitespace-nowrap ${className}`}>
+      {display}
+    </a>
+  );
+}
 
 // Google Apps Script URL (override via VITE_SCRIPT_URL in Vercel)
 const SCRIPT_URL = import.meta.env.VITE_SCRIPT_URL || 'https://script.google.com/macros/s/AKfycbyNNnfTYIlEcuJFD2DaHJcPkv-ErX34TRaxmuc3mFxLVksuoYqs4_GLhilMxHmS3Eg/exec';
@@ -2963,7 +2976,8 @@ function AdminPage() {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [cancelSearch, setCancelSearch] = useState('');
-  const [searchEmail, setSearchEmail] = useState('');
+  const [guestFilter, setGuestFilter] = useState('');
+  const [allCustomers, setAllCustomers] = useState<any[]>([]);
   const [customerProfile, setCustomerProfile] = useState<any>(null);
   const [allBookings, setAllBookings] = useState<any[]>([]);
   const [pendingBookings, setPendingBookings] = useState<any[]>([]);
@@ -3194,18 +3208,30 @@ function AdminPage() {
     }
   };
 
-  const searchCustomer = async () => {
-    if (!searchEmail) return;
+  const loadAllCustomers = async () => {
     try {
-      const response = await fetch(`${SCRIPT_URL}?action=customer&email=${searchEmail}`);
+      const response = await fetch(`${SCRIPT_URL}?action=allCustomers`);
+      const data = await response.json();
+      if (data.success) {
+        setAllCustomers(data.data?.customers || []);
+      }
+    } catch (error) {
+      console.error('Error loading customers:', error);
+    }
+  };
+
+  const openGuestProfile = async (email: string) => {
+    if (!email) return;
+    try {
+      const response = await fetch(`${SCRIPT_URL}?action=customer&email=${encodeURIComponent(email)}`);
       const data = await response.json();
       if (data.success) {
         setCustomerProfile(data.data);
       } else {
-        toast.error('Vásárló nem található');
+        toast.error('Vendég nem található');
       }
-    } catch (error) {
-      toast.error('Hiba a keresés során');
+    } catch {
+      toast.error('Hiba a vendég betöltésekor');
     }
   };
 
@@ -3434,7 +3460,7 @@ function AdminPage() {
               { id: 'dashboard', label: 'Áttekintés', icon: '📊' },
               { id: 'bookings', label: 'Foglálások', icon: '📅' },
               { id: 'pending', label: 'Függőben', icon: '⏳' },
-              { id: 'customers', label: 'Vásárlók', icon: '👥' },
+              { id: 'customers', label: 'Vendégek', icon: '👥' },
               { id: 'packages', label: 'Bérletek', icon: '🎫' },
               { id: 'pnl', label: 'P&L', icon: '💰' },
               { id: 'cancel', label: 'Lemondás', icon: '❌' },
@@ -3447,6 +3473,7 @@ function AdminPage() {
                   setActiveTab(tab.id as any);
                   if (tab.id === 'dashboard') loadDashboardData();
                   if (tab.id === 'bookings') loadAllBookings();
+                  if (tab.id === 'customers') loadAllCustomers();
                   if (tab.id === 'pending') loadPendingBookings();
                   if (tab.id === 'pnl') loadPnLData();
                   if (tab.id === 'packages') loadAllPackages();
@@ -3543,7 +3570,7 @@ function AdminPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 {[
-                  { label: 'Vásárlók', value: dashboardData?.customerCount || 0, icon: <User className="w-5 h-5 text-[#8B9A7C]" />, bg: 'bg-[#8B9A7C]/10' },
+                  { label: 'Vendégek', value: dashboardData?.customerCount || 0, icon: <User className="w-5 h-5 text-[#8B9A7C]" />, bg: 'bg-[#8B9A7C]/10' },
                   { label: 'Aktív foglalás', value: dashboardData?.activeBookingsTotal || 0, icon: <Calendar className="w-5 h-5 text-[#D4854A]" />, bg: 'bg-[#D4854A]/10' },
                   { label: 'Bérletek', value: dashboardData?.activePackages || 0, icon: <CreditCard className="w-5 h-5 text-[#4A7C59]" />, bg: 'bg-[#4A7C59]/10' },
                   { label: 'Alkalmak', value: dashboardData?.totalSessionsRemaining || 0, icon: <Sparkles className="w-5 h-5 text-[#8B7355]" />, bg: 'bg-[#F5E6D8]' },
@@ -3682,7 +3709,7 @@ function AdminPage() {
                   <table className="w-full text-sm">
                     <thead className="bg-[#F9F1EA]">
                       <tr>
-                        {['Név', 'Email', 'Kezelés', 'Dátum', 'Időpont', 'Státusz', 'Létrehozva', 'Művelet'].map(h => (
+                        {['Név', 'Email', 'Telefon', 'Kezelés', 'Dátum', 'Időpont', 'Státusz', 'Létrehozva', 'Művelet'].map(h => (
                           <th key={h} className="px-4 py-3 text-left text-[#4A3F35] font-semibold">{h}</th>
                         ))}
                       </tr>
@@ -3705,7 +3732,10 @@ function AdminPage() {
                         return (
                           <tr key={i} className="border-t border-[#F5E6D8] hover:bg-[#FFFBF7]">
                             <td className="px-4 py-3 font-medium text-[#4A3F35]">{b.customerName}</td>
-                            <td className="px-4 py-3 text-[#8B7355] text-xs">{b.customerEmail || '–'}</td>
+                            <td className="px-4 py-3 text-[#8B7355] text-xs break-all">{b.customerEmail || '–'}</td>
+                            <td className="px-4 py-3 text-xs">
+                              <PhoneLink phone={b.customerPhone} />
+                            </td>
                             <td className="px-4 py-3 text-[#8B7355]">{b.service}</td>
                             <td className="px-4 py-3 text-[#8B7355] whitespace-nowrap">{dateStr}</td>
                             <td className="px-4 py-3 text-[#8B7355] whitespace-nowrap">{timeStr}</td>
@@ -3792,7 +3822,11 @@ function AdminPage() {
                           <td className="px-6 py-4 align-top border-r border-[#F0E6DA]/80">
                             <div className="font-semibold text-[#4A3F35] text-[15px] leading-snug">{b.name}</div>
                             <div className="text-xs text-[#8B7355] mt-1 break-all">{b.email}</div>
-                            {b.phone && <div className="text-xs text-[#A89070] mt-0.5">{b.phone}</div>}
+                            {b.phone && (
+                              <div className="text-xs mt-0.5">
+                                <PhoneLink phone={b.phone} />
+                              </div>
+                            )}
                           </td>
                           <td className="px-5 py-4 align-top border-r border-[#F0E6DA]/80 whitespace-nowrap">
                             <div className="font-semibold text-[#4A3F35]">{formatBookingDate(b.date)}</div>
@@ -3870,34 +3904,83 @@ function AdminPage() {
           </div>
         )}
 
-        {activeTab === 'customers' && (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-[#4A3F35]">Vásárló keresése</h2>
+        {activeTab === 'customers' && (() => {
+          const filteredGuests = allCustomers.filter((c: any) => {
+            if (!guestFilter.trim()) return true;
+            const q = guestFilter.toLowerCase();
+            return (
+              String(c.name || '').toLowerCase().includes(q) ||
+              String(c.email || '').toLowerCase().includes(q) ||
+              String(c.phone || '').toLowerCase().includes(q)
+            );
+          });
 
-            <div className="bg-white rounded-2xl shadow-warm p-6">
-              <div className="flex gap-4">
-                <Input
-                  type="email"
-                  placeholder="Vásárló email címe"
-                  value={searchEmail}
-                  onChange={(e) => setSearchEmail(e.target.value)}
-                  className="flex-1 border-[#E8D4C0] focus:border-[#D4854A] focus:ring-[#D4854A]"
-                />
-                <Button
-                  onClick={searchCustomer}
-                  className="bg-[#D4854A] hover:bg-[#B87333] text-white"
-                >
-                  Keresés
-                </Button>
+          return (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-[#4A3F35]">Vendégek</h2>
+                <p className="text-sm text-[#8B7355] mt-1">{allCustomers.length} vendég rögzítve</p>
               </div>
+              <button onClick={loadAllCustomers} className="px-4 py-2 bg-[#D4854A] text-white rounded-lg text-sm hover:bg-[#B87333]">Frissítés</button>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-warm p-4 border border-[#E8D4C0]/50">
+              <Input
+                type="search"
+                placeholder="Keresés név, email vagy telefon alapján..."
+                value={guestFilter}
+                onChange={(e) => setGuestFilter(e.target.value)}
+                className="border-[#E8D4C0] focus:border-[#D4854A] focus:ring-[#D4854A]"
+              />
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-warm overflow-hidden border border-[#E8D4C0]/50">
+              {filteredGuests.length === 0 ? (
+                <div className="p-8 text-center text-[#8B7355]">
+                  {allCustomers.length === 0 ? 'Vendégek betöltése...' : 'Nincs találat.'}
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-[#F9F1EA]">
+                      <tr>
+                        {['Név', 'Email', 'Telefon', 'Hátralévő alkalmak'].map((h) => (
+                          <th key={h} className="px-5 py-3 text-left text-[#4A3F35] font-semibold">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredGuests.map((guest: any, i: number) => (
+                        <tr
+                          key={guest.customerId || i}
+                          onClick={() => openGuestProfile(guest.email)}
+                          className={`border-t border-[#F5E6D8] cursor-pointer transition-colors ${
+                            customerProfile?.customer?.email === guest.email ? 'bg-[#FFF3E8]' : 'hover:bg-[#FFFBF7]'
+                          }`}
+                        >
+                          <td className="px-5 py-3 font-semibold text-[#4A3F35]">{guest.name}</td>
+                          <td className="px-5 py-3 text-[#8B7355] text-xs break-all">{guest.email || '–'}</td>
+                          <td className="px-5 py-3" onClick={(e) => e.stopPropagation()}>
+                            <PhoneLink phone={guest.phone} />
+                          </td>
+                          <td className="px-5 py-3 text-[#8B9A7C] font-medium">{guest.totalSessionsRemaining || 0}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
 
             {customerProfile && (
-              <div className="bg-white rounded-2xl shadow-warm p-6 space-y-6">
+              <div className="bg-white rounded-2xl shadow-warm p-6 space-y-6 border border-[#E8D4C0]/50">
                 <div className="border-b border-[#E8D4C0] pb-4">
                   <h3 className="text-xl font-bold text-[#4A3F35]">{customerProfile.customer?.name}</h3>
-                  <p className="text-[#8B7355]">{customerProfile.customer?.email}</p>
-                  <p className="text-[#8B7355]">{customerProfile.customer?.phone}</p>
+                  <p className="text-[#8B7355] mt-1">{customerProfile.customer?.email}</p>
+                  <p className="mt-1">
+                    <PhoneLink phone={customerProfile.customer?.phone} className="text-base" />
+                  </p>
                 </div>
 
                 <div className="grid md:grid-cols-3 gap-4">
@@ -3961,7 +4044,8 @@ function AdminPage() {
               </div>
             )}
           </div>
-        )}
+          );
+        })()}
 
         {/* PACKAGES TAB */}
         {activeTab === 'packages' && (

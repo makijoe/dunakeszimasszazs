@@ -8,6 +8,31 @@ export function getTodayInBudapest(): string {
   return new Date().toLocaleDateString('sv-SE', { timeZone: BUDAPEST })
 }
 
+/** Build a tel: href for Hungarian phone numbers. */
+export function formatPhoneLink(phone: unknown): string | null {
+  if (phone === null || phone === undefined || phone === '') return null
+  const digits = String(phone).replace(/\D/g, '')
+  if (!digits) return null
+  if (digits.startsWith('36')) return `tel:+${digits}`
+  if (digits.startsWith('06')) return `tel:+36${digits.slice(1)}`
+  if (digits.length === 9) return `tel:+36${digits}`
+  return `tel:+${digits}`
+}
+
+/** Human-readable phone display for admin tables. */
+export function formatPhoneDisplay(phone: unknown): string {
+  if (phone === null || phone === undefined || phone === '') return '–'
+  const raw = String(phone).trim()
+  const digits = raw.replace(/\D/g, '')
+  if (digits.startsWith('36') && digits.length >= 11) {
+    return `+${digits.slice(0, 2)} ${digits.slice(2, 4)} ${digits.slice(4, 7)} ${digits.slice(7)}`.trim()
+  }
+  if (digits.length === 9) {
+    return `+36 ${digits.slice(0, 2)} ${digits.slice(2, 5)} ${digits.slice(5)}`
+  }
+  return raw
+}
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }

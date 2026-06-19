@@ -186,6 +186,8 @@ function doGet(e) {
         return getPnL({ mode: e.parameter.mode, month: e.parameter.month, year: e.parameter.year, date: e.parameter.date, weekStart: e.parameter.weekStart });
       case 'allBookings':
         return getAllBookings_();
+      case 'allCustomers':
+        return getAllCustomers();
       case 'pendingBookings':
         return getPendingBookings_();
       case 'allPackages':
@@ -634,7 +636,10 @@ function getAllCustomers() {
     });
   }
   
-  return createResponse(true, 'Vásárlók listája', { customers: customers });
+  customers.sort(function(a, b) {
+    return String(a.name).localeCompare(String(b.name), 'hu');
+  });
+  return createResponse(true, 'Vendégek listája', { customers: customers });
 }
 
 function getCustomerPackages(customerId) {
@@ -1257,12 +1262,14 @@ function getAllBookings_() {
   var bookingsSheet = ss.getSheetByName(SHEETS.BOOKINGS);
   var data = bookingsSheet.getDataRange().getValues();
 
-  // Build customerId -> email lookup map
+  // Build customerId -> contact lookup maps
   var customersSheet = ss.getSheetByName(SHEETS.CUSTOMERS);
   var custData = customersSheet.getDataRange().getValues();
   var emailMap = {};
+  var phoneMap = {};
   for (var k = 1; k < custData.length; k++) {
     emailMap[custData[k][0]] = custData[k][2];
+    phoneMap[custData[k][0]] = custData[k][3] || '';
   }
 
   var bookings = [];
@@ -1272,6 +1279,7 @@ function getAllBookings_() {
       customerId: data[i][1],
       customerName: data[i][2],
       customerEmail: emailMap[data[i][1]] || '',
+      customerPhone: phoneMap[data[i][1]] || '',
       service: data[i][3],
       date: typeof data[i][4] === 'string' ? data[i][4].slice(0,10) : formatDate(new Date(data[i][4])),
       time: formatTimeFromSheet(data[i][5]),
