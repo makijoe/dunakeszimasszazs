@@ -153,6 +153,10 @@ function doPost(e) {
         return createBankTransferBooking(data);
       case 'confirmBankTransfer':
         return confirmBankTransferBooking(data);
+      case 'adminDeletePending':
+        return adminDeletePendingBooking_(data);
+      case 'adminDeleteBooking':
+        return adminDeleteBooking_(data);
       default:
         return createHtmlResponse('<h1>Hiba</h1><p>Ismeretlen művelet: ' + data.action + '</p>');
     }
@@ -190,6 +194,12 @@ function doGet(e) {
         return getSlotsForDate_(e.parameter.date);
       case 'myBookings':
         return getMyBookings_(e.parameter.email);
+      case 'confirmBankTransfer':
+        return confirmBankTransferBooking(e.parameter);
+      case 'adminDeletePending':
+        return adminDeletePendingBooking_(e.parameter);
+      case 'adminDeleteBooking':
+        return adminDeleteBooking_(e.parameter);
       default:
         return createResponse(true, 'API is running', { 
           endpoints: ['dashboard', 'customer', 'pnl'] 
@@ -1085,8 +1095,8 @@ function confirmBankTransferBooking(data) {
       email: rowData[2],
       phone: rowData[3],
       service: rowData[4],
-      date: rowData[5],
-      time: rowData[6],
+      date: typeof rowData[5] === 'string' ? rowData[5].slice(0, 10) : formatDate(new Date(rowData[5])),
+      time: formatTimeFromSheet(rowData[6]),
       notes: rowData[7],
       recurring: rowData[8],
       recurringType: rowData[9],
@@ -1290,6 +1300,107 @@ function getPendingBookings_() {
     });
   }
   return createResponse(true, 'Függő foglalások', { bookings: bookings.reverse() });
+}
+
+// Admin: remove a pending booking (bank transfer / stripe hold / test data)
+function adminDeletePendingBooking_(data) {
+  try {
+    var pendingSheet = ensurePendingBookingsSheet_();
+    var sheetData = pendingSheet.getDataRange().getValues();
+    var targetRow = -1;
+
+    if (data.rowIndex) {
+      targetRow = parseInt(data.rowIndex, 10);
+    } else if (data.referenceId) {
+      for (var i = sheetData.length - 1; i >= 1; i--) {
+        if (String(sheetData[i][14]) === String(data.referenceId)) {
+          targetRow = i + 1;
+          break;
+        }
+      }
+    }
+
+    if (targetRow < 2 || targetRow > sheetData.length) {
+      return createResponse(false, 'Függő foglalás nem található');
+    }
+
+    var row = sheetData[targetRow - 1];
+    var currentStatus = String(row[12] || '');
+    if (currentStatus === 'confirmed') {
+      return createResponse(false, 'Ez a függő foglalás már megerősítve lett — a Foglalások fülön törölheted.');
+    }
+
+    pendingSheet.getRange(targetRow, 13).setValue('cancelled');
+    return createResponse(true, 'Függő foglalás törölve', {
+      name: row[1],
+      referenceId: row[14] || ''
+    });
+  } catch (error) {
+    logError('adminDeletePendingBooking_', error);
+    return createResponse(false, 'Hiba a függő foglalás törlésekor: ' + error.message);
+  }
+}
+
+// Admin: cancel a confirmed booking and remove calendar event (no 24h restriction)
+function adminDeleteBooking_(data) {
+  try {
+    if (!data.bookingId) {
+      return createResponse(false, 'Hiányzó foglalás azonosító (bookingId)');
+    }
+
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var bookingsSheet = ss.getSheetByName(SHEETS.BOOKINGS);
+    var bookingsData = bookingsSheet.getDataRange().getValues();
+    var bookingRow = -1;
+    var customerName = '';
+    var bookingService = '';
+    var bookingDate = '';
+    var bookingTime = '';
+    var calendarEventId = '';
+    var currentStatus = '';
+
+    for (var j = 1; j < bookingsData.length; j++) {
+      if (bookingsData[j][0] === data.bookingId) {
+        bookingRow = j + 1;
+        customerName = bookingsData[j][2];
+        bookingService = bookingsData[j][3];
+        bookingDate = typeof bookingsData[j][4] === 'string' ? bookingsData[j][4].slice(0, 10) : formatDate(new Date(bookingsData[j][4]));
+        bookingTime = formatTimeFromSheet(bookingsData[j][5]);
+        currentStatus = bookingsData[j][6];
+        calendarEventId = bookingsData[j][10] || '';
+        break;
+      }
+    }
+
+    if (bookingRow === -1) {
+      return createResponse(false, 'Foglalás nem található');
+    }
+    if (currentStatus === 'Cancelled') {
+      return createResponse(false, 'Ez a foglalás már lemondva');
+    }
+
+    bookingsSheet.getRange(bookingRow, 7).setValue('Cancelled');
+    SpreadsheetApp.flush();
+
+    var calendarDeleted = false;
+    try {
+      calendarDeleted = deleteCalendarEvent_(calendarEventId, bookingDate, bookingTime, customerName);
+    } catch (calErr) {
+      Logger.log('adminDeleteBooking_ calendar: ' + calErr);
+    }
+
+    return createResponse(true, 'Foglalás törölve', {
+      bookingId: data.bookingId,
+      customerName: customerName,
+      service: bookingService,
+      date: bookingDate,
+      time: bookingTime,
+      calendarDeleted: calendarDeleted
+    });
+  } catch (error) {
+    logError('adminDeleteBooking_', error);
+    return createResponse(false, 'Hiba a foglalás törlésekor: ' + error.message);
+  }
 }
 
 // ============================================

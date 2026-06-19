@@ -37,6 +37,24 @@ const BANK_ACCOUNT = {
   account: '10700581-73054012-51100005',
 };
 
+/** Google Apps Script admin mutations via GET (POST often returns HTML redirect pages). */
+async function callScriptAction(action: string, params: Record<string, string | number | undefined> = {}) {
+  const url = new URL(SCRIPT_URL);
+  url.searchParams.set('action', action);
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== null && String(value) !== '') {
+      url.searchParams.set(key, String(value));
+    }
+  }
+  const response = await fetch(url.toString());
+  const text = await response.text();
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new Error('A szerver nem érvényes választ adott. Telepítsd újra a Google Script legújabb verzióját (Deploy → New version).');
+  }
+}
+
 // Navigation Component
 function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -3054,6 +3072,9 @@ function AdminPage() {
 
   const [pendingCount, setPendingCount] = useState(0);
   const [confirmingReference, setConfirmingReference] = useState<string | null>(null);
+  const [confirmedReferences, setConfirmedReferences] = useState<Set<string>>(new Set());
+  const [deletingPendingKey, setDeletingPendingKey] = useState<string | null>(null);
+  const [deletingBookingId, setDeletingBookingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -3063,18 +3084,17 @@ function AdminPage() {
   }, [isAuthenticated]);
 
   const confirmBankTransfer = async (referenceId: string, customerName: string) => {
-    if (!referenceId) return;
+    if (!referenceId || confirmedReferences.has(referenceId)) return;
     if (!confirm(`Megerősíted, hogy megérkezett a banki átutalás?\n\nÜgyfél: ${customerName}\nKözlemény: ${referenceId}\n\nEz létrehozza a naptárbejegyzést és elküldi a visszaigazoló emailt.`)) {
       return;
     }
     setConfirmingReference(referenceId);
     try {
-      const params = new URLSearchParams();
-      params.append('action', 'confirmBankTransfer');
-      params.append('referenceId', referenceId);
-      const response = await fetch(SCRIPT_URL, { method: 'POST', body: params, redirect: 'follow' });
-      const result = await response.json();
+      const result = await callScriptAction('confirmBankTransfer', { referenceId });
       if (result.success) {
+        setConfirmedReferences((prev) => new Set(prev).add(referenceId));
+        setPendingBookings((prev) => prev.filter((b) => b.referenceId !== referenceId));
+        setPendingCount((prev) => Math.max(0, prev - 1));
         toast.success('Befizetés megerősítve! Foglalás létrehozva és email elküldve.');
         loadPendingBookings();
         loadAllBookings();
@@ -3082,10 +3102,63 @@ function AdminPage() {
       } else {
         toast.error(result.message || 'Hiba a megerősítés során');
       }
-    } catch {
-      toast.error('Hiba a megerősítés során. Próbáld újra!');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Hiba a megerősítés során. Próbáld újra!');
     } finally {
       setConfirmingReference(null);
+    }
+  };
+
+  const deletePendingBooking = async (booking: { rowIndex?: number; referenceId?: string; name: string }) => {
+    const key = String(booking.rowIndex || booking.referenceId || '');
+    if (!key) return;
+    if (!confirm(`Törlöd ezt a függő foglalást?\n\nÜgyfél: ${booking.name}\n\nEz felszabadítja az időpontot, de nem küld emailt.`)) {
+      return;
+    }
+    setDeletingPendingKey(key);
+    try {
+      const result = await callScriptAction('adminDeletePending', {
+        rowIndex: booking.rowIndex,
+        referenceId: booking.referenceId,
+      });
+      if (result.success) {
+        setPendingBookings((prev) => prev.filter((b) => b.rowIndex !== booking.rowIndex && b.referenceId !== booking.referenceId));
+        setPendingCount((prev) => Math.max(0, prev - 1));
+        toast.success('Függő foglalás törölve.');
+        loadPendingBookings();
+      } else {
+        toast.error(result.message || 'Hiba a törlés során');
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Hiba a törlés során');
+    } finally {
+      setDeletingPendingKey(null);
+    }
+  };
+
+  const deleteBooking = async (booking: { bookingId: string; customerName: string; date?: string; time?: string }) => {
+    if (!booking.bookingId) return;
+    const when = [formatBookingDate(booking.date), formatBookingTime(booking.time)].filter((v) => v !== '–').join(' ');
+    if (!confirm(`Törlöd ezt a foglalást?\n\nÜgyfél: ${booking.customerName}${when ? `\nIdőpont: ${when}` : ''}\n\nA naptárbejegyzés is törlődik.`)) {
+      return;
+    }
+    setDeletingBookingId(booking.bookingId);
+    try {
+      const result = await callScriptAction('adminDeleteBooking', { bookingId: booking.bookingId });
+      if (result.success) {
+        setAllBookings((prev) =>
+          prev.map((b) => (b.bookingId === booking.bookingId ? { ...b, status: 'Cancelled' } : b))
+        );
+        toast.success('Foglalás törölve.');
+        loadAllBookings();
+        loadDashboardData();
+      } else {
+        toast.error(result.message || 'Hiba a törlés során');
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Hiba a törlés során');
+    } finally {
+      setDeletingBookingId(null);
     }
   };
 
@@ -3543,7 +3616,7 @@ function AdminPage() {
                   <table className="w-full text-sm">
                     <thead className="bg-[#F9F1EA]">
                       <tr>
-                        {['Név', 'Email', 'Kezelés', 'Dátum', 'Időpont', 'Státusz', 'Létrehozva'].map(h => (
+                        {['Név', 'Email', 'Kezelés', 'Dátum', 'Időpont', 'Státusz', 'Létrehozva', 'Művelet'].map(h => (
                           <th key={h} className="px-4 py-3 text-left text-[#4A3F35] font-semibold">{h}</th>
                         ))}
                       </tr>
@@ -3576,6 +3649,25 @@ function AdminPage() {
                               </span>
                             </td>
                             <td className="px-4 py-3 text-[#8B7355] text-xs whitespace-nowrap">{createdStr}</td>
+                            <td className="px-4 py-3">
+                              {b.status !== 'Cancelled' ? (
+                                <button
+                                  type="button"
+                                  onClick={() => deleteBooking({
+                                    bookingId: b.bookingId,
+                                    customerName: b.customerName,
+                                    date: b.date,
+                                    time: b.time,
+                                  })}
+                                  disabled={deletingBookingId === b.bookingId}
+                                  className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded-lg text-xs font-semibold disabled:opacity-50 whitespace-nowrap"
+                                >
+                                  {deletingBookingId === b.bookingId ? 'Törlés...' : '🗑 Törlés'}
+                                </button>
+                              ) : (
+                                <span className="text-xs text-[#B5A08A]">—</span>
+                              )}
+                            </td>
                           </tr>
                         );
                       })}
@@ -3670,17 +3762,36 @@ function AdminPage() {
                             }`}>{getPendingStatusLabel(b)}</span>
                           </td>
                           <td className="px-6 py-4 align-top">
-                            {b.status === 'awaiting_bank_transfer' && b.referenceId ? (
+                            <div className="flex flex-col gap-2 items-start">
+                              {confirmedReferences.has(b.referenceId) ? (
+                                <span className="inline-flex px-3 py-1.5 bg-[#8B9A7C]/15 text-[#4A7C59] rounded-lg text-xs font-semibold whitespace-nowrap">
+                                  ✓ Megerősítve
+                                </span>
+                              ) : b.status === 'awaiting_bank_transfer' && b.referenceId ? (
+                                <button
+                                  type="button"
+                                  onClick={() => confirmBankTransfer(b.referenceId, b.name)}
+                                  disabled={confirmingReference === b.referenceId}
+                                  className="px-3.5 py-2 bg-[#8B9A7C] hover:bg-[#6B7F5E] text-white rounded-lg text-xs font-semibold disabled:opacity-50 whitespace-nowrap"
+                                >
+                                  {confirmingReference === b.referenceId ? 'Megerősítés...' : '✓ Befizetés megerősítése'}
+                                </button>
+                              ) : (
+                                <span className="text-xs text-[#B5A08A]">Automatikus</span>
+                              )}
                               <button
-                                onClick={() => confirmBankTransfer(b.referenceId, b.name)}
-                                disabled={confirmingReference === b.referenceId}
-                                className="px-3.5 py-2 bg-[#8B9A7C] hover:bg-[#6B7F5E] text-white rounded-lg text-xs font-semibold disabled:opacity-50 whitespace-nowrap"
+                                type="button"
+                                onClick={() => deletePendingBooking({
+                                  rowIndex: b.rowIndex,
+                                  referenceId: b.referenceId,
+                                  name: b.name,
+                                })}
+                                disabled={deletingPendingKey === String(b.rowIndex || b.referenceId)}
+                                className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded-lg text-xs font-semibold disabled:opacity-50 whitespace-nowrap"
                               >
-                                {confirmingReference === b.referenceId ? 'Megerősítés...' : '✓ Befizetés megerősítése'}
+                                {deletingPendingKey === String(b.rowIndex || b.referenceId) ? 'Törlés...' : '🗑 Törlés'}
                               </button>
-                            ) : (
-                              <span className="text-xs text-[#B5A08A]">Automatikus</span>
-                            )}
+                            </div>
                           </td>
                         </tr>
                       ))}
