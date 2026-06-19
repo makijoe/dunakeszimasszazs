@@ -222,22 +222,27 @@ function createBooking(data) {
   var customer = getOrCreateCustomer(data.name, data.email, data.phone);
   var customerId = customer.customerId;
 
-  // Prevent same customer from double-booking the same date + time
-  // 1) Check in-memory cache first (GAS read cache means sheet reads are stale in same execution)
-  if (_createdBookingKeys[customerId + '|' + data.date + '|' + data.time]) {
+  // Normalize date/time so Stripe metadata and Google Sheets values compare reliably
+  data.date = normalizeBookingDate_(data.date);
+  data.time = normalizeBookingTime_(data.time);
+  var slotKey = bookingSlotKey_(data.date, data.time);
+
+  // Prevent duplicate bookings for the same slot (Stripe webhook retries, double clicks, etc.)
+  // 1) In-memory cache (GAS sheet reads are stale within the same execution)
+  if (_createdBookingKeys[customerId + '|' + slotKey] || _createdBookingKeys['*|' + slotKey]) {
     return createResponse(false, 'Ezen az időponton már van aktív foglalásod! Kérjük válassz másik időpontot.');
   }
-  // 2) Check persisted sheet data (catches cross-execution duplicates)
+  // 2) Persisted sheet data (cross-execution duplicates)
   var dupSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEETS.BOOKINGS);
   var dupData = dupSheet.getDataRange().getValues();
   for (var di = 1; di < dupData.length; di++) {
-    if (dupData[di][1] === customerId && (dupData[di][6] === 'Confirmed' || dupData[di][6] === 'ChangeRequested')) {
-      var dupDate = typeof dupData[di][4] === 'string' ? dupData[di][4].slice(0,10) : formatDate(new Date(dupData[di][4]));
-      var dupTime = formatTimeFromSheet(dupData[di][5]);
-      if (dupDate === data.date && dupTime === data.time) {
-        return createResponse(false, 'Ezen az időponton már van aktív foglalásod! Kérjük válassz másik időpontot.');
-      }
+    if (dupData[di][6] !== 'Confirmed' && dupData[di][6] !== 'ChangeRequested') continue;
+    var dupSlotKey = bookingSlotKey_(dupData[di][4], dupData[di][5]);
+    if (dupSlotKey !== slotKey) continue;
+    if (dupData[di][1] === customerId) {
+      return createResponse(false, 'Ezen az időponton már van aktív foglalásod! Kérjük válassz másik időpontot.');
     }
+    return createResponse(false, 'Ez az időpont már foglalt! Kérjük válassz másik időpontot.');
   }
 
   // Check if customer has active session package
@@ -346,7 +351,9 @@ function createBooking(data) {
     var newBookingId = recordBooking(customerId, data.name, data.service, dateStr, data.time, packageId, sessionNumber, eventId, data.stripePaymentIntentId || '');
     createdBookingIds.push(newBookingId);
     // Register in-memory so same-execution duplicate checks catch this immediately
-    _createdBookingKeys[customerId + '|' + dateStr + '|' + data.time] = true;
+    var createdSlotKey = bookingSlotKey_(dateStr, data.time);
+    _createdBookingKeys[customerId + '|' + createdSlotKey] = true;
+    _createdBookingKeys['*|' + createdSlotKey] = true;
   }
   
   // Send confirmation emails
@@ -2564,10 +2571,26 @@ function handleStripeWebhook(event) {
         stripePaymentIntentId: session.payment_intent || ''
       };
 
+      if (isStripeSessionAlreadyProcessed_(session.id)) {
+        Logger.log('Stripe session already processed, skipping: ' + session.id);
+        return createResponse(true, 'Webhook már feldolgozva: ' + session.id);
+      }
+
+      bookingData.date = normalizeBookingDate_(bookingData.date);
+      bookingData.time = normalizeBookingTime_(bookingData.time);
+
       Logger.log('Creating booking from webhook: ' + JSON.stringify(bookingData));
 
       // Create the actual booking: calendar event, spreadsheet record, emails
-      createBooking(bookingData);
+      var bookingResult = createBooking(bookingData);
+      var bookingResultJson = JSON.parse(bookingResult.getContent());
+      if (!bookingResultJson.success) {
+        if (isDuplicateBookingMessage_(bookingResultJson.message)) {
+          Logger.log('Duplicate booking skipped for Stripe session ' + session.id);
+          return createResponse(true, 'Webhook feldolgozva (duplikátum kihagyva)');
+        }
+        return createResponse(false, bookingResultJson.message || 'Foglalás létrehozása sikertelen');
+      }
 
       // Mark the pending booking row as paid
       updatePendingBookingStatus(bookingData.email, 'paid');
@@ -2843,6 +2866,44 @@ function formatTimeFromSheet(val) {
   }
   // String — take first 5 chars ("HH:MM")
   return String(val).slice(0, 5);
+}
+
+function normalizeBookingDate_(val) {
+  if (!val && val !== 0) return '';
+  if (typeof val === 'string') {
+    var s = val.trim();
+    if (s.indexOf('T') !== -1) {
+      return formatDate(new Date(s));
+    }
+    return s.slice(0, 10);
+  }
+  return formatDate(new Date(val));
+}
+
+function normalizeBookingTime_(val) {
+  return formatTimeFromSheet(val);
+}
+
+function bookingSlotKey_(dateStr, timeStr) {
+  return normalizeBookingDate_(dateStr) + '|' + normalizeBookingTime_(timeStr);
+}
+
+function isDuplicateBookingMessage_(message) {
+  if (!message) return false;
+  return message.indexOf('már van aktív foglalásod') !== -1 ||
+    message.indexOf('Ez az időpont már foglalt') !== -1;
+}
+
+function isStripeSessionAlreadyProcessed_(sessionId) {
+  if (!sessionId) return false;
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var financialSheet = ss.getSheetByName(SHEETS.FINANCIAL);
+  if (!financialSheet || financialSheet.getLastRow() < 2) return false;
+  var data = financialSheet.getDataRange().getValues();
+  for (var i = 1; i < data.length; i++) {
+    if (String(data[i][8]) === String(sessionId)) return true;
+  }
+  return false;
 }
 
 // ============================================
