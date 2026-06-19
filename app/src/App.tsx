@@ -42,6 +42,63 @@ function PhoneLink({ phone, className = '' }: { phone?: string | number; classNa
   );
 }
 
+function buildPhoneByEmail(entries: Array<{ email?: string; phone?: string | number }>): Record<string, string> {
+  const map: Record<string, string> = {};
+  [...entries].reverse().forEach((entry) => {
+    const email = String(entry.email || '').toLowerCase();
+    if (email && entry.phone) {
+      map[email] = String(entry.phone);
+    }
+  });
+  return map;
+}
+
+function enrichBookingsWithPhones(bookings: any[], phoneByEmail: Record<string, string>) {
+  return bookings.map((booking) => ({
+    ...booking,
+    customerPhone: booking.customerPhone || phoneByEmail[String(booking.customerEmail || '').toLowerCase()] || '',
+  }));
+}
+
+function enrichCustomersWithBookings(customers: any[], bookings: any[]) {
+  const today = getTodayInBudapest();
+  return customers.map((customer) => {
+    const email = String(customer.email || '').toLowerCase();
+    const upcoming = bookings.filter(
+      (b) =>
+        String(b.customerEmail || '').toLowerCase() === email &&
+        (b.status === 'Confirmed' || b.status === 'ChangeRequested') &&
+        String(b.date || '') >= today
+    );
+    upcoming.sort((a, b) => {
+      const dateCmp = String(a.date).localeCompare(String(b.date));
+      if (dateCmp !== 0) return dateCmp;
+      return String(a.time || '').localeCompare(String(b.time || ''));
+    });
+    const next = upcoming[0];
+    return {
+      ...customer,
+      activeBookings: customer.activeBookings ?? upcoming.length,
+      nextBookingDate: customer.nextBookingDate || next?.date || '',
+      nextBookingTime: customer.nextBookingTime || next?.time || '',
+    };
+  });
+}
+
+function formatGuestNextBooking(guest: { activeBookings?: number; nextBookingDate?: string; nextBookingTime?: string }): string {
+  if (!guest.activeBookings) return '–';
+  const time = guest.nextBookingTime ? formatBookingTime(guest.nextBookingTime) : '';
+  const countSuffix = guest.activeBookings > 1 ? ` (+${guest.activeBookings - 1})` : '';
+  if (guest.nextBookingDate) {
+    const today = getTodayInBudapest();
+    if (guest.nextBookingDate === today) {
+      return `Ma ${time}${countSuffix}`;
+    }
+    return `${formatBookingDate(guest.nextBookingDate)} ${time}${countSuffix}`.trim();
+  }
+  return String(guest.activeBookings);
+}
+
 // Google Apps Script URL (override via VITE_SCRIPT_URL in Vercel)
 const SCRIPT_URL = import.meta.env.VITE_SCRIPT_URL || 'https://script.google.com/macros/s/AKfycbyNNnfTYIlEcuJFD2DaHJcPkv-ErX34TRaxmuc3mFxLVksuoYqs4_GLhilMxHmS3Eg/exec';
 
@@ -2977,6 +3034,10 @@ function AdminPage() {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [cancelSearch, setCancelSearch] = useState('');
   const [guestFilter, setGuestFilter] = useState('');
+  const [showAddGuest, setShowAddGuest] = useState(false);
+  const [guestForm, setGuestForm] = useState({ name: '', email: '', phone: '' });
+  const [isSavingGuest, setIsSavingGuest] = useState(false);
+  const [deletingGuestId, setDeletingGuestId] = useState<string | null>(null);
   const [allCustomers, setAllCustomers] = useState<any[]>([]);
   const [customerProfile, setCustomerProfile] = useState<any>(null);
   const [allBookings, setAllBookings] = useState<any[]>([]);
@@ -3047,9 +3108,46 @@ function AdminPage() {
 
   const loadAllBookings = async () => {
     try {
-      const response = await fetch(`${SCRIPT_URL}?action=allBookings`);
-      const data = await response.json();
-      if (data.success) setAllBookings(data.data.bookings || []);
+      const [bookingsRes, pendingRes] = await Promise.all([
+        fetch(`${SCRIPT_URL}?action=allBookings`),
+        fetch(`${SCRIPT_URL}?action=pendingBookings`),
+      ]);
+      const data = await bookingsRes.json();
+      const pendingData = await pendingRes.json();
+      if (data.success) {
+        const phoneByEmail = buildPhoneByEmail([
+          ...(pendingData.success ? pendingData.data?.bookings || [] : []),
+          ...(data.data?.bookings || []),
+        ]);
+        const bookings = enrichBookingsWithPhones(data.data.bookings || [], phoneByEmail);
+        setAllBookings(bookings);
+        setAllCustomers((prev) => enrichCustomersWithBookings(prev, bookings));
+        if (customerProfile?.customer?.email) {
+          const email = String(customerProfile.customer.email).toLowerCase();
+          const upcoming = bookings.filter(
+            (b: any) =>
+              String(b.customerEmail || '').toLowerCase() === email &&
+              (b.status === 'Confirmed' || b.status === 'ChangeRequested') &&
+              String(b.date || '') >= getTodayInBudapest()
+          );
+          upcoming.sort((a: any, b: any) => String(a.date).localeCompare(String(b.date)));
+          const next = upcoming[0];
+          setCustomerProfile((prev: any) =>
+            prev
+              ? {
+                  ...prev,
+                  customer: {
+                    ...prev.customer,
+                    phone: prev.customer?.phone || phoneByEmail[email] || '',
+                    activeBookings: upcoming.length,
+                    nextBookingDate: next?.date || '',
+                    nextBookingTime: next?.time || '',
+                  },
+                }
+              : prev
+          );
+        }
+      }
     } catch (error) {
       console.error('Error loading bookings:', error);
     }
@@ -3060,7 +3158,7 @@ function AdminPage() {
       const response = await fetch(`${SCRIPT_URL}?action=pendingBookings`);
       const data = await response.json();
       if (data.success) {
-        const bookings = data.data.bookings || [];
+        const bookings = (data.data.bookings || []).filter((b: any) => b.status !== 'paid');
         setPendingBookings(bookings);
         setPendingCount(bookings.length);
       }
@@ -3210,10 +3308,27 @@ function AdminPage() {
 
   const loadAllCustomers = async () => {
     try {
-      const response = await fetch(`${SCRIPT_URL}?action=allCustomers`);
-      const data = await response.json();
+      const [customersRes, bookingsRes, pendingRes] = await Promise.all([
+        fetch(`${SCRIPT_URL}?action=allCustomers`),
+        fetch(`${SCRIPT_URL}?action=allBookings`),
+        fetch(`${SCRIPT_URL}?action=pendingBookings`),
+      ]);
+      const data = await customersRes.json();
+      const bookingsData = await bookingsRes.json();
+      const pendingData = await pendingRes.json();
       if (data.success) {
-        setAllCustomers(data.data?.customers || []);
+        const phoneByEmail = buildPhoneByEmail([
+          ...(pendingData.success ? pendingData.data?.bookings || [] : []),
+          ...(bookingsData.success ? bookingsData.data?.bookings || [] : []),
+        ]);
+        const bookings = bookingsData.success
+          ? enrichBookingsWithPhones(bookingsData.data?.bookings || [], phoneByEmail)
+          : allBookings;
+        const customers = (data.data?.customers || []).map((customer: any) => ({
+          ...customer,
+          phone: customer.phone || phoneByEmail[String(customer.email || '').toLowerCase()] || '',
+        }));
+        setAllCustomers(enrichCustomersWithBookings(customers, bookings));
       }
     } catch (error) {
       console.error('Error loading customers:', error);
@@ -3226,12 +3341,82 @@ function AdminPage() {
       const response = await fetch(`${SCRIPT_URL}?action=customer&email=${encodeURIComponent(email)}`);
       const data = await response.json();
       if (data.success) {
-        setCustomerProfile(data.data);
+        const profile = data.data;
+        const email = String(profile?.customer?.email || '').toLowerCase();
+        const phoneByEmail = buildPhoneByEmail([
+          ...pendingBookings,
+          ...allBookings,
+          { email: profile?.customer?.email, phone: profile?.customer?.phone },
+        ]);
+        const bookings = enrichCustomersWithBookings(
+          [{ email: profile?.customer?.email, ...profile?.customer }],
+          allBookings
+        )[0];
+        setCustomerProfile({
+          ...profile,
+          customer: {
+            ...profile.customer,
+            phone: profile.customer?.phone || phoneByEmail[email] || '',
+            activeBookings: bookings.activeBookings,
+            nextBookingDate: bookings.nextBookingDate,
+            nextBookingTime: bookings.nextBookingTime,
+          },
+        });
       } else {
         toast.error('Vendég nem található');
       }
     } catch {
       toast.error('Hiba a vendég betöltésekor');
+    }
+  };
+
+  const handleCreateGuest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSavingGuest(true);
+    try {
+      const result = await callScriptAction('adminCreateCustomer', {
+        name: guestForm.name,
+        email: guestForm.email,
+        phone: guestForm.phone,
+      });
+      if (result.success) {
+        toast.success('Vendég hozzáadva');
+        setGuestForm({ name: '', email: '', phone: '' });
+        setShowAddGuest(false);
+        loadAllCustomers();
+        loadDashboardData();
+      } else {
+        toast.error(result.message || 'Hiba a vendég létrehozásakor');
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Hiba a vendég létrehozásakor');
+    } finally {
+      setIsSavingGuest(false);
+    }
+  };
+
+  const deleteGuest = async (guest: { customerId?: string; email?: string; name?: string }) => {
+    if (!confirm(`Biztosan törlöd ezt a vendéget?\n\n${guest.name || ''}`)) return;
+    setDeletingGuestId(guest.customerId || guest.email || null);
+    try {
+      const result = await callScriptAction('adminDeleteCustomer', {
+        customerId: guest.customerId,
+        email: guest.email,
+      });
+      if (result.success) {
+        toast.success('Vendég törölve');
+        if (customerProfile?.customer?.email === guest.email) {
+          setCustomerProfile(null);
+        }
+        loadAllCustomers();
+        loadDashboardData();
+      } else {
+        toast.error(result.message || 'Hiba a törlés során');
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Hiba a törlés során');
+    } finally {
+      setDeletingGuestId(null);
     }
   };
 
@@ -3917,13 +4102,58 @@ function AdminPage() {
 
           return (
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <h2 className="text-2xl font-bold text-[#4A3F35]">Vendégek</h2>
                 <p className="text-sm text-[#8B7355] mt-1">{allCustomers.length} vendég rögzítve</p>
               </div>
-              <button onClick={loadAllCustomers} className="px-4 py-2 bg-[#D4854A] text-white rounded-lg text-sm hover:bg-[#B87333]">Frissítés</button>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAddGuest((v) => !v)}
+                  className="px-4 py-2 bg-[#8B9A7C] text-white rounded-lg text-sm hover:bg-[#6B7F5E]"
+                >
+                  {showAddGuest ? 'Mégse' : '+ Új vendég'}
+                </button>
+                <button onClick={loadAllCustomers} className="px-4 py-2 bg-[#D4854A] text-white rounded-lg text-sm hover:bg-[#B87333]">Frissítés</button>
+              </div>
             </div>
+
+            {showAddGuest && (
+              <form onSubmit={handleCreateGuest} className="bg-white rounded-2xl shadow-warm p-5 border border-[#E8D4C0]/50 space-y-4">
+                <h3 className="font-semibold text-[#4A3F35]">Új vendég hozzáadása</h3>
+                <div className="grid sm:grid-cols-3 gap-3">
+                  <Input
+                    required
+                    placeholder="Név"
+                    value={guestForm.name}
+                    onChange={(e) => setGuestForm({ ...guestForm, name: e.target.value })}
+                    className="border-[#E8D4C0] focus:border-[#D4854A] focus:ring-[#D4854A]"
+                  />
+                  <Input
+                    required
+                    type="email"
+                    placeholder="Email"
+                    value={guestForm.email}
+                    onChange={(e) => setGuestForm({ ...guestForm, email: e.target.value })}
+                    className="border-[#E8D4C0] focus:border-[#D4854A] focus:ring-[#D4854A]"
+                  />
+                  <Input
+                    placeholder="Telefon"
+                    value={guestForm.phone}
+                    onChange={(e) => setGuestForm({ ...guestForm, phone: e.target.value })}
+                    className="border-[#E8D4C0] focus:border-[#D4854A] focus:ring-[#D4854A]"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={isSavingGuest}
+                  className="px-4 py-2 bg-[#D4854A] text-white rounded-lg text-sm hover:bg-[#B87333] disabled:opacity-50"
+                >
+                  {isSavingGuest ? 'Mentés...' : 'Vendég mentése'}
+                </button>
+              </form>
+            )}
 
             <div className="bg-white rounded-2xl shadow-warm p-4 border border-[#E8D4C0]/50">
               <Input
@@ -3945,8 +4175,8 @@ function AdminPage() {
                   <table className="w-full text-sm">
                     <thead className="bg-[#F9F1EA]">
                       <tr>
-                        {['Név', 'Email', 'Telefon', 'Hátralévő alkalmak'].map((h) => (
-                          <th key={h} className="px-5 py-3 text-left text-[#4A3F35] font-semibold">{h}</th>
+                        {['Név', 'Email', 'Telefon', 'Következő foglalás', 'Bérlet', ''].map((h) => (
+                          <th key={h || 'actions'} className="px-5 py-3 text-left text-[#4A3F35] font-semibold">{h}</th>
                         ))}
                       </tr>
                     </thead>
@@ -3964,7 +4194,22 @@ function AdminPage() {
                           <td className="px-5 py-3" onClick={(e) => e.stopPropagation()}>
                             <PhoneLink phone={guest.phone} />
                           </td>
-                          <td className="px-5 py-3 text-[#8B9A7C] font-medium">{guest.totalSessionsRemaining || 0}</td>
+                          <td className="px-5 py-3 text-[#4A3F35] font-medium whitespace-nowrap">
+                            {formatGuestNextBooking(guest)}
+                          </td>
+                          <td className="px-5 py-3 text-[#8B9A7C] font-medium">
+                            {guest.totalSessionsRemaining ? `${guest.totalSessionsRemaining} alkalom` : '–'}
+                          </td>
+                          <td className="px-5 py-3" onClick={(e) => e.stopPropagation()}>
+                            <button
+                              type="button"
+                              onClick={() => deleteGuest(guest)}
+                              disabled={deletingGuestId === (guest.customerId || guest.email)}
+                              className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded-lg text-xs font-semibold disabled:opacity-50 whitespace-nowrap"
+                            >
+                              {deletingGuestId === (guest.customerId || guest.email) ? 'Törlés...' : '🗑 Törlés'}
+                            </button>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -3983,7 +4228,13 @@ function AdminPage() {
                   </p>
                 </div>
 
-                <div className="grid md:grid-cols-3 gap-4">
+                <div className="grid md:grid-cols-4 gap-4">
+                  <div className="bg-[#FFF3E8] rounded-xl p-4 text-center border border-[#F5D5B8]/60">
+                    <p className="text-[#8B7355] text-sm">Aktív foglalás</p>
+                    <p className="text-lg font-bold text-[#D4854A]">
+                      {formatGuestNextBooking(customerProfile.customer || {})}
+                    </p>
+                  </div>
                   <div className="bg-[#F9F1EA] rounded-xl p-4 text-center">
                     <p className="text-[#8B7355] text-sm">Vásárolt alkalmak</p>
                     <p className="text-2xl font-bold text-[#4A3F35]">{customerProfile.customer?.totalSessionsPurchased || 0}</p>
@@ -3993,7 +4244,7 @@ function AdminPage() {
                     <p className="text-2xl font-bold text-[#4A3F35]">{customerProfile.customer?.totalSessionsUsed || 0}</p>
                   </div>
                   <div className="bg-[#8B9A7C]/10 rounded-xl p-4 text-center">
-                    <p className="text-[#8B9A7C] text-sm">Hátralévő alkalmak</p>
+                    <p className="text-[#8B9A7C] text-sm">Bérlet – hátralévő</p>
                     <p className="text-2xl font-bold text-[#8B9A7C]">{customerProfile.customer?.totalSessionsRemaining || 0}</p>
                   </div>
                 </div>
@@ -4028,7 +4279,9 @@ function AdminPage() {
                         <div key={i} className="flex justify-between items-center p-3 bg-[#F9F1EA] rounded-lg">
                           <div>
                             <p className="font-medium text-[#4A3F35]">{booking.service}</p>
-                            <p className="text-sm text-[#8B7355]">{booking.date} {booking.time}</p>
+                            <p className="text-sm text-[#8B7355]">
+                              {formatBookingDate(booking.date)} · {formatBookingTime(booking.time)}
+                            </p>
                           </div>
                           <span className={`px-2 py-1 rounded text-xs ${booking.status === 'Confirmed'
                             ? 'bg-[#8B9A7C]/20 text-[#8B9A7C]'

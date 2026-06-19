@@ -157,6 +157,10 @@ function doPost(e) {
         return adminDeletePendingBooking_(data);
       case 'adminDeleteBooking':
         return adminDeleteBooking_(data);
+      case 'adminCreateCustomer':
+        return adminCreateCustomer_(data);
+      case 'adminDeleteCustomer':
+        return adminDeleteCustomer_(data);
       case 'reconcilePnL':
         return adminReconcilePnL_();
       default:
@@ -204,6 +208,10 @@ function doGet(e) {
         return adminDeletePendingBooking_(e.parameter);
       case 'adminDeleteBooking':
         return adminDeleteBooking_(e.parameter);
+      case 'adminCreateCustomer':
+        return adminCreateCustomer_(e.parameter);
+      case 'adminDeleteCustomer':
+        return adminDeleteCustomer_(e.parameter);
       case 'reconcilePnL':
         return adminReconcilePnL_();
       default:
@@ -519,11 +527,16 @@ function getOrCreateCustomer(name, email, phone) {
   // Search by email
   for (var i = 1; i < data.length; i++) {
     if (data[i][2] === email) {
+      var existingPhone = data[i][3] || '';
+      if (!existingPhone && phone) {
+        customersSheet.getRange(i + 1, 4).setValue(String(phone));
+        existingPhone = String(phone);
+      }
       return {
         customerId: data[i][0],
         name: data[i][1],
         email: data[i][2],
-        phone: data[i][3],
+        phone: existingPhone,
         createdDate: data[i][4],
         totalSessionsPurchased: data[i][5],
         totalSessionsUsed: data[i][6],
@@ -603,6 +616,12 @@ function getCustomerProfile(data) {
   if (!customer) {
     return createResponse(false, 'Vásárló nem található');
   }
+
+  customer.phone = resolveCustomerPhone_(customer.customerId, customer.email, customer.phone);
+  var bookingStats = getCustomerBookingStats_(customer.customerId);
+  customer.activeBookings = bookingStats.activeBookings;
+  customer.nextBookingDate = bookingStats.nextBookingDate;
+  customer.nextBookingTime = bookingStats.nextBookingTime;
   
   // Get active packages
   var packages = getCustomerPackages(customer.customerId);
@@ -626,13 +645,17 @@ function getAllCustomers() {
   
   var customers = [];
   for (var i = 1; i < data.length; i++) {
+    var stats = getCustomerBookingStats_(data[i][0]);
     customers.push({
       customerId: data[i][0],
       name: data[i][1],
       email: data[i][2],
-      phone: data[i][3],
+      phone: resolveCustomerPhone_(data[i][0], data[i][2], data[i][3]),
       totalSessionsRemaining: data[i][7],
-      totalSpent: data[i][8]
+      totalSpent: data[i][8],
+      activeBookings: stats.activeBookings,
+      nextBookingDate: stats.nextBookingDate,
+      nextBookingTime: stats.nextBookingTime
     });
   }
   
@@ -680,8 +703,8 @@ function getCustomerBookings(customerId) {
       bookings.push({
         bookingId: data[i][0],
         service: data[i][3],
-        date: data[i][4],
-        time: data[i][5],
+        date: typeof data[i][4] === 'string' ? data[i][4].slice(0, 10) : formatDate(new Date(data[i][4])),
+        time: formatTimeFromSheet(data[i][5]),
         status: data[i][6],
         packageId: data[i][7],
         sessionNumber: data[i][8]
@@ -883,6 +906,7 @@ function createStripeCheckout(data) {
       '&cancel_url=' + encodeURIComponent(data.cancelUrl || 'https://www.dunakeszimasszazs.hu/booking-cancel') +
       '&metadata[customer_name]=' + encodeURIComponent(data.name) +
       '&metadata[customer_email]=' + encodeURIComponent(data.email) +
+      '&metadata[customer_phone]=' + encodeURIComponent(data.phone || '') +
       '&metadata[service]=' + encodeURIComponent(data.service || '') +
       '&metadata[date]=' + encodeURIComponent(data.date || '') +
       '&metadata[time]=' + encodeURIComponent(data.time || '') +
@@ -1255,6 +1279,187 @@ function sendBankTransferInstructionsToCustomer_(data, referenceId, amount) {
 }
 
 // ============================================
+// Customer phone & booking stats helpers
+// ============================================
+function getLatestPhoneForEmail_(email) {
+  if (!email) return '';
+  var pendingSheet = ensurePendingBookingsSheet_();
+  var data = pendingSheet.getDataRange().getValues();
+  var target = String(email).toLowerCase();
+  for (var i = data.length - 1; i >= 1; i--) {
+    if (String(data[i][2]).toLowerCase() === target && data[i][3]) {
+      return String(data[i][3]);
+    }
+  }
+  return '';
+}
+
+function updateCustomerPhoneByEmail_(email, phone) {
+  if (!email || !phone) return;
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(SHEETS.CUSTOMERS);
+  var data = sheet.getDataRange().getValues();
+  var target = String(email).toLowerCase();
+  for (var i = 1; i < data.length; i++) {
+    if (String(data[i][2]).toLowerCase() === target) {
+      if (!data[i][3]) {
+        sheet.getRange(i + 1, 4).setValue(String(phone));
+      }
+      break;
+    }
+  }
+}
+
+function resolveCustomerPhone_(customerId, email, storedPhone) {
+  if (storedPhone) return String(storedPhone);
+  var fromPending = getLatestPhoneForEmail_(email);
+  if (fromPending) {
+    updateCustomerPhoneByEmail_(email, fromPending);
+    return fromPending;
+  }
+  return '';
+}
+
+function getCustomerBookingStats_(customerId) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var bookingsSheet = ss.getSheetByName(SHEETS.BOOKINGS);
+  var data = bookingsSheet.getDataRange().getValues();
+  var today = formatDate(new Date());
+  var activeBookings = 0;
+  var nextBookingDate = '';
+  var nextBookingTime = '';
+
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][1] !== customerId) continue;
+    if (data[i][6] !== 'Confirmed' && data[i][6] !== 'ChangeRequested') continue;
+    var d = normalizeBookingDate_(data[i][4]);
+    if (d < today) continue;
+    activeBookings++;
+    var t = formatTimeFromSheet(data[i][5]);
+    if (!nextBookingDate || d < nextBookingDate || (d === nextBookingDate && t < nextBookingTime)) {
+      nextBookingDate = d;
+      nextBookingTime = t;
+    }
+  }
+
+  return {
+    activeBookings: activeBookings,
+    nextBookingDate: nextBookingDate,
+    nextBookingTime: nextBookingTime
+  };
+}
+
+function reconcilePendingBookings_() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var custData = ss.getSheetByName(SHEETS.CUSTOMERS).getDataRange().getValues();
+  var idToEmail = {};
+  for (var c = 1; c < custData.length; c++) {
+    idToEmail[custData[c][0]] = String(custData[c][2] || '').toLowerCase();
+  }
+
+  var bookingsSheet = ss.getSheetByName(SHEETS.BOOKINGS);
+  var bookingData = bookingsSheet.getDataRange().getValues();
+  var confirmedKeys = {};
+  for (var b = 1; b < bookingData.length; b++) {
+    if (bookingData[b][6] !== 'Confirmed' && bookingData[b][6] !== 'ChangeRequested') continue;
+    var email = idToEmail[bookingData[b][1]] || '';
+    if (!email) continue;
+    confirmedKeys[email + '|' + bookingSlotKey_(bookingData[b][4], bookingData[b][5])] = true;
+  }
+
+  var pendingSheet = ensurePendingBookingsSheet_();
+  var pendingData = pendingSheet.getDataRange().getValues();
+  for (var i = 1; i < pendingData.length; i++) {
+    var status = String(pendingData[i][12] || '');
+    if (status === 'confirmed' || status === 'cancelled') continue;
+    var email = String(pendingData[i][2] || '').toLowerCase();
+    var key = email + '|' + bookingSlotKey_(pendingData[i][5], pendingData[i][6]);
+    if (confirmedKeys[key]) {
+      pendingSheet.getRange(i + 1, 13).setValue('confirmed');
+      if (pendingData[i][3]) {
+        updateCustomerPhoneByEmail_(pendingData[i][2], pendingData[i][3]);
+      }
+    }
+  }
+}
+
+function adminCreateCustomer_(data) {
+  try {
+    if (!data.name || !data.email) {
+      return createResponse(false, 'Név és email kötelező');
+    }
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getSheetByName(SHEETS.CUSTOMERS);
+    var rows = sheet.getDataRange().getValues();
+    var email = String(data.email).trim().toLowerCase();
+    for (var i = 1; i < rows.length; i++) {
+      if (String(rows[i][2]).toLowerCase() === email) {
+        return createResponse(false, 'Ez az email már szerepel a vendéglistán');
+      }
+    }
+    var customerId = 'CUST' + Date.now();
+    sheet.appendRow([
+      customerId,
+      String(data.name).trim(),
+      String(data.email).trim(),
+      data.phone ? String(data.phone).trim() : '',
+      formatDate(new Date()),
+      0, 0, 0, 0, data.notes ? String(data.notes).trim() : ''
+    ]);
+    return createResponse(true, 'Vendég létrehozva', {
+      customerId: customerId,
+      name: String(data.name).trim(),
+      email: String(data.email).trim(),
+      phone: data.phone ? String(data.phone).trim() : ''
+    });
+  } catch (error) {
+    logError('adminCreateCustomer_', error);
+    return createResponse(false, 'Hiba a vendég létrehozásakor: ' + error.message);
+  }
+}
+
+function adminDeleteCustomer_(data) {
+  try {
+    if (!data.email && !data.customerId) {
+      return createResponse(false, 'Email vagy customerId szükséges');
+    }
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getSheetByName(SHEETS.CUSTOMERS);
+    var rows = sheet.getDataRange().getValues();
+    var targetRow = -1;
+    var customerId = data.customerId || '';
+
+    for (var i = 1; i < rows.length; i++) {
+      if (data.customerId && rows[i][0] === data.customerId) {
+        targetRow = i + 1;
+        customerId = rows[i][0];
+        break;
+      }
+      if (data.email && String(rows[i][2]).toLowerCase() === String(data.email).toLowerCase()) {
+        targetRow = i + 1;
+        customerId = rows[i][0];
+        break;
+      }
+    }
+
+    if (targetRow < 2) {
+      return createResponse(false, 'Vendég nem található');
+    }
+
+    var stats = getCustomerBookingStats_(customerId);
+    if (stats.activeBookings > 0) {
+      return createResponse(false, 'Nem törölhető: van aktív foglalása. Előbb töröld a foglalást a Foglalások fülön.');
+    }
+
+    sheet.deleteRow(targetRow);
+    return createResponse(true, 'Vendég törölve', { customerId: customerId });
+  } catch (error) {
+    logError('adminDeleteCustomer_', error);
+    return createResponse(false, 'Hiba a vendég törlésekor: ' + error.message);
+  }
+}
+
+// ============================================
 // Get All Bookings & Pending Bookings (for Admin Panel)
 // ============================================
 function getAllBookings_() {
@@ -1269,17 +1474,18 @@ function getAllBookings_() {
   var phoneMap = {};
   for (var k = 1; k < custData.length; k++) {
     emailMap[custData[k][0]] = custData[k][2];
-    phoneMap[custData[k][0]] = custData[k][3] || '';
+    phoneMap[custData[k][0]] = resolveCustomerPhone_(custData[k][0], custData[k][2], custData[k][3]);
   }
 
   var bookings = [];
   for (var i = 1; i < data.length; i++) {
+    var custEmail = emailMap[data[i][1]] || '';
     bookings.push({
       bookingId: data[i][0],
       customerId: data[i][1],
       customerName: data[i][2],
-      customerEmail: emailMap[data[i][1]] || '',
-      customerPhone: phoneMap[data[i][1]] || '',
+      customerEmail: custEmail,
+      customerPhone: phoneMap[data[i][1]] || getLatestPhoneForEmail_(custEmail) || '',
       service: data[i][3],
       date: typeof data[i][4] === 'string' ? data[i][4].slice(0,10) : formatDate(new Date(data[i][4])),
       time: formatTimeFromSheet(data[i][5]),
@@ -1293,12 +1499,13 @@ function getAllBookings_() {
 }
 
 function getPendingBookings_() {
+  reconcilePendingBookings_();
   var pendingSheet = ensurePendingBookingsSheet_();
   var data = pendingSheet.getDataRange().getValues();
   var bookings = [];
   for (var i = 1; i < data.length; i++) {
     var status = data[i][12];
-    if (status === 'confirmed' || status === 'cancelled') continue;
+    if (status === 'confirmed' || status === 'cancelled' || status === 'paid') continue;
     bookings.push({
       rowIndex: i + 1,
       timestamp: data[i][0],
@@ -2701,8 +2908,14 @@ function handleStripeWebhook(event) {
         return createResponse(false, bookingResultJson.message || 'Foglalás létrehozása sikertelen');
       }
 
-      // Mark the pending booking row as paid
-      updatePendingBookingStatus(bookingData.email, 'paid');
+      // Mark the pending booking row as confirmed (payment received + booking created)
+      updatePendingBookingStatus(bookingData.email, 'confirmed', bookingData.date, bookingData.time);
+      if (!bookingData.phone) {
+        bookingData.phone = getLatestPhoneForEmail_(bookingData.email);
+      }
+      if (bookingData.phone) {
+        updateCustomerPhoneByEmail_(bookingData.email, bookingData.phone);
+      }
 
       // Record the payment in the Financial sheet
       recordTransaction(
@@ -2725,15 +2938,21 @@ function handleStripeWebhook(event) {
   }
 }
 
-function updatePendingBookingStatus(email, status) {
+function updatePendingBookingStatus(email, status, date, time) {
   var pendingSheet = ensurePendingBookingsSheet_();
   if (!pendingSheet) return;
 
   var data = pendingSheet.getDataRange().getValues();
+  var slotKey = (date && time) ? bookingSlotKey_(date, time) : '';
   // Search from the bottom so we update the most recent pending entry
   for (var i = data.length - 1; i >= 1; i--) {
-    if (data[i][2] === email && (data[i][12] === 'pending' || data[i][12] === 'awaiting_bank_transfer')) {
+    if (String(data[i][2]).toLowerCase() !== String(email).toLowerCase()) continue;
+    if (slotKey && bookingSlotKey_(data[i][5], data[i][6]) !== slotKey) continue;
+    if (data[i][12] === 'pending' || data[i][12] === 'awaiting_bank_transfer' || data[i][12] === 'paid') {
       pendingSheet.getRange(i + 1, 13).setValue(status);
+      if (data[i][3]) {
+        updateCustomerPhoneByEmail_(email, data[i][3]);
+      }
       Logger.log('Updated pending booking for ' + email + ' to ' + status);
       break;
     }
