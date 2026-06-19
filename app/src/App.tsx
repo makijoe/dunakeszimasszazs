@@ -27,7 +27,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { toast, Toaster } from 'sonner';
 import { getAppRoute, navigateTo, ROUTES, type AppRoute } from '@/lib/navigation';
-import { formatBookingDate, formatBookingTime } from '@/lib/utils';
+import { formatBookingDate, formatBookingTime, getTodayInBudapest } from '@/lib/utils';
 
 // Google Apps Script URL (override via VITE_SCRIPT_URL in Vercel)
 const SCRIPT_URL = import.meta.env.VITE_SCRIPT_URL || 'https://script.google.com/macros/s/AKfycbyNNnfTYIlEcuJFD2DaHJcPkv-ErX34TRaxmuc3mFxLVksuoYqs4_GLhilMxHmS3Eg/exec';
@@ -3009,7 +3009,8 @@ function AdminPage() {
 
   const loadDashboardData = async () => {
     try {
-      const response = await fetch(`${SCRIPT_URL}?action=dashboard`);
+      const today = getTodayInBudapest();
+      const response = await fetch(`${SCRIPT_URL}?action=dashboard&today=${today}`);
       const data = await response.json();
       if (data.success) {
         setDashboardData(data.data);
@@ -3444,6 +3445,7 @@ function AdminPage() {
                 key={tab.id}
                 onClick={() => {
                   setActiveTab(tab.id as any);
+                  if (tab.id === 'dashboard') loadDashboardData();
                   if (tab.id === 'bookings') loadAllBookings();
                   if (tab.id === 'pending') loadPendingBookings();
                   if (tab.id === 'pnl') loadPnLData();
@@ -3477,7 +3479,31 @@ function AdminPage() {
           const monthlyDeposits = Math.max(0, Number(dashboardData?.monthlyPnL?.depositsReceived ?? dashboardData?.monthlyPnL?.totalIncome ?? 0));
           const monthlyBookings = dashboardData?.monthlyPnL?.activeBookings ?? dashboardData?.monthlyPnL?.sessionsCompleted ?? 0;
           const expectedRevenue = Math.max(0, Number(dashboardData?.monthlyPnL?.estimatedFullRevenue ?? 0));
-          const todayLabel = new Date().toLocaleDateString('hu-HU', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+          const todayStr = getTodayInBudapest();
+          const todayLabel = new Date().toLocaleDateString('hu-HU', { timeZone: 'Europe/Budapest', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+          const normalizeBookingDay = (dateVal: unknown) => {
+            if (!dateVal) return '';
+            const s = String(dateVal);
+            if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
+            if (s.includes('T')) {
+              return new Date(s).toLocaleDateString('sv-SE', { timeZone: 'Europe/Budapest' });
+            }
+            return s.slice(0, 10);
+          };
+          const todaysBookingsList = (() => {
+            const apiToday = dashboardData?.todaysBookings || [];
+            const fromUpcoming = (dashboardData?.upcomingBookings || []).filter((b: { date?: string }) =>
+              normalizeBookingDay(b.date) === todayStr
+            );
+            const merged = [...apiToday, ...fromUpcoming];
+            const seen = new Set<string>();
+            return merged.filter((b: { customer?: string; time?: string }) => {
+              const key = `${b.customer}|${b.time}`;
+              if (seen.has(key)) return false;
+              seen.add(key);
+              return true;
+            });
+          })();
 
           return (
           <div className="space-y-6">
@@ -3538,12 +3564,12 @@ function AdminPage() {
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-semibold text-[#4A3F35]">Mai foglalások</h3>
                   <span className="text-xs font-medium text-[#D4854A] bg-[#D4854A]/10 px-2.5 py-1 rounded-full">
-                    {dashboardData?.todaysBookings?.length || 0} db
+                    {todaysBookingsList.length} db
                   </span>
                 </div>
-                {dashboardData?.todaysBookings?.length > 0 ? (
+                {todaysBookingsList.length > 0 ? (
                   <div className="space-y-3">
-                    {dashboardData.todaysBookings.map((booking: any, i: number) => (
+                    {todaysBookingsList.map((booking: any, i: number) => (
                       <div key={i} className="flex justify-between items-center p-4 bg-[#FFF8F2] border border-[#F5E6D8] rounded-xl">
                         <div>
                           <p className="font-semibold text-[#4A3F35]">{booking.customer}</p>

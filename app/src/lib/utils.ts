@@ -3,6 +3,11 @@ import { twMerge } from "tailwind-merge"
 
 const BUDAPEST = 'Europe/Budapest'
 
+/** Today's date as YYYY-MM-DD in Budapest (matches salon timezone). */
+export function getTodayInBudapest(): string {
+  return new Date().toLocaleDateString('sv-SE', { timeZone: BUDAPEST })
+}
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
