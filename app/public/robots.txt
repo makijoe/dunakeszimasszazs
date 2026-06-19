@@ -1,4 +1,8 @@
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /foglalasaim
+Disallow: /booking-success
+Disallow: /booking-cancel
 
-Sitemap: https://dunakeszimasszazs.hu/sitemap.xml
+Sitemap: https://www.dunakeszimasszazs.hu/sitemap.xml

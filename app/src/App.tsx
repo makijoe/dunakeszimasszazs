@@ -28,7 +28,20 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { toast, Toaster } from 'sonner';
 import { getAppRoute, navigateTo, ROUTES, type AppRoute } from '@/lib/navigation';
+import { services, getServicePath } from '@/lib/services';
+import {
+  FAQ_ITEMS,
+  GBP_URL,
+  GOOGLE_REVIEW_COUNT,
+  HOME_SEO,
+  SITE_NAME,
+  SITE_URL,
+  useSeo,
+} from '@/lib/seo';
 import { formatBookingDate, formatBookingTime, formatPhoneDisplay, formatPhoneLink, getTodayInBudapest } from '@/lib/utils';
+import { PrivacyPolicyContent } from '@/components/PrivacyPolicyContent';
+import { PrivacyPage } from '@/pages/PrivacyPage';
+import { ServiceLandingPage } from '@/pages/ServiceLandingPage';
 
 function PhoneLink({ phone, className = '' }: { phone?: string | number; className?: string }) {
   const tel = formatPhoneLink(phone);
@@ -167,6 +180,7 @@ function Navigation() {
     { href: '#fooldal', label: 'Főoldal' },
     { href: '#kezelesek', label: 'Kezelések' },
     { href: '#arlista', label: 'Árlista' },
+    { href: '#gyik', label: 'GYIK' },
     { href: '#tv-szereplesek', label: 'TV Szereplések' },
     { href: '#idopont', label: 'Időpontfoglalás' },
     { href: '#kapcsolat', label: 'Kapcsolat' },
@@ -390,11 +404,13 @@ function HeroSection() {
               {/* Main Image Container */}
               <div className="relative rounded-3xl overflow-hidden shadow-warm-lg">
                 <img
-                  src="https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=800&h=1000&fit=crop"
-                  alt="Relaxáló masszázs környezet az Angyali Szalonban"
+                  src="/images/szalon-1.jpeg"
+                  alt="Relaxáló masszázs környezet az Angyali Szalonban, Dunakeszi"
                   className="w-full h-[500px] lg:h-[600px] object-cover"
                   loading="eager"
                   fetchPriority="high"
+                  width={800}
+                  height={1000}
                 />
                 {/* Overlay Gradient */}
                 <div className="absolute inset-0 bg-gradient-to-t from-[#4A3F35]/30 via-transparent to-transparent" />
@@ -407,8 +423,8 @@ function HeroSection() {
                     <Heart className="w-6 h-6 text-[#8B9A7C]" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-[#4A3F35]">5000+</p>
-                    <p className="text-sm text-[#8B7355]">Elégedett vendég</p>
+                    <p className="text-2xl font-bold text-[#4A3F35]">{GOOGLE_REVIEW_COUNT}+</p>
+                    <p className="text-sm text-[#8B7355]">Google vélemény</p>
                   </div>
                 </div>
               </div>
@@ -422,7 +438,7 @@ function HeroSection() {
                   </div>
                   <span className="text-sm font-medium text-[#4A3F35]">5.0</span>
                 </div>
-                <p className="text-xs text-[#8B7355] mt-1">Vendég értékelések</p>
+                <p className="text-xs text-[#8B7355] mt-1">Google értékelés</p>
               </div>
             </div>
           </div>
@@ -621,13 +637,25 @@ function ServiceModal({ service, isOpen, onClose }: { service: typeof services[0
             </div>
           )}
 
-          <Button
-            onClick={scrollToBooking}
-            className="w-full bg-[#D4854A] hover:bg-[#B87333] text-white py-4 rounded-xl text-lg font-medium shadow-warm hover:shadow-warm-lg transition-all duration-300"
-          >
-            <Calendar className="w-5 h-5 mr-2" />
-            Időpontot foglalok erre a kezelésre
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Button
+              onClick={() => {
+                onClose();
+                navigateTo(getServicePath(service.id));
+              }}
+              variant="outline"
+              className="flex-1 border-[#D4854A] text-[#D4854A] hover:bg-[#D4854A] hover:text-white py-4 rounded-xl"
+            >
+              Teljes kezelés oldal
+            </Button>
+            <Button
+              onClick={scrollToBooking}
+              className="flex-1 bg-[#D4854A] hover:bg-[#B87333] text-white py-4 rounded-xl text-lg font-medium shadow-warm hover:shadow-warm-lg transition-all duration-300"
+            >
+              <Calendar className="w-5 h-5 mr-2" />
+              Időpontfoglalás
+            </Button>
+          </div>
         </div>
       </div>
     </div>
@@ -693,14 +721,16 @@ function ServicesSection() {
               className={`group bg-white rounded-2xl overflow-hidden shadow-warm hover:shadow-warm-lg transition-all duration-500 hover:-translate-y-2 cursor-pointer ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
                 }`}
               style={{ transitionDelay: `${index * 100}ms` }}
-              onClick={() => openModal(service)}
+              onClick={() => navigateTo(getServicePath(service.id))}
             >
               <div className="relative h-48 overflow-hidden">
                 <img
                   src={service.image}
-                  alt={service.name}
+                  alt={`${service.name} – masszázs Dunakeszin`}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   loading="lazy"
+                  width={600}
+                  height={400}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#4A3F35]/60 via-transparent to-transparent" />
                 <div className="absolute bottom-4 left-4 right-4">
@@ -718,9 +748,21 @@ function ServicesSection() {
                 <p className="text-[#8B7355] text-sm line-clamp-2 mb-4">
                   {service.shortDescription}
                 </p>
-                <div className="flex items-center text-[#D4854A] text-sm font-medium">
-                  <span>Részletek</span>
-                  <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center text-[#D4854A] text-sm font-medium">
+                    <span>Részletek</span>
+                    <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openModal(service);
+                    }}
+                    className="text-xs text-[#8B7355] hover:text-[#D4854A] underline"
+                  >
+                    Gyors áttekintés
+                  </button>
                 </div>
               </div>
             </div>
@@ -738,123 +780,33 @@ function ServicesSection() {
   );
 }
 
-// Services Data
-const services = [
-  {
-    id: 'frissito',
-    name: 'Frissítő masszázs',
-    duration: 'kb. 60 perc',
-    price: 15000,
-    shortDescription: 'Könnyed, lazító masszázs, amely oldja a mindennapi feszültségeket és javítja a vérkeringést.',
-    description: 'A frissítő masszázs egy kellemes, könnyed kezelés, amely átmozgatja az egész testet, oldja az izmok feszességét és segít lelassítani a mindennapi rohanást. Finom, ritmikus fogásokkal dolgozom a hát, vállak és végtagok területén, hogy a tested fokozatosan megkönnyebbüljön.',
-    benefits: ['Ellazult izmok', 'Csökkent feszültség', 'Jobb közérzet', 'Könnyedség a hátban'],
-    image: 'https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?w=600&h=400&fit=crop'
-  },
-  {
-    id: 'nepali',
-    name: 'Nepáli masszázs',
-    duration: 'kb. 60 perc',
-    price: 15000,
-    shortDescription: 'Mélyebb lazítást biztosító kezelés, amely hatékonyan oldja a mélyebben fekvő izomfeszültségeket.',
-    description: 'A nepáli masszázs egy gyengéd, mégis hatékony stresszoldó kezelés, amely segít lecsendesíteni az elmét, ellazítani a testet és helyreállítani a belső egyensúlyt. Különösen ajánlott azoknak, akik sok feszültséget, szorongást vagy kimerültséget élnek meg a mindennapokban.',
-    benefits: ['Mély izomlazítás', 'Energiarendszer harmonizálása', 'Testi-lelki egyensúly', 'Belső nyugalom'],
-    image: 'https://images.unsplash.com/photo-1519824145371-296894a0daa9?w=600&h=400&fit=crop'
-  },
-  {
-    id: 'nyirok',
-    name: 'Nyirokmasszázs',
-    duration: '60 perc',
-    price: 15000,
-    shortDescription: 'Könnyed lábak, jobb keringés. Támogatja a nyirokkeringést és segít a méregtelenítésben.',
-    description: 'A nyirokmasszázs egy gyengéd, lassú ritmusú kezelés, amely a nyirokkeringés támogatásával segíti a szervezet természetes tisztulási folyamatait, csökkentheti a pangó folyadékot és könnyedségérzetet adhat a testnek.',
-    benefits: ['Könnyedebb lábak', 'Csökkent ödéma', 'Jobb keringés', 'Méregtelenítés'],
-    image: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=600&h=400&fit=crop'
-  },
-  {
-    id: 'aroma',
-    name: 'Aromamasszázs',
-    duration: '60 perc',
-    price: 15000,
-    shortDescription: 'Illóolajos, relaxáló kezelés, amely a természetes illatok erejével harmonizálja testet és lelket.',
-    description: 'Az aromamasszázs illóolajos, relaxáló kezelés, amely a természetes illatok erejével harmonizálja testet és lelket. A válogatott illóolajok mély relaxációt és stresszoldást biztosítanak.',
-    benefits: ['Mély relaxáció', 'Stresszoldás', 'Aromaterápiás hatás', 'Érzelmi egyensúly'],
-    image: 'https://images.unsplash.com/photo-1552693673-1bf958298935?w=600&h=400&fit=crop'
-  },
-  {
-    id: 'indiai',
-    name: 'Indiai fejmasszázs',
-    duration: 'kb. 30-40 perc',
-    price: 15000,
-    shortDescription: 'Ősi, rendkívül pihentető technika, amely a fejen, nyakon és vállakon felhalmozódott feszültséget oldja.',
-    description: 'Az indiai fejmasszázs egy ősi, gyengéd és rendkívül megnyugtató technika, amely segít oldani a fejben, nyakban és vállakban felhalmozódott feszültséget. Tökéletes választás stressz, túlterheltség vagy fejfájás esetén.',
-    benefits: ['Fejfájás csökkentése', 'Mentális frissesség', 'Stresszoldás', 'Jobb koncentráció'],
-    image: '/images/indiai-fejmasszazs.jpeg'
-  },
-  {
-    id: 'nehezfem',
-    name: 'Nehézfém-kivezetés',
-    duration: 'kb. 60 perc',
-    price: 15000,
-    shortDescription: 'Gyengéd, harmonizáló módszer, amely támogatja a szervezet természetes méregtelenítő folyamatait.',
-    description: 'A nehézfém-kivezetés gyengéd, harmonizáló módszer, amely támogatja a szervezet természetes méregtelenítő folyamatait. A kezelés segít a szervezetnek megszabadulni a felhalmozódott méreganyagoktól.',
-    benefits: ['Méregtelenítés', 'Nyirokkeringés támogatása', 'Belső tehermentesítés', 'Energia növekedés'],
-    image: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=600&h=400&fit=crop'
-  },
-  {
-    id: 'kineziologia',
-    name: 'Kineziológia',
-    duration: '60-75 perc',
-    price: 15000,
-    shortDescription: 'Blokkoldó, lelki egyensúlyt teremtő kezelés, amely segít feloldani a testben tárolt érzelmi blokkokat.',
-    description: 'A kineziológia egy gyengéd, érintésen alapuló módszer, amely segít feltárni és oldani a testben, elmében és érzelmekben megbújó blokkokat. A kezelés célja a belső harmónia helyreállítása, a stressz csökkentése és a természetes energiaáramlás támogatása.',
-    benefits: ['Lelki egyensúly', 'Blokkoldás', 'Stresszkezelés', 'Belső erő'],
-    image: '/images/kineziologia.jpeg'
-  },
-  {
-    id: 'kollagen',
-    name: 'Arany kollagén arckezelés',
-    duration: 'kb. 60-90 perc',
-    price: 30000,
-    shortDescription: 'Bőrbe olvadó fiatalítás. Luxus arckezelés arany kollagén terápiával.',
-    description: 'Már elérhető a teljesen új, bőrbe olvadó arany kollagén terápia – két különleges változatban, intenzív feszesítéssel és mély hidratálással. Összehangolva nyirokmasszázzsal a látványosabb, tartósabb eredményért. Az aranyszálas kezelés egy komplex, prémium arcszépítő protokoll, amely a bőr természetes megújulását indítja el. Őssejt szérumokkal dolgozunk, amelyek vegyszermentesek, a bőrrel abszolút azonos összetételűek és mélyen támogatják a bőr regenerációját. Aranyszál + potenciált adó sejtszál alkalmazás kétféle technikával vihető be az arcba, elindítja a természetes kollagéntermelést, feszesít, tölt és fiatalít. A kezelés feltölti az arcot, javítja a krátereket, hegeket, bőrhibákat, egységesíti a bőrfelszínt és ragyogó, élettel teli arcképet ad. Teljes, tudatos protokoll része: professzionális arctisztítás, bőrtípushoz igazított peelingek, csodálatos hámasztó, nyugtató, regeneráló anyagok, rétegről rétegre felépített kezelés.',
-    benefits: ['Bőrfiatalítás', 'Ragyogó bőr', 'Ránccsökkentés', 'Feszesebb bőr', 'Kollagéntermelés'],
-    image: '/images/professional-products.jpeg',
-    beforeAfter: [
-      { before: '/images/arany-before-1.jpeg', after: '/images/arany-after-1.jpeg' },
-      { before: '/images/arany-before-2.jpeg', after: '/images/arany-after-2.jpeg' }
-    ]
-  },
-  {
-    id: 'zsirbontas',
-    name: 'Ultrahangos zsírbontás',
-    duration: 'kb. 45-60 perc',
-    price: 15000,
-    shortDescription: 'Egy testterület kezelése ultrahangos technológiával a zsírsejtek csökkentésére.',
-    description: 'Az ultrahangos zsírbontás egy testterület kezelése ultrahangos technológiával a zsírsejtek csökkentésére. A kezelés segít javítani a testkontúrt és csökkenti a cellulitot.',
-    benefits: ['Zsírsejt csökkentés', 'Testkontúr javítás', 'Cellulit kezelés', 'Bőrfeszesítés'],
-    image: '/images/ultrahangos-zsirbontas.jpeg'
-  },
-  {
-    id: 'metamorf',
-    name: 'Metamorf masszázs',
-    duration: 'kb. 60 perc',
-    price: 15000,
-    shortDescription: 'Belső átalakulás gyengéd érintéssel. Gerinc energetikai pontjain keresztül.',
-    description: 'A metamorf masszázs egy finom, mégis mély hatású kezelés, amely a gerinc energetikai pontjain keresztül segíti a testi-lelki oldódást. A kezelés során enyhe nyomással haladunk végig a lábfejen és a kézfejen található gerincpontokon, melyek reflexkapcsolatban állnak a teljes gerinccel és idegrendszerrel. Ez a módszer tulajdonképpen egy különleges gerincmasszázs, amely nem közvetlenül a gerincet érinti, hanem annak kivetülésein dolgozik. A gyengéd érintések segítenek oldani a régi feszültségeket, berögzült mintákat, és támogatják a szervezet természetes egyensúlyát. Ajánlott stressz, belső feszültség esetén, lelki elakadásoknál, túlterheltség, kimerültség idején, amikor "jólesne egy belső újrahangolás". A metamorf masszázs kortól függetlenül alkalmazható, teljes ellazulást és mély megnyugvást hozhat.',
-    benefits: ['Belső átalakulás', 'Régi feszültségek oldása', 'Lelki elakadások feloldása', 'Belső újrahangolás', 'Teljes ellazulás'],
-    image: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=600&h=400&fit=crop'
-  },
-  {
-    id: 'bemer',
-    name: 'BEMER Kezelés',
-    duration: '20 vagy 40 perc',
-    price: 15000,
-    shortDescription: 'A mikroerek pacemakere. Sejtszintű támogatás a mikrokeringés javításával.',
-    description: 'A BEMER matrac a mikroerek pacemakere. A szervezet legapróbb hajszálereire hat, ott támogatja a keringést, ahol már az orvos, a gyógyszer és a gépek fizikailag nem tudnak "bejutni". A mikroerek felelősek azért, hogy a sejtek megfelelő mennyiségű oxigénhez és tápanyaghoz jussanak, valamint hogy a salakanyagok kiürüljenek. Ha a mikrokeringés nem működik optimálisan, a sejtek regenerációja lelassul, a szervezet terheltebbé válik. A BEMER terápia segíti a mikrokeringés támogatását, így hozzájárul a jobb oxigénellátáshoz, a sejtek hatékonyabb működéséhez, a regeneráció gyorsításához és a szervezet természetes egyensúlyának fenntartásához. Kiemelten fontos szerepe van a megelőzésben is, hiszen a megfelelő mikrokeringés az egészséges működés alapja. A BEMER matrac külön választható kezelésként is igénybe vehető (20 perc: 7 500 Ft, 40 perc: 15 000 Ft), illetve bármely kezelés mellé ajánljuk kiegészítésként. Alkalmazható a kezelések előtt, alatt vagy után is – a páciens döntése alapján. Ez egy lehetőség azok számára, akik mélyebb, sejtszintű támogatást szeretnének adni a testüknek, és tudatosan tesznek az egészségük megőrzéséért.',
-    benefits: ['Jobb oxigénellátás', 'Sejtek hatékonyabb működése', 'Regeneráció gyorsítása', 'Szervezet egyensúlyának fenntartása', 'Megelőzés támogatása'],
-    image: '/images/bemer-1.jpeg'
-  }
-];
+// FAQ Section
+function FAQSection() {
+  return (
+    <section id="gyik" className="py-20 bg-[#F9F1EA]">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl sm:text-4xl font-bold text-[#4A3F35] mb-4">Gyakran ismételt kérdések</h2>
+          <p className="text-lg text-[#8B7355]">Masszázs Dunakeszin – hasznos információk az Angyali Szalonban.</p>
+        </div>
+        <div className="space-y-4">
+          {FAQ_ITEMS.map((item) => (
+            <details
+              key={item.question}
+              className="group bg-white rounded-2xl border border-[#E8D4C0]/60 p-5 shadow-warm open:shadow-warm-lg"
+            >
+              <summary className="cursor-pointer font-semibold text-[#4A3F35] list-none flex items-center justify-between gap-4">
+                {item.question}
+                <ChevronDown className="w-5 h-5 text-[#D4854A] group-open:rotate-180 transition-transform shrink-0" />
+              </summary>
+              <p className="mt-4 text-[#4A3F35] leading-relaxed">{item.answer}</p>
+            </details>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
 
 // Pricing Section
 function PricingSection() {
@@ -879,19 +831,19 @@ function PricingSection() {
     return () => observer.disconnect();
   }, []);
 
-  const prices = [
-    { name: 'Frissítő masszázs', duration: 'kb. 60 perc', price: '15 000' },
-    { name: 'Nepáli masszázs', duration: 'kb. 60 perc', price: '15 000' },
-    { name: 'Nyirokmasszázs', duration: '60 perc', price: '15 000' },
-    { name: 'Aromamasszázs', duration: '60 perc', price: '15 000' },
-    { name: 'Indiai fejmasszázs', duration: 'kb. 30-40 perc', price: '15 000' },
-    { name: 'Nehézfém-kivezetés', duration: 'kb. 60 perc', price: '15 000' },
-    { name: 'Kineziológia', duration: '60-75 perc', price: '15 000' },
-    { name: 'Ultrahangos zsírbontás', duration: 'kb. 45-60 perc', price: '15 000' },
-    { name: 'Arany kollagén arckezelés', duration: 'kb. 60-90 perc', price: '30 000' },
-    { name: 'Metamorf masszázs', duration: 'kb. 60 perc', price: '15 000' },
-    { name: 'BEMER Kezelés (20 perc)', duration: 'kb. 20 perc', price: '7 500' },
-    { name: 'BEMER Kezelés (40 perc)', duration: 'kb. 40 perc', price: '15 000' },
+  const prices: Array<{ name: string; duration: string; price: string; slug?: string }> = [
+    { name: 'Frissítő masszázs', duration: 'kb. 60 perc', price: '15 000', slug: 'frissito' },
+    { name: 'Nepáli masszázs', duration: 'kb. 60 perc', price: '15 000', slug: 'nepali' },
+    { name: 'Nyirokmasszázs', duration: '60 perc', price: '15 000', slug: 'nyirok' },
+    { name: 'Aromamasszázs', duration: '60 perc', price: '15 000', slug: 'aroma' },
+    { name: 'Indiai fejmasszázs', duration: 'kb. 30-40 perc', price: '15 000', slug: 'indiai' },
+    { name: 'Nehézfém-kivezetés', duration: 'kb. 60 perc', price: '15 000', slug: 'nehezfem' },
+    { name: 'Kineziológia', duration: '60-75 perc', price: '15 000', slug: 'kineziologia' },
+    { name: 'Ultrahangos zsírbontás', duration: 'kb. 45-60 perc', price: '15 000', slug: 'zsirbontas' },
+    { name: 'Arany kollagén arckezelés', duration: 'kb. 60-90 perc', price: '30 000', slug: 'kollagen' },
+    { name: 'Metamorf masszázs', duration: 'kb. 60 perc', price: '15 000', slug: 'metamorf' },
+    { name: 'BEMER Kezelés (20 perc)', duration: 'kb. 20 perc', price: '7 500', slug: 'bemer' },
+    { name: 'BEMER Kezelés (40 perc)', duration: 'kb. 40 perc', price: '15 000', slug: 'bemer' },
   ];
 
   return (
@@ -918,7 +870,20 @@ function PricingSection() {
                 className="flex items-center justify-between p-6 hover:bg-[#F9F1EA] transition-colors"
               >
                 <div className="flex-1">
-                  <h3 className="font-semibold text-[#4A3F35] text-lg">{item.name}</h3>
+                  {item.slug ? (
+                    <a
+                      href={getServicePath(item.slug)}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        navigateTo(getServicePath(item.slug!));
+                      }}
+                      className="font-semibold text-[#4A3F35] text-lg hover:text-[#D4854A] transition-colors"
+                    >
+                      {item.name}
+                    </a>
+                  ) : (
+                    <h3 className="font-semibold text-[#4A3F35] text-lg">{item.name}</h3>
+                  )}
                   <p className="text-sm text-[#8B7355]">{item.duration}</p>
                 </div>
                 <div className="text-right">
@@ -1137,7 +1102,7 @@ function TestimonialsSection() {
           {/* Google Rating Badge */}
           <div className={`flex flex-col items-center gap-4 mb-8 transition-all duration-700 delay-100 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
             <a
-              href="https://share.google/bUlkHfnNUJpZeq2Tw"
+              href={GBP_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-3 bg-white px-6 py-4 rounded-2xl shadow-warm hover:shadow-warm-lg transition-all duration-300 hover:-translate-y-1"
@@ -1211,7 +1176,7 @@ function TestimonialsSection() {
         {/* View All Reviews CTA */}
         <div className={`text-center mt-10 transition-all duration-700 delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           <a
-            href="https://share.google/bUlkHfnNUJpZeq2Tw"
+            href={GBP_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-6 py-3 bg-white border border-[#E8D4C0] rounded-full text-[#4A3F35] hover:bg-[#F5E6D8] hover:border-[#D4854A] transition-all duration-300"
@@ -2407,58 +2372,19 @@ function PrivacyPolicyModal({ onClose }: { onClose: () => void }) {
             <X className="w-5 h-5 text-[#4A3F35]" />
           </button>
         </div>
-        <div className="px-6 py-6 space-y-5 text-sm text-[#4A3F35] leading-relaxed">
-          <p className="text-[#8B7355]">Hatályos: 2024. január 1-től</p>
-
-          <div>
-            <h3 className="font-semibold text-base mb-2">1. Adatkezelő</h3>
-            <p>Makra Edina (Angyali Szalon), 2120 Dunakeszi, Kolonics György utca 2/B.<br />
-            E-mail: <a href="mailto:dunakeszimasszor@gmail.com" className="text-[#D4854A] hover:underline">dunakeszimasszor@gmail.com</a><br />
-            Telefon: +36 30 487 7883</p>
-          </div>
-
-          <div>
-            <h3 className="font-semibold text-base mb-2">2. Kezelt személyes adatok</h3>
-            <ul className="list-disc list-inside space-y-1 text-[#4A3F35]">
-              <li>Teljes név</li>
-              <li>E-mail cím</li>
-              <li>Telefonszám</li>
-              <li>Foglalási adatok (időpont, kezelés típusa)</li>
-              <li>Esetleges megjegyzések, egészségügyi preferenciák</li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="font-semibold text-base mb-2">3. Az adatkezelés célja és jogalapja</h3>
-            <p>Az adatokat kizárólag az időpontfoglalás kezelése, visszaigazolása és a kezelés megszervezése céljából kezeljük. Az adatkezelés jogalapja a szerződés teljesítése (GDPR 6. cikk (1) bekezdés b) pont).</p>
-          </div>
-
-          <div>
-            <h3 className="font-semibold text-base mb-2">4. Adatmegőrzési idő</h3>
-            <p>A személyes adatokat a foglalás teljesítésétől számított 5 évig őrizzük meg, a számviteli kötelezettségeknek megfelelően.</p>
-          </div>
-
-          <div>
-            <h3 className="font-semibold text-base mb-2">5. Az érintett jogai</h3>
-            <ul className="list-disc list-inside space-y-1">
-              <li>Hozzáférés joga: kérheti a tárolt adatairól szóló tájékoztatást</li>
-              <li>Helyesbítés joga: kérheti a pontatlan adatok javítását</li>
-              <li>Törlés joga: kérheti adatai törlését</li>
-              <li>Tiltakozás joga: tiltakozhat az adatkezelés ellen</li>
-            </ul>
-            <p className="mt-2">Kéréseit az <a href="mailto:dunakeszimasszor@gmail.com" className="text-[#D4854A] hover:underline">dunakeszimasszor@gmail.com</a> e-mail címre küldheti.</p>
-          </div>
-
-          <div>
-            <h3 className="font-semibold text-base mb-2">6. Adatbiztonság</h3>
-            <p>Az adatokat biztonságos, titkosított csatornákon (HTTPS) továbbítjuk. Harmadik félnek csak a foglalás feldolgozásához szükséges mértékben (pl. fizetési szolgáltató: Stripe) adjuk át az adatokat.</p>
-          </div>
-
-          <div>
-            <h3 className="font-semibold text-base mb-2">7. Jogorvoslat</h3>
-            <p>Panasszal a Nemzeti Adatvédelmi és Információszabadság Hatósághoz fordulhat:<br />
-            <a href="https://www.naih.hu" target="_blank" rel="noopener noreferrer" className="text-[#D4854A] hover:underline">www.naih.hu</a> · 1055 Budapest, Falk Miksa utca 9–11.</p>
-          </div>
+        <div className="px-6 py-6">
+          <PrivacyPolicyContent />
+          <a
+            href={ROUTES.privacy}
+            onClick={(e) => {
+              e.preventDefault();
+              onClose();
+              navigateTo(ROUTES.privacy);
+            }}
+            className="inline-block mt-4 text-sm text-[#D4854A] hover:underline"
+          >
+            Teljes adatvédelmi oldal megnyitása →
+          </a>
         </div>
       </div>
     </div>
@@ -2498,17 +2424,23 @@ function FooterSection() {
           <div>
             <h4 className="font-semibold text-lg mb-4">Gyors linkek</h4>
             <ul className="space-y-2">
-              {[
+              {([
                 { href: '#fooldal', label: 'Főoldal' },
                 { href: '#kezelesek', label: 'Kezelések' },
                 { href: '#arlista', label: 'Árlista' },
+                { href: '#gyik', label: 'GYIK' },
                 { href: '#idopont', label: 'Időpontfoglalás' },
-              ].map((link) => (
+                { href: ROUTES.privacy, label: 'Adatvédelem', route: true },
+              ] as const).map((link) => (
                 <li key={link.href}>
                   <a
                     href={link.href}
                     onClick={(e) => {
                       e.preventDefault();
+                      if ('route' in link && link.route) {
+                        navigateTo(link.href);
+                        return;
+                      }
                       const element = document.querySelector(link.href);
                       if (element) {
                         element.scrollIntoView({ behavior: 'smooth' });
@@ -2575,7 +2507,7 @@ function FooterSection() {
                   <Facebook className="w-5 h-5" />
                 </a>
                 <a
-                  href="https://share.google/bUlkHfnNUJpZeq2Tw"
+                  href={GBP_URL}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-[#D4854A] transition-colors"
@@ -2593,18 +2525,39 @@ function FooterSection() {
           </div>
         </div>
 
+        <div className="mt-10 rounded-2xl overflow-hidden border border-white/10 shadow-warm">
+          <iframe
+            title="Angyali Szalon helye Dunakeszin – térkép"
+            src="https://maps.google.com/maps?q=47.6289,19.1406&hl=hu&z=15&output=embed"
+            className="w-full h-56 sm:h-64 border-0"
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+          />
+        </div>
+
         {/* Divider */}
-        <div className="border-t border-white/10 pt-8">
+        <div className="border-t border-white/10 pt-8 mt-10">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-white/50 text-sm text-center md:text-left">
               © {new Date().getFullYear()} Dunakeszi Masszázs - Angyali Szalon – Makra Edina | Minden jog fenntartva
             </p>
             <div className="flex items-center gap-6">
-              <button
-                onClick={() => setShowPrivacyPolicy(true)}
+              <a
+                href={ROUTES.privacy}
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigateTo(ROUTES.privacy);
+                }}
                 className="text-white/50 hover:text-[#D4854A] transition-colors text-sm"
               >
                 Adatvédelmi tájékoztató
+              </a>
+              <button
+                type="button"
+                onClick={() => setShowPrivacyPolicy(true)}
+                className="text-white/40 hover:text-[#D4854A] transition-colors text-xs"
+              >
+                Gyors nézet
               </button>
               <a
                 href={ROUTES.admin}
@@ -2634,6 +2587,13 @@ function FooterSection() {
 // Manage Bookings Page - Self-Service for Customers
 // ============================================
 function ManageBookingsPage() {
+  useSeo({
+    title: `Foglalásaim | ${SITE_NAME}`,
+    description: 'Saját foglalások megtekintése, lemondása vagy módosítása – Dunakeszi Masszázs.',
+    canonical: `${SITE_URL}/foglalasaim`,
+    noindex: true,
+  });
+
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [myBookings, setMyBookings] = useState<any[]>([]);
@@ -3029,6 +2989,13 @@ function ManageBookingsPage() {
 
 // Admin Page Component - Enhanced with Customer Management & P&L
 function AdminPage() {
+  useSeo({
+    title: `Admin | ${SITE_NAME}`,
+    description: 'Admin felület – belső használatra.',
+    canonical: `${SITE_URL}/admin`,
+    noindex: true,
+  });
+
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
   const [activeTab, setActiveTab] = useState<'dashboard' | 'bookings' | 'pending' | 'customers' | 'packages' | 'pnl' | 'cancel' | 'notify' | 'blockslot'>('dashboard');
@@ -5040,6 +5007,13 @@ function AdminPage() {
 
 // Bank Transfer Pending Page
 function BookingBankPendingPage() {
+  useSeo({
+    title: `Banki átutalás | ${SITE_NAME}`,
+    description: 'Banki átutalásos foglalás részletei.',
+    canonical: `${SITE_URL}/`,
+    noindex: true,
+  });
+
   const [booking, setBooking] = useState<{
     referenceId: string;
     amount: number;
@@ -5130,6 +5104,13 @@ function BookingBankPendingPage() {
 
 // Booking Success Page
 function BookingSuccessPage() {
+  useSeo({
+    title: `Foglalás visszaigazolva | ${SITE_NAME}`,
+    description: 'Sikeres online foglalás – Dunakeszi Masszázs Angyali Szalon.',
+    canonical: `${SITE_URL}/booking-success`,
+    noindex: true,
+  });
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#FFFBF7] to-[#F5E6D8] flex items-center justify-center p-4">
       <div className="bg-white rounded-3xl shadow-warm-lg p-8 sm:p-12 max-w-lg w-full text-center">
@@ -5166,6 +5147,13 @@ function BookingSuccessPage() {
 
 // Booking Cancel Page
 function BookingCancelPage() {
+  useSeo({
+    title: `Fizetés megszakítva | ${SITE_NAME}`,
+    description: 'A fizetés nem történt meg. Próbáld újra a foglalást.',
+    canonical: `${SITE_URL}/booking-cancel`,
+    noindex: true,
+  });
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#FFFBF7] to-[#F5E6D8] flex items-center justify-center p-4">
       <div className="bg-white rounded-3xl shadow-warm-lg p-8 sm:p-12 max-w-lg w-full text-center">
@@ -5187,6 +5175,31 @@ function BookingCancelPage() {
           Vissza a foglaláshoz
         </a>
       </div>
+    </div>
+  );
+}
+
+function HomeSite() {
+  useSeo(HOME_SEO);
+
+  return (
+    <div className="min-h-screen bg-[#FFFBF7]">
+      <Navigation />
+      <main>
+        <HeroSection />
+        <BenefitsSection />
+        <ServicesSection />
+        <PricingSection />
+        <TVSection />
+        <TestimonialsSection />
+        <AboutSection />
+        <GallerySection />
+        <ProductsSection />
+        <OrganoCoffeeSection />
+        <BookingSection />
+        <FAQSection />
+      </main>
+      <FooterSection />
     </div>
   );
 }
@@ -5213,6 +5226,20 @@ function App() {
     return <ManageBookingsPage />;
   }
 
+  if (route === 'privacy') {
+    return <PrivacyPage Navigation={Navigation} Footer={FooterSection} />;
+  }
+
+  if (route.startsWith('service:')) {
+    return (
+      <ServiceLandingPage
+        slug={route.slice('service:'.length)}
+        Navigation={Navigation}
+        Footer={FooterSection}
+      />
+    );
+  }
+
   if (route === 'booking-bank-pending') {
     return <BookingBankPendingPage />;
   }
@@ -5225,25 +5252,7 @@ function App() {
     return <BookingCancelPage />;
   }
 
-  return (
-    <div className="min-h-screen bg-[#FFFBF7]">
-      <Navigation />
-      <main>
-        <HeroSection />
-        <BenefitsSection />
-        <ServicesSection />
-        <PricingSection />
-        <TVSection />
-        <TestimonialsSection />
-        <AboutSection />
-        <GallerySection />
-        <ProductsSection />
-        <OrganoCoffeeSection />
-        <BookingSection />
-      </main>
-      <FooterSection />
-    </div>
-  );
+  return <HomeSite />;
 }
 
 export default App;
