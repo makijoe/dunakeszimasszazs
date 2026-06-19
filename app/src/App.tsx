@@ -27,6 +27,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { toast, Toaster } from 'sonner';
 import { getAppRoute, navigateTo, ROUTES, type AppRoute } from '@/lib/navigation';
+import { formatBookingDate, formatBookingTime } from '@/lib/utils';
 
 // Google Apps Script URL (override via VITE_SCRIPT_URL in Vercel)
 const SCRIPT_URL = import.meta.env.VITE_SCRIPT_URL || 'https://script.google.com/macros/s/AKfycbyNNnfTYIlEcuJFD2DaHJcPkv-ErX34TRaxmuc3mFxLVksuoYqs4_GLhilMxHmS3Eg/exec';
@@ -3332,7 +3333,7 @@ function AdminPage() {
     <div className="min-h-screen bg-gradient-to-b from-[#F9F1EA] to-[#FFFBF7]">
       {/* Header */}
       <header className="bg-white shadow-sm py-4 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+        <div className="max-w-screen-2xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-[#D4854A]/10 rounded-full flex items-center justify-center">
               <svg className="w-5 h-5 text-[#D4854A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -3367,7 +3368,7 @@ function AdminPage() {
 
       {/* Navigation Tabs */}
       <div className="bg-white border-b border-[#E8D4C0]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
           <nav className="flex overflow-x-auto">
             {[
               { id: 'dashboard', label: 'Áttekintés', icon: '📊' },
@@ -3411,7 +3412,7 @@ function AdminPage() {
       </div>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* DASHBOARD TAB */}
         {activeTab === 'dashboard' && (
           <div className="space-y-6">
@@ -3559,9 +3560,9 @@ function AdminPage() {
                           ChangeRequested: '⏳ Módosítás',
                           Cancelled: '✕ Lemondva',
                         };
-                        const dateStr = b.date ? (typeof b.date === 'string' ? b.date.slice(0,10) : new Date(b.date).toLocaleDateString('hu-HU')) : '–';
-                        const timeStr = b.time ? String(b.time).slice(0,5) : '–';
-                        const createdStr = b.createdDate ? (typeof b.createdDate === 'string' ? b.createdDate.slice(0,10) : new Date(b.createdDate).toLocaleDateString('hu-HU')) : '–';
+                        const dateStr = formatBookingDate(b.date);
+                        const timeStr = formatBookingTime(b.time);
+                        const createdStr = formatBookingDate(b.createdDate);
                         return (
                           <tr key={i} className="border-t border-[#F5E6D8] hover:bg-[#FFFBF7]">
                             <td className="px-4 py-3 font-medium text-[#4A3F35]">{b.customerName}</td>
@@ -3597,48 +3598,88 @@ function AdminPage() {
               Banki átutalások: amikor megérkezik a befizetés a bankszámlára, kattints a <strong>Befizetés megerősítése</strong> gombra.
               Stripe foglalások automatikusan megerősülnek fizetés után.
             </p>
-            <div className="bg-white rounded-2xl shadow-warm overflow-hidden">
+            <div className="bg-white rounded-2xl shadow-warm overflow-hidden border border-[#E8D4C0]/60">
               {pendingBookings.length === 0 ? (
                 <div className="p-8 text-center text-[#8B7355]">Nincs függőben lévő foglalás.</div>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead className="bg-[#F9F1EA]">
+                  <table className="w-full text-sm min-w-[1080px]">
+                    <thead className="bg-[#F3EBE2]">
                       <tr>
-                        {['Név', 'Email', 'Kezelés', 'Dátum', 'Időpont', 'Összeg', 'Fizetés', 'Közl.', 'Státusz', 'Művelet'].map(h => (
-                          <th key={h} className="px-4 py-3 text-left text-[#4A3F35] font-semibold">{h}</th>
+                        {[
+                          { label: 'Ügyfél', className: 'pl-6' },
+                          { label: 'Időpont', className: '' },
+                          { label: 'Kezelés', className: '' },
+                          { label: 'Fizetés', className: '' },
+                          { label: 'Közlemény', className: '' },
+                          { label: 'Státusz', className: '' },
+                          { label: 'Művelet', className: 'pr-6' },
+                        ].map((h) => (
+                          <th
+                            key={h.label}
+                            className={`px-5 py-3.5 text-left text-[#4A3F35] font-semibold text-xs uppercase tracking-wide ${h.className}`}
+                          >
+                            {h.label}
+                          </th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
                       {pendingBookings.map((b: any, i: number) => (
-                        <tr key={i} className="border-t border-[#F5E6D8] hover:bg-[#FFFBF7]">
-                          <td className="px-4 py-3 font-medium text-[#4A3F35]">{b.name}</td>
-                          <td className="px-4 py-3 text-[#8B7355]">{b.email}</td>
-                          <td className="px-4 py-3 text-[#8B7355]">{b.service}</td>
-                          <td className="px-4 py-3 text-[#8B7355]">{b.date}</td>
-                          <td className="px-4 py-3 text-[#8B7355]">{b.time}</td>
-                          <td className="px-4 py-3 text-[#8B7355]">{b.amount ? Number(b.amount).toLocaleString() + ' Ft' : '-'}</td>
-                          <td className="px-4 py-3 text-[#8B7355]">{b.paymentMethod === 'bank_transfer' ? '🏦 Átutalás' : '💳 Stripe'}</td>
-                          <td className="px-4 py-3 font-mono text-sm text-[#D4854A] font-bold tracking-wide">{b.referenceId || '-'}</td>
-                          <td className="px-4 py-3">
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        <tr
+                          key={i}
+                          className="border-t border-[#E8D4C0]/70 even:bg-[#FFFBF7]/70 hover:bg-[#FFF6EE] transition-colors"
+                        >
+                          <td className="px-6 py-4 align-top border-r border-[#F0E6DA]/80">
+                            <div className="font-semibold text-[#4A3F35] text-[15px] leading-snug">{b.name}</div>
+                            <div className="text-xs text-[#8B7355] mt-1 break-all">{b.email}</div>
+                            {b.phone && <div className="text-xs text-[#A89070] mt-0.5">{b.phone}</div>}
+                          </td>
+                          <td className="px-5 py-4 align-top border-r border-[#F0E6DA]/80 whitespace-nowrap">
+                            <div className="font-semibold text-[#4A3F35]">{formatBookingDate(b.date)}</div>
+                            <div className="inline-flex items-center gap-1.5 mt-1.5 text-[#D4854A] font-semibold">
+                              <Clock className="w-3.5 h-3.5 shrink-0" />
+                              {formatBookingTime(b.time)}
+                            </div>
+                          </td>
+                          <td className="px-5 py-4 align-top border-r border-[#F0E6DA]/80 text-[#4A3F35] font-medium">
+                            {b.service}
+                          </td>
+                          <td className="px-5 py-4 align-top border-r border-[#F0E6DA]/80 whitespace-nowrap">
+                            <div className="font-medium text-[#4A3F35]">
+                              {b.paymentMethod === 'bank_transfer' ? '🏦 Banki átutalás' : '💳 Stripe'}
+                            </div>
+                            <div className="text-[#8B7355] mt-1">
+                              {b.amount ? `${Number(b.amount).toLocaleString('hu-HU')} Ft` : '–'}
+                            </div>
+                          </td>
+                          <td className="px-5 py-4 align-top border-r border-[#F0E6DA]/80">
+                            {b.referenceId ? (
+                              <span className="inline-block font-mono text-sm text-[#D4854A] font-bold tracking-wide bg-[#FFF3E8] border border-[#F5D5B8] rounded-lg px-2.5 py-1">
+                                {b.referenceId}
+                              </span>
+                            ) : (
+                              <span className="text-[#B5A08A]">—</span>
+                            )}
+                          </td>
+                          <td className="px-5 py-4 align-top">
+                            <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${
                               b.status === 'paid' ? 'bg-[#8B9A7C]/15 text-[#4A7C59]' :
-                              b.status === 'awaiting_bank_transfer' ? 'bg-amber-100 text-amber-800' :
-                              'bg-orange-100 text-orange-700'
+                              b.status === 'awaiting_bank_transfer' ? 'bg-amber-100 text-amber-900' :
+                              'bg-orange-100 text-orange-800'
                             }`}>{getPendingStatusLabel(b)}</span>
                           </td>
-                          <td className="px-4 py-3">
+                          <td className="px-6 py-4 align-top">
                             {b.status === 'awaiting_bank_transfer' && b.referenceId ? (
                               <button
                                 onClick={() => confirmBankTransfer(b.referenceId, b.name)}
                                 disabled={confirmingReference === b.referenceId}
-                                className="px-3 py-1.5 bg-[#8B9A7C] hover:bg-[#6B7F5E] text-white rounded-lg text-xs font-medium disabled:opacity-50"
+                                className="px-3.5 py-2 bg-[#8B9A7C] hover:bg-[#6B7F5E] text-white rounded-lg text-xs font-semibold disabled:opacity-50 whitespace-nowrap"
                               >
-                                {confirmingReference === b.referenceId ? '...' : '✓ Befizetés megerősítése'}
+                                {confirmingReference === b.referenceId ? 'Megerősítés...' : '✓ Befizetés megerősítése'}
                               </button>
                             ) : (
-                              <span className="text-xs text-[#8B7355]">—</span>
+                              <span className="text-xs text-[#B5A08A]">Automatikus</span>
                             )}
                           </td>
                         </tr>
