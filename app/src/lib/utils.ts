@@ -89,3 +89,30 @@ export function formatBookingTime(value: unknown): string {
     hour12: false,
   })
 }
+
+function getNowTimeInBudapest(): string {
+  return new Date().toLocaleTimeString('en-GB', {
+    timeZone: BUDAPEST,
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  })
+}
+
+/** True if booking date/time is still in the future (Budapest). */
+export function isBookingUpcoming(date: unknown, time: unknown): boolean {
+  const d = String(date ?? '').slice(0, 10)
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) return false
+
+  const today = getTodayInBudapest()
+  if (d > today) return true
+  if (d < today) return false
+
+  const t = formatBookingTime(time)
+  if (t === '–') return true
+  return t >= getNowTimeInBudapest()
+}
+
+export function isActiveBookingStatus(status: unknown): boolean {
+  return status === 'Confirmed' || status === 'ChangeRequested'
+}

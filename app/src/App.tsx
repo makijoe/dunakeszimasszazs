@@ -38,7 +38,15 @@ import {
   SITE_URL,
   useSeo,
 } from '@/lib/seo';
-import { formatBookingDate, formatBookingTime, formatPhoneDisplay, formatPhoneLink, getTodayInBudapest } from '@/lib/utils';
+import {
+  formatBookingDate,
+  formatBookingTime,
+  formatPhoneDisplay,
+  formatPhoneLink,
+  getTodayInBudapest,
+  isActiveBookingStatus,
+  isBookingUpcoming,
+} from '@/lib/utils';
 import { PrivacyPolicyContent } from '@/components/PrivacyPolicyContent';
 import { PrivacyPage } from '@/pages/PrivacyPage';
 import { ServiceLandingPage } from '@/pages/ServiceLandingPage';
@@ -3037,7 +3045,27 @@ function AdminPage() {
   const [allBookings, setAllBookings] = useState<any[]>([]);
   const [pendingBookings, setPendingBookings] = useState<any[]>([]);
   const [allPackages, setAllPackages] = useState<any[]>([]);
+  const ADMIN_TIME_SLOTS = ['08:30', '09:45', '11:00', '12:15', '13:30', '14:45', '16:00', '17:15', '18:30'];
+  const WEEKDAY_OPTIONS = [
+    { value: 'MONDAY', label: 'Hétfő' },
+    { value: 'TUESDAY', label: 'Kedd' },
+    { value: 'WEDNESDAY', label: 'Szerda' },
+    { value: 'THURSDAY', label: 'Csütörtök' },
+    { value: 'FRIDAY', label: 'Péntek' },
+    { value: 'SATURDAY', label: 'Szombat' },
+    { value: 'SUNDAY', label: 'Vasárnap' },
+  ];
+  const EDINA_WEEKLY_PRESET = [
+    { dayOfWeek: 'FRIDAY', startTime: '08:30', endTime: '10:30', label: 'Foglalt – heti' },
+    { dayOfWeek: 'MONDAY', startTime: '08:30', endTime: '11:00', label: 'Foglalt – heti' },
+    { dayOfWeek: 'THURSDAY', startTime: '11:00', endTime: '12:00', label: 'Foglalt – heti' },
+    { dayOfWeek: 'THURSDAY', startTime: '17:00', endTime: '20:00', label: 'Foglalt – heti' },
+  ];
+  const [blockMode, setBlockMode] = useState<'single' | 'multi' | 'recurring'>('single');
   const [blockSlotForm, setBlockSlotForm] = useState({ date: '', time: '', label: '', duration: '75' });
+  const [multiSlotForm, setMultiSlotForm] = useState({ date: '', times: [] as string[], label: '', duration: '75' });
+  const [recurringBlocks, setRecurringBlocks] = useState(EDINA_WEEKLY_PRESET);
+  const [recurringWeeks, setRecurringWeeks] = useState('52');
   const [isBlockingSlot, setIsBlockingSlot] = useState(false);
 
   const handleBlockSlot = async (e: React.FormEvent) => {
@@ -3060,6 +3088,64 @@ function AdminPage() {
       }
     } catch { toast.error('Hiba a zárolás során'); }
     finally { setIsBlockingSlot(false); }
+  };
+
+  const handleBlockMultipleSlots = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!multiSlotForm.times.length) {
+      toast.error('Válassz legalább egy időpontot!');
+      return;
+    }
+    setIsBlockingSlot(true);
+    try {
+      const params = new URLSearchParams();
+      params.append('action', 'blockMultipleSlots');
+      params.append('date', multiSlotForm.date);
+      params.append('times', JSON.stringify(multiSlotForm.times));
+      params.append('label', multiSlotForm.label || 'Zárolt időpont');
+      params.append('duration', multiSlotForm.duration);
+      const res = await fetch(SCRIPT_URL, { method: 'POST', body: params });
+      const result = await res.json();
+      if (result.success) {
+        toast.success(result.message || 'Időpontok zárolva');
+        setMultiSlotForm({ date: '', times: [], label: '', duration: '75' });
+      } else {
+        toast.error(result.message || 'Hiba a zárolás során');
+      }
+    } catch { toast.error('Hiba a zárolás során'); }
+    finally { setIsBlockingSlot(false); }
+  };
+
+  const handleBlockRecurringSchedule = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!recurringBlocks.length) {
+      toast.error('Adj meg legalább egy heti zárolást!');
+      return;
+    }
+    setIsBlockingSlot(true);
+    try {
+      const params = new URLSearchParams();
+      params.append('action', 'blockRecurringSchedule');
+      params.append('blocks', JSON.stringify(recurringBlocks));
+      params.append('weeks', recurringWeeks);
+      const res = await fetch(SCRIPT_URL, { method: 'POST', body: params });
+      const result = await res.json();
+      if (result.success) {
+        toast.success(result.message || 'Heti zárolások létrehozva');
+      } else {
+        toast.error(result.message || 'Hiba a zárolás során');
+      }
+    } catch { toast.error('Hiba a zárolás során'); }
+    finally { setIsBlockingSlot(false); }
+  };
+
+  const toggleMultiSlotTime = (time: string) => {
+    setMultiSlotForm((prev) => ({
+      ...prev,
+      times: prev.times.includes(time)
+        ? prev.times.filter((t) => t !== time)
+        : [...prev.times, time].sort(),
+    }));
   };
 
   const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'Edina2025!';
@@ -3171,8 +3257,8 @@ function AdminPage() {
           const upcoming = bookings.filter(
             (b: any) =>
               String(b.customerEmail || '').toLowerCase() === email &&
-              (b.status === 'Confirmed' || b.status === 'ChangeRequested') &&
-              String(b.date || '') >= getTodayInBudapest()
+              isActiveBookingStatus(b.status) &&
+              isBookingUpcoming(b.date, b.time)
           );
           upcoming.sort((a: any, b: any) => String(a.date).localeCompare(String(b.date)));
           const next = upcoming[0];
@@ -3599,6 +3685,85 @@ function AdminPage() {
     return Math.round(packageForm.originalPrice * (1 - discount / 100));
   };
 
+  const upcomingActiveBookings = allBookings
+    .filter((b: any) => isActiveBookingStatus(b.status) && isBookingUpcoming(b.date, b.time))
+    .sort((a: any, b: any) => `${a.date} ${a.time}`.localeCompare(`${b.date} ${b.time}`));
+
+  const historyBookings = allBookings
+    .filter((b: any) => !(isActiveBookingStatus(b.status) && isBookingUpcoming(b.date, b.time)))
+    .sort((a: any, b: any) => `${b.date} ${b.time}`.localeCompare(`${a.date} ${a.time}`));
+
+  const renderBookingsTable = (bookings: any[], emptyMessage: string) => {
+    if (bookings.length === 0) {
+      return <div className="p-8 text-center text-[#8B7355]">{emptyMessage}</div>;
+    }
+
+    const statusColors: Record<string, string> = {
+      Confirmed: 'bg-[#8B9A7C]/15 text-[#4A7C59]',
+      ChangeRequested: 'bg-yellow-100 text-yellow-700',
+      Cancelled: 'bg-red-100 text-red-600',
+    };
+    const statusLabels: Record<string, string> = {
+      Confirmed: '✓ Aktív',
+      ChangeRequested: '⏳ Módosítás',
+      Cancelled: '✕ Lemondva',
+    };
+
+    return (
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="bg-[#F9F1EA]">
+            <tr>
+              {['Név', 'Email', 'Telefon', 'Kezelés', 'Dátum', 'Időpont', 'Státusz', 'Létrehozva', 'Művelet'].map((h) => (
+                <th key={h} className="px-4 py-3 text-left text-[#4A3F35] font-semibold">{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {bookings.map((b: any, i: number) => (
+              <tr key={`${b.bookingId || i}-${b.date}-${b.time}`} className="border-t border-[#F5E6D8] hover:bg-[#FFFBF7]">
+                <td className="px-4 py-3 font-medium text-[#4A3F35]">{b.customerName}</td>
+                <td className="px-4 py-3 text-[#8B7355] text-xs break-all">{b.customerEmail || '–'}</td>
+                <td className="px-4 py-3 text-xs">
+                  <PhoneLink phone={b.customerPhone} />
+                </td>
+                <td className="px-4 py-3 text-[#8B7355]">{b.service}</td>
+                <td className="px-4 py-3 text-[#8B7355] whitespace-nowrap">{formatBookingDate(b.date)}</td>
+                <td className="px-4 py-3 text-[#8B7355] whitespace-nowrap">{formatBookingTime(b.time)}</td>
+                <td className="px-4 py-3">
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[b.status] || 'bg-gray-100 text-gray-500'}`}>
+                    {statusLabels[b.status] || b.status}
+                  </span>
+                </td>
+                <td className="px-4 py-3 text-[#8B7355] text-xs whitespace-nowrap">{formatBookingDate(b.createdDate)}</td>
+                <td className="px-4 py-3">
+                  {isActiveBookingStatus(b.status) && isBookingUpcoming(b.date, b.time) ? (
+                    <button
+                      type="button"
+                      onClick={() => deleteBooking({
+                        bookingId: b.bookingId,
+                        customerName: b.customerName,
+                        date: b.date,
+                        time: b.time,
+                        service: b.service,
+                      })}
+                      disabled={deletingBookingId === b.bookingId}
+                      className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded-lg text-xs font-semibold disabled:opacity-50 whitespace-nowrap"
+                    >
+                      {deletingBookingId === b.bookingId ? 'Törlés...' : '🗑 Törlés'}
+                    </button>
+                  ) : (
+                    <span className="text-xs text-[#B5A08A]">—</span>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
+
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#F9F1EA] to-[#FFFBF7] flex items-center justify-center p-4">
@@ -3918,86 +4083,42 @@ function AdminPage() {
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-2xl font-bold text-[#4A3F35]">Összes foglalás</h2>
+                <h2 className="text-2xl font-bold text-[#4A3F35]">Foglalások</h2>
                 {allBookings.length > 0 && (
                   <p className="text-sm text-[#8B7355] mt-0.5">
-                    {allBookings.filter((b:any)=>b.status==='Confirmed').length} aktív · {allBookings.filter((b:any)=>b.status==='ChangeRequested').length} módosítás kérve · {allBookings.filter((b:any)=>b.status==='Cancelled').length} lemondva
+                    {upcomingActiveBookings.length} közelgő aktív · {historyBookings.filter((b: any) => b.status === 'Cancelled').length} lemondva · {historyBookings.filter((b: any) => isActiveBookingStatus(b.status)).length} elmúlt
                   </p>
                 )}
               </div>
               <button type="button" disabled={tabLoading} onClick={() => runWithTabLoading('Foglalások betöltése…', loadAllBookings)} className="px-4 py-2 bg-[#D4854A] text-white rounded-lg text-sm hover:bg-[#B87333] disabled:opacity-60">Frissítés</button>
             </div>
-            <div className="bg-white rounded-2xl shadow-warm overflow-hidden">
-              {allBookings.length === 0 ? (
-                <div className="p-8 text-center text-[#8B7355]">Még nincs foglalás rögzítve.</div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead className="bg-[#F9F1EA]">
-                      <tr>
-                        {['Név', 'Email', 'Telefon', 'Kezelés', 'Dátum', 'Időpont', 'Státusz', 'Létrehozva', 'Művelet'].map(h => (
-                          <th key={h} className="px-4 py-3 text-left text-[#4A3F35] font-semibold">{h}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {allBookings.map((b: any, i: number) => {
-                        const statusColors: Record<string, string> = {
-                          Confirmed: 'bg-[#8B9A7C]/15 text-[#4A7C59]',
-                          ChangeRequested: 'bg-yellow-100 text-yellow-700',
-                          Cancelled: 'bg-red-100 text-red-600',
-                        };
-                        const statusLabels: Record<string, string> = {
-                          Confirmed: '✓ Aktív',
-                          ChangeRequested: '⏳ Módosítás',
-                          Cancelled: '✕ Lemondva',
-                        };
-                        const dateStr = formatBookingDate(b.date);
-                        const timeStr = formatBookingTime(b.time);
-                        const createdStr = formatBookingDate(b.createdDate);
-                        return (
-                          <tr key={i} className="border-t border-[#F5E6D8] hover:bg-[#FFFBF7]">
-                            <td className="px-4 py-3 font-medium text-[#4A3F35]">{b.customerName}</td>
-                            <td className="px-4 py-3 text-[#8B7355] text-xs break-all">{b.customerEmail || '–'}</td>
-                            <td className="px-4 py-3 text-xs">
-                              <PhoneLink phone={b.customerPhone} />
-                            </td>
-                            <td className="px-4 py-3 text-[#8B7355]">{b.service}</td>
-                            <td className="px-4 py-3 text-[#8B7355] whitespace-nowrap">{dateStr}</td>
-                            <td className="px-4 py-3 text-[#8B7355] whitespace-nowrap">{timeStr}</td>
-                            <td className="px-4 py-3">
-                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[b.status] || 'bg-gray-100 text-gray-500'}`}>
-                                {statusLabels[b.status] || b.status}
-                              </span>
-                            </td>
-                            <td className="px-4 py-3 text-[#8B7355] text-xs whitespace-nowrap">{createdStr}</td>
-                            <td className="px-4 py-3">
-                              {b.status !== 'Cancelled' ? (
-                                <button
-                                  type="button"
-                                  onClick={() => deleteBooking({
-                                    bookingId: b.bookingId,
-                                    customerName: b.customerName,
-                                    date: b.date,
-                                    time: b.time,
-                                    service: b.service,
-                                  })}
-                                  disabled={deletingBookingId === b.bookingId}
-                                  className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded-lg text-xs font-semibold disabled:opacity-50 whitespace-nowrap"
-                                >
-                                  {deletingBookingId === b.bookingId ? 'Törlés...' : '🗑 Törlés'}
-                                </button>
-                              ) : (
-                                <span className="text-xs text-[#B5A08A]">—</span>
-                              )}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
+
+            <div className="bg-white rounded-2xl shadow-warm overflow-hidden border border-[#8B9A7C]/20">
+              <div className="px-5 py-4 bg-[#8B9A7C]/10 border-b border-[#E8D4C0] flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-[#4A3F35]">Közelgő aktív foglalások</h3>
+                  <p className="text-sm text-[#8B7355]">Csak a még el nem végzett, jövőbeli időpontok</p>
                 </div>
-              )}
+                <span className="px-3 py-1 rounded-full bg-[#8B9A7C]/15 text-[#4A7C59] text-sm font-semibold">
+                  {upcomingActiveBookings.length}
+                </span>
+              </div>
+              {renderBookingsTable(upcomingActiveBookings, 'Nincs közelgő aktív foglalás.')}
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-warm overflow-hidden">
+              <div className="px-5 py-4 bg-[#F9F1EA] border-b border-[#E8D4C0] flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-[#4A3F35]">Korábbi és lemondott foglalások</h3>
+                  <p className="text-sm text-[#8B7355]">Elmúlt időpontok, lemondások és régi státuszok</p>
+                </div>
+                <span className="px-3 py-1 rounded-full bg-[#E8D4C0]/50 text-[#8B7355] text-sm font-semibold">
+                  {historyBookings.length}
+                </span>
+              </div>
+              {allBookings.length === 0
+                ? <div className="p-8 text-center text-[#8B7355]">Még nincs foglalás rögzítve.</div>
+                : renderBookingsTable(historyBookings, 'Nincs korábbi vagy lemondott foglalás.')}
             </div>
           </div>
         )}
@@ -4931,73 +5052,248 @@ function AdminPage() {
         )}
 
         {activeTab === 'blockslot' && (
-          <div className="bg-white rounded-2xl shadow-warm-lg p-6 sm:p-8 max-w-lg">
-            <h2 className="text-2xl font-bold text-[#4A3F35] mb-2">Időpont zárolása</h2>
-            <p className="text-sm text-[#8B7355] mb-6">
-              Ezzel a funkcióval lezárhatsz egy időpontot, így az online foglalásban <b>nem lesz elérhető</b>.
-              Pl. ha beteg vagy, szabadnapot veszel ki, vagy más okból nem érsz rá.
-            </p>
-            <form onSubmit={handleBlockSlot} className="space-y-5">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-[#4A3F35]">Dátum *</Label>
-                  <Input
-                    type="date"
-                    value={blockSlotForm.date}
-                    onChange={(e) => setBlockSlotForm({ ...blockSlotForm, date: e.target.value })}
-                    required
-                    className="border-[#E8D4C0] focus:border-[#D4854A]"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-[#4A3F35]">Időpont *</Label>
-                  <select
-                    value={blockSlotForm.time}
-                    onChange={(e) => setBlockSlotForm({ ...blockSlotForm, time: e.target.value })}
-                    required
-                    className="w-full border border-[#E8D4C0] rounded-md px-3 py-2 text-sm text-[#4A3F35] bg-white focus:outline-none focus:ring-1 focus:ring-[#D4854A] focus:border-[#D4854A]"
-                  >
-                    <option value="">Válassz időpontot</option>
-                    {['08:00','09:30','11:00','12:30','14:00','15:30','17:00'].map(t => (
-                      <option key={t} value={t}>{t}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-[#4A3F35]">Megjegyzés (opcionális)</Label>
-                <Input
-                  value={blockSlotForm.label}
-                  onChange={(e) => setBlockSlotForm({ ...blockSlotForm, label: e.target.value })}
-                  placeholder="Pl.: Betegség, szabadnap..."
-                  className="border-[#E8D4C0] focus:border-[#D4854A]"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-[#4A3F35]">Időtartam (perc)</Label>
-                <select
-                  value={blockSlotForm.duration}
-                  onChange={(e) => setBlockSlotForm({ ...blockSlotForm, duration: e.target.value })}
-                  className="w-full border border-[#E8D4C0] rounded-md px-3 py-2 text-sm text-[#4A3F35] bg-white focus:outline-none focus:ring-1 focus:ring-[#D4854A] focus:border-[#D4854A]"
+          <div className="space-y-6 max-w-3xl">
+            <div>
+              <h2 className="text-2xl font-bold text-[#4A3F35] mb-2">Időpont zárolása</h2>
+              <p className="text-sm text-[#8B7355]">
+                A zárolt időszakok a Google Naptárban jelennek meg, és az online foglalásban nem lesznek elérhetők.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {([
+                { id: 'single', label: 'Egyszeri' },
+                { id: 'multi', label: 'Több időpont (egy nap)' },
+                { id: 'recurring', label: 'Heti ismétlődő' },
+              ] as const).map((mode) => (
+                <button
+                  key={mode.id}
+                  type="button"
+                  onClick={() => setBlockMode(mode.id)}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                    blockMode === mode.id
+                      ? 'bg-[#4A3F35] text-white'
+                      : 'bg-white text-[#8B7355] border border-[#E8D4C0] hover:border-[#D4854A]'
+                  }`}
                 >
-                  <option value="75">75 perc (1 időpont)</option>
-                  <option value="150">150 perc (2 időpont)</option>
-                  <option value="225">225 perc (3 időpont)</option>
-                  <option value="300">300 perc (4 időpont)</option>
-                  <option value="480">Egész nap (8 óra)</option>
-                </select>
+                  {mode.label}
+                </button>
+              ))}
+            </div>
+
+            {blockMode === 'single' && (
+              <div className="bg-white rounded-2xl shadow-warm-lg p-6 sm:p-8">
+                <form onSubmit={handleBlockSlot} className="space-y-5">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-[#4A3F35]">Dátum *</Label>
+                      <Input
+                        type="date"
+                        value={blockSlotForm.date}
+                        onChange={(e) => setBlockSlotForm({ ...blockSlotForm, date: e.target.value })}
+                        required
+                        className="border-[#E8D4C0] focus:border-[#D4854A]"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-[#4A3F35]">Időpont *</Label>
+                      <select
+                        value={blockSlotForm.time}
+                        onChange={(e) => setBlockSlotForm({ ...blockSlotForm, time: e.target.value })}
+                        required
+                        className="w-full border border-[#E8D4C0] rounded-md px-3 py-2 text-sm text-[#4A3F35] bg-white focus:outline-none focus:ring-1 focus:ring-[#D4854A] focus:border-[#D4854A]"
+                      >
+                        <option value="">Válassz időpontot</option>
+                        {ADMIN_TIME_SLOTS.map((t) => (
+                          <option key={t} value={t}>{t}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[#4A3F35]">Megjegyzés (opcionális)</Label>
+                    <Input
+                      value={blockSlotForm.label}
+                      onChange={(e) => setBlockSlotForm({ ...blockSlotForm, label: e.target.value })}
+                      placeholder="Pl.: Betegség, szabadnap..."
+                      className="border-[#E8D4C0] focus:border-[#D4854A]"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[#4A3F35]">Időtartam (perc)</Label>
+                    <select
+                      value={blockSlotForm.duration}
+                      onChange={(e) => setBlockSlotForm({ ...blockSlotForm, duration: e.target.value })}
+                      className="w-full border border-[#E8D4C0] rounded-md px-3 py-2 text-sm text-[#4A3F35] bg-white focus:outline-none focus:ring-1 focus:ring-[#D4854A] focus:border-[#D4854A]"
+                    >
+                      <option value="75">75 perc (1 időpont)</option>
+                      <option value="150">150 perc (2 időpont)</option>
+                      <option value="225">225 perc (3 időpont)</option>
+                      <option value="300">300 perc (4 időpont)</option>
+                      <option value="480">Egész nap (8 óra)</option>
+                    </select>
+                  </div>
+                  <Button type="submit" disabled={isBlockingSlot} className="w-full bg-[#4A3F35] hover:bg-[#3a3029] text-white py-4 rounded-xl font-medium">
+                    {isBlockingSlot ? 'Zárolás...' : '🔒 Időpont zárolása'}
+                  </Button>
+                </form>
               </div>
-              <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 text-sm text-amber-800">
-                🔒 A zárolt időpont megjelenik a Google Naptárban, és <b>senki sem tud foglalni</b> az adott időre.
+            )}
+
+            {blockMode === 'multi' && (
+              <div className="bg-white rounded-2xl shadow-warm-lg p-6 sm:p-8">
+                <form onSubmit={handleBlockMultipleSlots} className="space-y-5">
+                  <div className="space-y-2">
+                    <Label className="text-[#4A3F35]">Dátum *</Label>
+                    <Input
+                      type="date"
+                      value={multiSlotForm.date}
+                      onChange={(e) => setMultiSlotForm({ ...multiSlotForm, date: e.target.value })}
+                      required
+                      className="border-[#E8D4C0] focus:border-[#D4854A]"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[#4A3F35]">Időpontok * (több is választható)</Label>
+                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                      {ADMIN_TIME_SLOTS.map((slot) => {
+                        const selected = multiSlotForm.times.includes(slot);
+                        return (
+                          <button
+                            key={slot}
+                            type="button"
+                            onClick={() => toggleMultiSlotTime(slot)}
+                            className={`px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                              selected
+                                ? 'bg-[#4A3F35] text-white border-[#4A3F35]'
+                                : 'bg-white text-[#8B7355] border-[#E8D4C0] hover:border-[#D4854A]'
+                            }`}
+                          >
+                            {slot}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[#4A3F35]">Megjegyzés (opcionális)</Label>
+                    <Input
+                      value={multiSlotForm.label}
+                      onChange={(e) => setMultiSlotForm({ ...multiSlotForm, label: e.target.value })}
+                      placeholder="Pl.: Szabadnap, családi program..."
+                      className="border-[#E8D4C0] focus:border-[#D4854A]"
+                    />
+                  </div>
+                  <Button type="submit" disabled={isBlockingSlot} className="w-full bg-[#4A3F35] hover:bg-[#3a3029] text-white py-4 rounded-xl font-medium">
+                    {isBlockingSlot ? 'Zárolás...' : `🔒 ${multiSlotForm.times.length || 0} időpont zárolása`}
+                  </Button>
+                </form>
               </div>
-              <Button
-                type="submit"
-                disabled={isBlockingSlot}
-                className="w-full bg-[#4A3F35] hover:bg-[#3a3029] text-white py-4 rounded-xl font-medium"
-              >
-                {isBlockingSlot ? 'Zárolás...' : '🔒 Időpont zárolása'}
-              </Button>
-            </form>
+            )}
+
+            {blockMode === 'recurring' && (
+              <div className="bg-white rounded-2xl shadow-warm-lg p-6 sm:p-8 space-y-5">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <p className="text-sm text-[#8B7355]">Állandó heti foglalt időszakok — minden héten ismétlődnek a Google Naptárban.</p>
+                  <button
+                    type="button"
+                    onClick={() => setRecurringBlocks(EDINA_WEEKLY_PRESET)}
+                    className="px-3 py-1.5 text-sm rounded-lg border border-[#D4854A] text-[#D4854A] hover:bg-[#D4854A]/10"
+                  >
+                    Edina heti sablon betöltése
+                  </button>
+                </div>
+
+                <div className="space-y-3">
+                  {recurringBlocks.map((block, index) => (
+                    <div key={index} className="grid grid-cols-1 sm:grid-cols-5 gap-3 p-4 bg-[#FFFBF7] rounded-xl border border-[#E8D4C0]">
+                      <select
+                        value={block.dayOfWeek}
+                        onChange={(e) => {
+                          const next = [...recurringBlocks];
+                          next[index] = { ...block, dayOfWeek: e.target.value };
+                          setRecurringBlocks(next);
+                        }}
+                        className="border border-[#E8D4C0] rounded-md px-3 py-2 text-sm bg-white"
+                      >
+                        {WEEKDAY_OPTIONS.map((d) => (
+                          <option key={d.value} value={d.value}>{d.label}</option>
+                        ))}
+                      </select>
+                      <Input
+                        type="time"
+                        value={block.startTime}
+                        onChange={(e) => {
+                          const next = [...recurringBlocks];
+                          next[index] = { ...block, startTime: e.target.value };
+                          setRecurringBlocks(next);
+                        }}
+                        className="border-[#E8D4C0]"
+                      />
+                      <Input
+                        type="time"
+                        value={block.endTime}
+                        onChange={(e) => {
+                          const next = [...recurringBlocks];
+                          next[index] = { ...block, endTime: e.target.value };
+                          setRecurringBlocks(next);
+                        }}
+                        className="border-[#E8D4C0]"
+                      />
+                      <Input
+                        value={block.label}
+                        onChange={(e) => {
+                          const next = [...recurringBlocks];
+                          next[index] = { ...block, label: e.target.value };
+                          setRecurringBlocks(next);
+                        }}
+                        placeholder="Megjegyzés"
+                        className="border-[#E8D4C0]"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setRecurringBlocks(recurringBlocks.filter((_, i) => i !== index))}
+                        className="px-3 py-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100"
+                      >
+                        Törlés
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setRecurringBlocks([...recurringBlocks, { dayOfWeek: 'MONDAY', startTime: '08:30', endTime: '10:30', label: 'Foglalt – heti' }])}
+                    className="px-4 py-2 text-sm rounded-lg border border-[#E8D4C0] text-[#8B7355] hover:border-[#D4854A]"
+                  >
+                    + Új heti sor
+                  </button>
+                  <div className="flex items-center gap-2">
+                    <Label className="text-[#4A3F35] text-sm whitespace-nowrap">Ismétlődés (hét)</Label>
+                    <select
+                      value={recurringWeeks}
+                      onChange={(e) => setRecurringWeeks(e.target.value)}
+                      className="border border-[#E8D4C0] rounded-md px-3 py-2 text-sm bg-white"
+                    >
+                      <option value="12">12 hét</option>
+                      <option value="26">26 hét</option>
+                      <option value="52">52 hét (1 év)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 text-sm text-amber-800">
+                  A sablon: Hétfő 08:30–11:00, Péntek 08:30–10:30, Csütörtök 11:00–12:00 és 17:00–20:00.
+                </div>
+
+                <form onSubmit={handleBlockRecurringSchedule}>
+                  <Button type="submit" disabled={isBlockingSlot} className="w-full bg-[#4A3F35] hover:bg-[#3a3029] text-white py-4 rounded-xl font-medium">
+                    {isBlockingSlot ? 'Zárolás...' : `🔒 ${recurringBlocks.length} heti zárolás létrehozása`}
+                  </Button>
+                </form>
+              </div>
+            )}
           </div>
         )}
       </main>

@@ -145,6 +145,10 @@ function doPost(e) {
         return selfRequestChange_(data);
       case 'blockSlot':
         return blockSlot_(data);
+      case 'blockMultipleSlots':
+        return blockMultipleSlots_(data);
+      case 'blockRecurringSchedule':
+        return blockRecurringSchedule_(data);
       case 'createStripeCheckout':
         return createStripeCheckout(data);
       case 'createStripeCheckoutDebug':
@@ -1333,9 +1337,9 @@ function getCustomerBookingStats_(customerId) {
     if (data[i][1] !== customerId) continue;
     if (data[i][6] !== 'Confirmed' && data[i][6] !== 'ChangeRequested') continue;
     var d = normalizeBookingDate_(data[i][4]);
-    if (d < today) continue;
-    activeBookings++;
     var t = formatTimeFromSheet(data[i][5]);
+    if (!isBookingUpcoming_(d, t)) continue;
+    activeBookings++;
     if (!nextBookingDate || d < nextBookingDate || (d === nextBookingDate && t < nextBookingTime)) {
       nextBookingDate = d;
       nextBookingTime = t;
@@ -2406,16 +2410,16 @@ function getDashboardData(data) {
   var today = data.today && /^\d{4}-\d{2}-\d{2}$/.test(String(data.today))
     ? String(data.today)
     : formatDate(new Date());
-  var todayMs = new Date(today + 'T12:00:00').getTime();
   var todaysBookings = [];
   var upcomingBookings = [];
   var activeBookingsTotal = 0;
 
   for (var j = 1; j < bookingsData.length; j++) {
     if (bookingsData[j][6] !== 'Confirmed') continue;
-    activeBookingsTotal++;
     var bDate = normalizeBookingDate_(bookingsData[j][4]);
     var bTime = formatTimeFromSheet(bookingsData[j][5]);
+    if (!isBookingUpcoming_(bDate, bTime)) continue;
+    activeBookingsTotal++;
     var entry = {
       customer: bookingsData[j][2],
       service: bookingsData[j][3],
@@ -2425,10 +2429,7 @@ function getDashboardData(data) {
     if (bDate === today) {
       todaysBookings.push(entry);
     }
-    var bookingMs = new Date(bDate + 'T12:00:00').getTime();
-    if (bookingMs >= todayMs) {
-      upcomingBookings.push(entry);
-    }
+    upcomingBookings.push(entry);
   }
 
   upcomingBookings.sort(function(a, b) {
@@ -2988,24 +2989,156 @@ function getSlotsForDate_(dateStr) {
 function blockSlot_(data) {
   if (!data.date || !data.time) return createResponse(false, 'Hiányzó dátum vagy időpont');
   try {
-    var calendar = CalendarApp.getDefaultCalendar();
-    var dateParts = data.date.split('-');
-    var timeParts = data.time.split(':');
-    var start = new Date(
-      parseInt(dateParts[0]), parseInt(dateParts[1]) - 1, parseInt(dateParts[2]),
-      parseInt(timeParts[0]), parseInt(timeParts[1])
-    );
-    var duration = parseInt(data.duration) || 75;
-    var end = new Date(start.getTime() + duration * 60 * 1000);
-    var title = data.label ? '🔒 ' + data.label : '🔒 Zárolt időpont';
-    var event = calendar.createEvent(title, start, end, {
-      description: 'Admin által zárolt időpont. Nem foglalható.'
-    });
-    event.setColor('8'); // graphite / dark
-    return createResponse(true, 'Időpont sikeresen zárolva: ' + data.date + ' ' + data.time, { eventId: event.getId() });
+    var result = blockSlotCore_(data);
+    return createResponse(true, 'Időpont sikeresen zárolva: ' + data.date + ' ' + data.time, result);
   } catch(e) {
     return createResponse(false, 'Hiba a zárolás során: ' + e.message);
   }
+}
+
+function blockSlotCore_(data) {
+  var calendar = CalendarApp.getDefaultCalendar();
+  var dateParts = data.date.split('-');
+  var timeParts = String(data.time).split(':');
+  var start = new Date(
+    parseInt(dateParts[0], 10), parseInt(dateParts[1], 10) - 1, parseInt(dateParts[2], 10),
+    parseInt(timeParts[0], 10), parseInt(timeParts[1], 10) || 0
+  );
+  var duration = parseInt(data.duration, 10) || 75;
+  var end = new Date(start.getTime() + duration * 60 * 1000);
+  var title = data.label ? '🔒 ' + data.label : '🔒 Zárolt időpont';
+  var event = calendar.createEvent(title, start, end, {
+    description: 'Admin által zárolt időpont. Nem foglalható.'
+  });
+  event.setColor('8');
+  return { eventId: event.getId(), date: data.date, time: data.time };
+}
+
+// Block several one-off slots on the same day
+// data: { date, times (JSON array or comma-separated), label, duration }
+function blockMultipleSlots_(data) {
+  if (!data.date) return createResponse(false, 'Hiányzó dátum');
+  var times = [];
+  try {
+    times = JSON.parse(data.times || '[]');
+  } catch (e) {
+    times = String(data.times || '').split(',').map(function(t) { return t.trim(); }).filter(Boolean);
+  }
+  if (!times.length) return createResponse(false, 'Nincs megadva időpont');
+  var created = [];
+  var errors = [];
+  for (var i = 0; i < times.length; i++) {
+    try {
+      created.push(blockSlotCore_({
+        date: data.date,
+        time: times[i],
+        label: data.label,
+        duration: data.duration
+      }));
+    } catch (err) {
+      errors.push(times[i] + ': ' + err.message);
+    }
+  }
+  if (!created.length) return createResponse(false, 'Egyik időpont sem sikerült: ' + errors.join('; '));
+  return createResponse(true, created.length + ' időpont zárolva', { created: created, errors: errors });
+}
+
+var WEEKDAY_ENUM_ = {
+  'MONDAY': CalendarApp.Weekday.MONDAY,
+  'TUESDAY': CalendarApp.Weekday.TUESDAY,
+  'WEDNESDAY': CalendarApp.Weekday.WEDNESDAY,
+  'THURSDAY': CalendarApp.Weekday.THURSDAY,
+  'FRIDAY': CalendarApp.Weekday.FRIDAY,
+  'SATURDAY': CalendarApp.Weekday.SATURDAY,
+  'SUNDAY': CalendarApp.Weekday.SUNDAY
+};
+
+var JS_WEEKDAY_ = {
+  'SUNDAY': 0, 'MONDAY': 1, 'TUESDAY': 2, 'WEDNESDAY': 3,
+  'THURSDAY': 4, 'FRIDAY': 5, 'SATURDAY': 6
+};
+
+function parseTimeParts_(timeStr) {
+  var parts = String(timeStr || '').split(':');
+  return {
+    hour: parseInt(parts[0], 10) || 0,
+    minute: parseInt(parts[1], 10) || 0
+  };
+}
+
+function buildDateTimeOnNextWeekday_(dayName, timeStr) {
+  var target = JS_WEEKDAY_[String(dayName || '').toUpperCase()];
+  if (target === undefined) throw new Error('Érvénytelen nap: ' + dayName);
+  var tp = parseTimeParts_(timeStr);
+  var todayStr = getTodayInBudapest_();
+  var ymd = todayStr.split('-');
+  var cursor = new Date(parseInt(ymd[0], 10), parseInt(ymd[1], 10) - 1, parseInt(ymd[2], 10));
+
+  for (var i = 0; i < 7; i++) {
+    var d = new Date(cursor.getFullYear(), cursor.getMonth(), cursor.getDate() + i);
+    if (d.getDay() !== target) continue;
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate(), tp.hour, tp.minute, 0);
+  }
+  throw new Error('Nem található megfelelő nap: ' + dayName);
+}
+
+function blockRecurringSlotCore_(data) {
+  var weekday = WEEKDAY_ENUM_[String(data.dayOfWeek || '').toUpperCase()];
+  if (!weekday) throw new Error('Érvénytelen nap: ' + data.dayOfWeek);
+  if (!data.startTime || !data.endTime) throw new Error('Hiányzó kezdő vagy záró idő');
+
+  var start = buildDateTimeOnNextWeekday_(data.dayOfWeek, data.startTime);
+  var endParts = parseTimeParts_(data.endTime);
+  var end = new Date(start.getFullYear(), start.getMonth(), start.getDate(), endParts.hour, endParts.minute, 0);
+  if (end.getTime() <= start.getTime()) throw new Error('A záró időnek a kezdő idő után kell lennie');
+
+  var weeks = parseInt(data.weeks, 10) || 52;
+  var until = new Date(start.getTime() + weeks * 7 * 24 * 60 * 60 * 1000);
+  var calendar = CalendarApp.getDefaultCalendar();
+  var title = data.label ? '🔒 ' + data.label : '🔒 Heti zárolás';
+  var recurrence = CalendarApp.newRecurrence()
+    .addWeeklyRule()
+    .onlyOnWeekday(weekday)
+    .until(until);
+
+  var event = calendar.createEvent(title, start, end, {
+    description: 'Admin által zárolt heti időszak. Nem foglalható.',
+    recurrence: recurrence
+  });
+  event.setColor('8');
+  return {
+    eventId: event.getId(),
+    dayOfWeek: data.dayOfWeek,
+    startTime: data.startTime,
+    endTime: data.endTime,
+    until: Utilities.formatDate(until, TZ, 'yyyy-MM-dd')
+  };
+}
+
+function blockRecurringSchedule_(data) {
+  var blocks;
+  try {
+    blocks = JSON.parse(data.blocks || '[]');
+  } catch (e) {
+    return createResponse(false, 'Érvénytelen blocks JSON');
+  }
+  if (!blocks.length) return createResponse(false, 'Nincs megadva zárolás');
+  var weeks = parseInt(data.weeks, 10) || 52;
+  var created = [];
+  var errors = [];
+  for (var i = 0; i < blocks.length; i++) {
+    try {
+      var block = blocks[i];
+      block.weeks = weeks;
+      created.push(blockRecurringSlotCore_(block));
+    } catch (err) {
+      errors.push((blocks[i].label || blocks[i].dayOfWeek || ('#' + (i + 1))) + ': ' + err.message);
+    }
+  }
+  if (!created.length) return createResponse(false, 'Egyik zárolás sem sikerült: ' + errors.join('; '));
+  var msg = created.length + ' heti zárolás létrehozva';
+  if (errors.length) msg += ' (' + errors.length + ' hiba)';
+  return createResponse(true, msg, { created: created, errors: errors });
 }
 
 // Email wrapper — skips actual sending when TEST_MODE is active
@@ -3210,6 +3343,25 @@ function normalizeBookingDate_(val) {
 
 function normalizeBookingTime_(val) {
   return formatTimeFromSheet(val);
+}
+
+function getTodayInBudapest_() {
+  return Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd');
+}
+
+function getNowTimeInBudapest_() {
+  return Utilities.formatDate(new Date(), TZ, 'HH:mm');
+}
+
+function isBookingUpcoming_(dateStr, timeStr) {
+  if (!dateStr) return false;
+  var d = normalizeBookingDate_(dateStr);
+  var today = getTodayInBudapest_();
+  if (d > today) return true;
+  if (d < today) return false;
+  var t = normalizeBookingTime_(timeStr);
+  if (!t) return true;
+  return t >= getNowTimeInBudapest_();
 }
 
 function bookingSlotKey_(dateStr, timeStr) {
