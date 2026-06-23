@@ -39,6 +39,9 @@ import {
   useSeo,
 } from '@/lib/seo';
 import {
+  addDaysToDateStr,
+  addMonthsToDateStr,
+  BOOKING_MAX_MONTHS_AHEAD,
   formatBookingDate,
   formatBookingTime,
   formatPhoneDisplay,
@@ -1793,15 +1796,9 @@ function BookingSection() {
   const handleBankTransfer = () => submitBookingRequest('createBankTransferBooking');
   const handlePayment = () => submitBookingRequest('createStripeCheckout');
 
-  // Get minimum date (tomorrow)
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const minDate = tomorrow.toISOString().split('T')[0];
-
-  // Get maximum date (3 months from now)
-  const maxDate = new Date();
-  maxDate.setMonth(maxDate.getMonth() + 3);
-  const maxDateStr = maxDate.toISOString().split('T')[0];
+  const today = getTodayInBudapest();
+  const minDate = addDaysToDateStr(today, 1);
+  const maxDateStr = addMonthsToDateStr(today, BOOKING_MAX_MONTHS_AHEAD);
 
   return (
     <section id="idopont" ref={sectionRef} className="py-20 bg-gradient-to-b from-[#FFFBF7] to-[#F5E6D8]">
@@ -1815,6 +1812,7 @@ function BookingSection() {
           </h2>
           <p className="text-lg text-[#8B7355]">
             Válaszd ki a számodra megfelelő kezelést és időpontot.
+            <span className="block text-sm mt-1">Foglalható: holnaptól {BOOKING_MAX_MONTHS_AHEAD} hónapra előre.</span>
           </p>
         </div>
 

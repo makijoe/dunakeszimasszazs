@@ -8,6 +8,32 @@ export function getTodayInBudapest(): string {
   return new Date().toLocaleDateString('sv-SE', { timeZone: BUDAPEST })
 }
 
+/** How far ahead customers can book online (months). */
+export const BOOKING_MAX_MONTHS_AHEAD = 12
+
+function parseYmd(ymd: string): { y: number; m: number; d: number } {
+  const [y, m, d] = ymd.split('-').map(Number)
+  return { y, m, d }
+}
+
+function formatYmdLocal(date: Date): string {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+}
+
+/** Add calendar days to a YYYY-MM-DD string (salon-local, no UTC drift). */
+export function addDaysToDateStr(ymd: string, days: number): string {
+  const { y, m, d } = parseYmd(ymd)
+  return formatYmdLocal(new Date(y, m - 1, d + days))
+}
+
+/** Add calendar months to a YYYY-MM-DD string (salon-local). */
+export function addMonthsToDateStr(ymd: string, months: number): string {
+  const { y, m, d } = parseYmd(ymd)
+  const date = new Date(y, m - 1, d)
+  date.setMonth(date.getMonth() + months)
+  return formatYmdLocal(date)
+}
+
 /** Build a tel: href for Hungarian phone numbers. */
 export function formatPhoneLink(phone: unknown): string | null {
   if (phone === null || phone === undefined || phone === '') return null
