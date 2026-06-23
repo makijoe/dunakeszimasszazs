@@ -3067,6 +3067,9 @@ function AdminPage() {
   const [recurringBlocks, setRecurringBlocks] = useState(EDINA_WEEKLY_PRESET);
   const [recurringWeeks, setRecurringWeeks] = useState('52');
   const [isBlockingSlot, setIsBlockingSlot] = useState(false);
+  const [blockedSlotStats, setBlockedSlotStats] = useState<{ future: number; total: number } | null>(null);
+  const [deleteBlockLabel, setDeleteBlockLabel] = useState('Foglalt');
+  const [isDeletingBlocks, setIsDeletingBlocks] = useState(false);
 
   const handleBlockSlot = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -3139,6 +3142,51 @@ function AdminPage() {
     finally { setIsBlockingSlot(false); }
   };
 
+  const loadBlockedSlotStats = async (label = deleteBlockLabel) => {
+    try {
+      const params = new URLSearchParams();
+      params.append('action', 'countBlockedSlots');
+      params.append('futureOnly', 'true');
+      if (label.trim()) params.append('label', label.trim());
+      const res = await fetch(SCRIPT_URL, { method: 'POST', body: params });
+      const result = await res.json();
+      if (result.success && result.data) {
+        setBlockedSlotStats({ future: result.data.future || 0, total: result.data.total || 0 });
+      }
+    } catch {
+      setBlockedSlotStats(null);
+    }
+  };
+
+  const handleDeleteBlockedSlots = async (options: { allFuture?: boolean; labelOnly?: boolean }) => {
+    const label = options.labelOnly ? deleteBlockLabel.trim() : '';
+    const countHint = blockedSlotStats?.future ?? '?';
+    const msg = options.labelOnly
+      ? `Törlöd az összes jövőbeli 🔒 zárolást, ami tartalmazza: "${label}"?\n\nKb. ${countHint} esemény.`
+      : `Törlöd az ÖSSZES jövőbeli 🔒 zárolást a naptárból?\n\nKb. ${countHint} esemény.`;
+    if (!confirm(msg)) return;
+
+    setIsDeletingBlocks(true);
+    try {
+      const params = new URLSearchParams();
+      params.append('action', 'deleteBlockedSlots');
+      params.append('futureOnly', 'true');
+      if (label) params.append('label', label);
+      const res = await fetch(SCRIPT_URL, { method: 'POST', body: params });
+      const result = await res.json();
+      if (result.success) {
+        toast.success(result.message || 'Zárolások törölve');
+        await loadBlockedSlotStats(label);
+      } else {
+        toast.error(result.message || 'Hiba a törlés során');
+      }
+    } catch {
+      toast.error('Hiba a törlés során');
+    } finally {
+      setIsDeletingBlocks(false);
+    }
+  };
+
   const toggleMultiSlotTime = (time: string) => {
     setMultiSlotForm((prev) => ({
       ...prev,
@@ -3209,6 +3257,10 @@ function AdminPage() {
         run: async () => {
           if (allBookings.length === 0) await loadAllBookings();
         },
+      },
+      blockslot: {
+        label: 'Zárolások betöltése…',
+        run: async () => { await loadBlockedSlotStats(); },
       },
     };
 
@@ -3288,7 +3340,7 @@ function AdminPage() {
       const response = await fetch(`${SCRIPT_URL}?action=pendingBookings`);
       const data = await response.json();
       if (data.success) {
-        const bookings = (data.data.bookings || []).filter((b: any) => b.status !== 'paid');
+        const bookings = data.data.bookings || [];
         setPendingBookings(bookings);
         setPendingCount(bookings.length);
       }
@@ -5311,6 +5363,54 @@ function AdminPage() {
                 </form>
               </div>
             )}
+
+            <div className="bg-white rounded-2xl shadow-warm-lg p-6 sm:p-8 border border-red-100 max-w-3xl">
+              <h3 className="text-lg font-semibold text-[#4A3F35] mb-2">Zárolások törlése (tömeges)</h3>
+              <p className="text-sm text-[#8B7355] mb-4">
+                Ha megváltozott a terv (pl. éves zárolás már nem kell), itt egy gombbal törölheted a jövőbeli 🔒 eseményeket a Google Naptárból.
+              </p>
+              <div className="flex flex-wrap items-end gap-3 mb-4">
+                <div className="space-y-1 flex-1 min-w-[200px]">
+                  <Label className="text-[#4A3F35] text-sm">Szűrés megjegyzésben (opcionális)</Label>
+                  <Input
+                    value={deleteBlockLabel}
+                    onChange={(e) => setDeleteBlockLabel(e.target.value)}
+                    placeholder="Pl. Foglalt"
+                    className="border-[#E8D4C0] focus:border-[#D4854A]"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => loadBlockedSlotStats()}
+                  className="px-4 py-2 text-sm rounded-lg border border-[#E8D4C0] text-[#8B7355] hover:border-[#D4854A]"
+                >
+                  Számolás
+                </button>
+              </div>
+              {blockedSlotStats && (
+                <p className="text-sm text-[#4A3F35] mb-4">
+                  Jövőbeli zárolások: <b>{blockedSlotStats.future}</b> (összesen a keresésben: {blockedSlotStats.total})
+                </p>
+              )}
+              <div className="flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  disabled={isDeletingBlocks}
+                  onClick={() => handleDeleteBlockedSlots({ labelOnly: true })}
+                  className="px-4 py-2.5 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded-xl text-sm font-semibold disabled:opacity-50"
+                >
+                  {isDeletingBlocks ? 'Törlés...' : '🗑 Szűrt zárolások törlése'}
+                </button>
+                <button
+                  type="button"
+                  disabled={isDeletingBlocks}
+                  onClick={() => handleDeleteBlockedSlots({ allFuture: true })}
+                  className="px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-sm font-semibold disabled:opacity-50"
+                >
+                  {isDeletingBlocks ? 'Törlés...' : '🗑 Minden jövőbeli 🔒 törlése'}
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </main>

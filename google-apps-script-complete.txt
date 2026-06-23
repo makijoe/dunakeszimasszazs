@@ -149,6 +149,10 @@ function doPost(e) {
         return blockMultipleSlots_(data);
       case 'blockRecurringSchedule':
         return blockRecurringSchedule_(data);
+      case 'deleteBlockedSlots':
+        return deleteBlockedSlots_(data);
+      case 'countBlockedSlots':
+        return countBlockedSlots_(data);
       case 'createStripeCheckout':
         return createStripeCheckout(data);
       case 'createStripeCheckoutDebug':
@@ -1353,6 +1357,11 @@ function getCustomerBookingStats_(customerId) {
   };
 }
 
+function isOpenPendingStatus_(status) {
+  var s = String(status || '').toLowerCase();
+  return s !== 'confirmed' && s !== 'cancelled';
+}
+
 function reconcilePendingBookings_() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var custData = ss.getSheetByName(SHEETS.CUSTOMERS).getDataRange().getValues();
@@ -1375,7 +1384,7 @@ function reconcilePendingBookings_() {
   var pendingData = pendingSheet.getDataRange().getValues();
   for (var i = 1; i < pendingData.length; i++) {
     var status = String(pendingData[i][12] || '');
-    if (status === 'confirmed' || status === 'cancelled') continue;
+    if (!isOpenPendingStatus_(status)) continue;
     var email = String(pendingData[i][2] || '').toLowerCase();
     var key = email + '|' + bookingSlotKey_(pendingData[i][5], pendingData[i][6]);
     if (confirmedKeys[key]) {
@@ -1383,8 +1392,26 @@ function reconcilePendingBookings_() {
       if (pendingData[i][3]) {
         updateCustomerPhoneByEmail_(pendingData[i][2], pendingData[i][3]);
       }
+      continue;
+    }
+    var apptDate = normalizeBookingDate_(pendingData[i][5]);
+    var apptTime = formatTimeFromSheet(pendingData[i][6]);
+    if (apptDate && !isBookingUpcoming_(apptDate, apptTime)) {
+      pendingSheet.getRange(i + 1, 13).setValue('cancelled');
     }
   }
+}
+
+function countOpenPendingBookings_() {
+  reconcilePendingBookings_();
+  var pendingSheet = ensurePendingBookingsSheet_();
+  if (!pendingSheet || pendingSheet.getLastRow() < 2) return 0;
+  var pendingData = pendingSheet.getDataRange().getValues();
+  var count = 0;
+  for (var p = 1; p < pendingData.length; p++) {
+    if (isOpenPendingStatus_(pendingData[p][12])) count++;
+  }
+  return count;
 }
 
 function adminCreateCustomer_(data) {
@@ -1509,7 +1536,7 @@ function getPendingBookings_() {
   var bookings = [];
   for (var i = 1; i < data.length; i++) {
     var status = data[i][12];
-    if (status === 'confirmed' || status === 'cancelled' || status === 'paid') continue;
+    if (!isOpenPendingStatus_(status)) continue;
     bookings.push({
       rowIndex: i + 1,
       timestamp: data[i][0],
@@ -2439,15 +2466,7 @@ function getDashboardData(data) {
   });
   upcomingBookings = upcomingBookings.slice(0, 6);
 
-  var pendingCount = 0;
-  var pendingSheet = ss.getSheetByName('PendingBookings');
-  if (pendingSheet && pendingSheet.getLastRow() > 1) {
-    var pendingData = pendingSheet.getDataRange().getValues();
-    for (var p = 1; p < pendingData.length; p++) {
-      var pStatus = String(pendingData[p][12] || '');
-      if (pStatus !== 'confirmed' && pStatus !== 'cancelled') pendingCount++;
-    }
-  }
+  var pendingCount = countOpenPendingBookings_();
 
   // Get current month P&L
   var pnlData = getPnLData_(new Date().getMonth() + 1, new Date().getFullYear());
@@ -3154,6 +3173,75 @@ function blockRecurringSchedule_(data) {
   var msg = created.length + ' heti sor × ' + weeks + ' hét = ' + totalEvents + ' naptáresemény létrehozva';
   if (errors.length) msg += ' (' + errors.length + ' hiba)';
   return createResponse(true, msg, { created: created, errors: errors, weeks: weeks, totalEvents: totalEvents });
+}
+
+function isBlockedCalendarEvent_(title) {
+  var t = String(title || '');
+  return t.indexOf('🔒') === 0 || t.indexOf('Zárolt') !== -1;
+}
+
+function countBlockedSlots_(data) {
+  try {
+    var stats = scanBlockedSlots_(data);
+    return createResponse(true, stats.future + ' jövőbeli zárolás', stats);
+  } catch (e) {
+    return createResponse(false, 'Hiba a zárolások számolásakor: ' + e.message);
+  }
+}
+
+function scanBlockedSlots_(data) {
+  var calendar = CalendarApp.getDefaultCalendar();
+  var now = new Date();
+  var from = data && data.from ? new Date(String(data.from) + 'T00:00:00') : now;
+  var to = data && data.to
+    ? new Date(String(data.to) + 'T23:59:59')
+    : new Date(now.getTime() + 400 * 24 * 60 * 60 * 1000);
+  var labelFilter = data && data.label ? String(data.label).toLowerCase() : '';
+  var futureOnly = !data || data.futureOnly !== 'false';
+  var events = calendar.getEvents(from, to);
+  var future = 0;
+  var past = 0;
+  for (var i = 0; i < events.length; i++) {
+    var title = events[i].getTitle() || '';
+    if (!isBlockedCalendarEvent_(title)) continue;
+    if (labelFilter && title.toLowerCase().indexOf(labelFilter) === -1) continue;
+    if (events[i].getStartTime().getTime() >= now.getTime()) future++;
+    else past++;
+  }
+  return {
+    total: future + past,
+    future: future,
+    past: past,
+    from: Utilities.formatDate(from, TZ, 'yyyy-MM-dd'),
+    to: Utilities.formatDate(to, TZ, 'yyyy-MM-dd')
+  };
+}
+
+function deleteBlockedSlots_(data) {
+  try {
+    var calendar = CalendarApp.getDefaultCalendar();
+    var now = new Date();
+    var from = data.from ? new Date(String(data.from) + 'T00:00:00') : now;
+    var to = data.to
+      ? new Date(String(data.to) + 'T23:59:59')
+      : new Date(now.getTime() + 400 * 24 * 60 * 60 * 1000);
+    var labelFilter = data.label ? String(data.label).toLowerCase() : '';
+    var futureOnly = data.futureOnly !== 'false';
+    var events = calendar.getEvents(from, to);
+    var deleted = 0;
+    for (var i = 0; i < events.length; i++) {
+      var ev = events[i];
+      var title = ev.getTitle() || '';
+      if (!isBlockedCalendarEvent_(title)) continue;
+      if (labelFilter && title.toLowerCase().indexOf(labelFilter) === -1) continue;
+      if (futureOnly && ev.getStartTime().getTime() < now.getTime()) continue;
+      ev.deleteEvent();
+      deleted++;
+    }
+    return createResponse(true, deleted + ' zárolás törölve a naptárból', { deleted: deleted });
+  } catch (e) {
+    return createResponse(false, 'Hiba a zárolások törlésekor: ' + e.message);
+  }
 }
 
 // Email wrapper — skips actual sending when TEST_MODE is active
