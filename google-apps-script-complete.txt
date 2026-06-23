@@ -3083,35 +3083,46 @@ function buildDateTimeOnNextWeekday_(dayName, timeStr) {
 }
 
 function blockRecurringSlotCore_(data) {
-  var weekday = WEEKDAY_ENUM_[String(data.dayOfWeek || '').toUpperCase()];
-  if (!weekday) throw new Error('Érvénytelen nap: ' + data.dayOfWeek);
+  var dayKey = String(data.dayOfWeek || '').toUpperCase();
+  if (!WEEKDAY_ENUM_[dayKey]) throw new Error('Érvénytelen nap: ' + data.dayOfWeek);
   if (!data.startTime || !data.endTime) throw new Error('Hiányzó kezdő vagy záró idő');
 
-  var start = buildDateTimeOnNextWeekday_(data.dayOfWeek, data.startTime);
+  var startBase = buildDateTimeOnNextWeekday_(data.dayOfWeek, data.startTime);
   var endParts = parseTimeParts_(data.endTime);
-  var end = new Date(start.getFullYear(), start.getMonth(), start.getDate(), endParts.hour, endParts.minute, 0);
-  if (end.getTime() <= start.getTime()) throw new Error('A záró időnek a kezdő idő után kell lennie');
+  var probeEnd = new Date(startBase.getFullYear(), startBase.getMonth(), startBase.getDate(), endParts.hour, endParts.minute, 0);
+  if (probeEnd.getTime() <= startBase.getTime()) throw new Error('A záró időnek a kezdő idő után kell lennie');
 
   var weeks = parseInt(data.weeks, 10) || 52;
-  var until = new Date(start.getTime() + weeks * 7 * 24 * 60 * 60 * 1000);
+  if (weeks < 1) weeks = 1;
+  if (weeks > 260) weeks = 260;
+
   var calendar = CalendarApp.getDefaultCalendar();
   var title = data.label ? '🔒 ' + data.label : '🔒 Heti zárolás';
-  var recurrence = CalendarApp.newRecurrence()
-    .addWeeklyRule()
-    .onlyOnWeekday(weekday)
-    .until(until);
+  var eventIds = [];
+  var firstDate = '';
+  var lastDate = '';
 
-  var event = calendar.createEvent(title, start, end, {
-    description: 'Admin által zárolt heti időszak. Nem foglalható.',
-    recurrence: recurrence
-  });
-  event.setColor('8');
+  // Create one calendar event per week (reliable for booking availability checks).
+  for (var w = 0; w < weeks; w++) {
+    var start = new Date(startBase.getTime() + w * 7 * 24 * 60 * 60 * 1000);
+    var end = new Date(start.getFullYear(), start.getMonth(), start.getDate(), endParts.hour, endParts.minute, 0);
+    var event = calendar.createEvent(title, start, end, {
+      description: 'Admin által zárolt heti időszak (' + (w + 1) + '/' + weeks + '). Nem foglalható.'
+    });
+    event.setColor('8');
+    eventIds.push(event.getId());
+    if (w === 0) firstDate = Utilities.formatDate(start, TZ, 'yyyy-MM-dd');
+    if (w === weeks - 1) lastDate = Utilities.formatDate(start, TZ, 'yyyy-MM-dd');
+  }
+
   return {
-    eventId: event.getId(),
+    eventIds: eventIds,
+    eventsCreated: weeks,
     dayOfWeek: data.dayOfWeek,
     startTime: data.startTime,
     endTime: data.endTime,
-    until: Utilities.formatDate(until, TZ, 'yyyy-MM-dd')
+    firstDate: firstDate,
+    lastDate: lastDate
   };
 }
 
@@ -3136,9 +3147,13 @@ function blockRecurringSchedule_(data) {
     }
   }
   if (!created.length) return createResponse(false, 'Egyik zárolás sem sikerült: ' + errors.join('; '));
-  var msg = created.length + ' heti zárolás létrehozva';
+  var totalEvents = 0;
+  for (var c = 0; c < created.length; c++) {
+    totalEvents += created[c].eventsCreated || 0;
+  }
+  var msg = created.length + ' heti sor × ' + weeks + ' hét = ' + totalEvents + ' naptáresemény létrehozva';
   if (errors.length) msg += ' (' + errors.length + ' hiba)';
-  return createResponse(true, msg, { created: created, errors: errors });
+  return createResponse(true, msg, { created: created, errors: errors, weeks: weeks, totalEvents: totalEvents });
 }
 
 // Email wrapper — skips actual sending when TEST_MODE is active

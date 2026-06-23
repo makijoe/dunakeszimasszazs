@@ -3131,7 +3131,7 @@ function AdminPage() {
       const res = await fetch(SCRIPT_URL, { method: 'POST', body: params });
       const result = await res.json();
       if (result.success) {
-        toast.success(result.message || 'Heti zárolások létrehozva');
+        toast.success(result.message || 'Heti zárolások létrehozva', { duration: 6000 });
       } else {
         toast.error(result.message || 'Hiba a zárolás során');
       }
@@ -5261,7 +5261,7 @@ function AdminPage() {
                   ))}
                 </div>
 
-                <div className="flex flex-wrap gap-3">
+                <div className="flex flex-wrap items-end gap-3">
                   <button
                     type="button"
                     onClick={() => setRecurringBlocks([...recurringBlocks, { dayOfWeek: 'MONDAY', startTime: '08:30', endTime: '10:30', label: 'Foglalt – heti' }])}
@@ -5269,22 +5269,39 @@ function AdminPage() {
                   >
                     + Új heti sor
                   </button>
-                  <div className="flex items-center gap-2">
-                    <Label className="text-[#4A3F35] text-sm whitespace-nowrap">Ismétlődés (hét)</Label>
-                    <select
-                      value={recurringWeeks}
-                      onChange={(e) => setRecurringWeeks(e.target.value)}
-                      className="border border-[#E8D4C0] rounded-md px-3 py-2 text-sm bg-white"
-                    >
-                      <option value="12">12 hét</option>
-                      <option value="26">26 hét</option>
-                      <option value="52">52 hét (1 év)</option>
-                    </select>
+                  <div className="space-y-1">
+                    <Label className="text-[#4A3F35] text-sm">Hány hétig ismétlődjön?</Label>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Input
+                        type="number"
+                        min={1}
+                        max={260}
+                        value={recurringWeeks}
+                        onChange={(e) => setRecurringWeeks(e.target.value)}
+                        className="w-24 border-[#E8D4C0] focus:border-[#D4854A]"
+                      />
+                      <span className="text-sm text-[#8B7355]">hét</span>
+                      {[3, 6, 12, 26, 52].map((w) => (
+                        <button
+                          key={w}
+                          type="button"
+                          onClick={() => setRecurringWeeks(String(w))}
+                          className={`px-2.5 py-1 text-xs rounded-full border transition-colors ${
+                            recurringWeeks === String(w)
+                              ? 'bg-[#4A3F35] text-white border-[#4A3F35]'
+                              : 'bg-white text-[#8B7355] border-[#E8D4C0] hover:border-[#D4854A]'
+                          }`}
+                        >
+                          {w} hét
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
 
                 <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 text-sm text-amber-800">
-                  A sablon: Hétfő 08:30–11:00, Péntek 08:30–10:30, Csütörtök 11:00–12:00 és 17:00–20:00.
+                  <p>Pl. 4 sor × 52 hét = <b>208 külön naptáresemény</b> (minden héten ugyanarra az időre).</p>
+                  <p className="mt-1">Sablon: Hétfő 08:30–11:00, Péntek 08:30–10:30, Csütörtök 11:00–12:00 és 17:00–20:00.</p>
                 </div>
 
                 <form onSubmit={handleBlockRecurringSchedule}>
