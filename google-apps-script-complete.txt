@@ -198,10 +198,12 @@ function doGet(e) {
         return getPnL({ mode: e.parameter.mode, month: e.parameter.month, year: e.parameter.year, date: e.parameter.date, weekStart: e.parameter.weekStart });
       case 'allBookings':
         return getAllBookings_();
+      case 'adminBundle':
+        return getAdminBundle_(e.parameter);
       case 'allCustomers':
         return getAllCustomers();
       case 'pendingBookings':
-        return getPendingBookings_();
+        return getPendingBookings_(e.parameter);
       case 'allPackages':
         return getAllPackages_();
       case 'checkSlot':
@@ -532,9 +534,11 @@ function getOrCreateCustomer(name, email, phone) {
   var customersSheet = ss.getSheetByName(SHEETS.CUSTOMERS);
   var data = customersSheet.getDataRange().getValues();
   
-  // Search by email
+  var emailNorm = normalizeEmail_(email);
+
+  // Search by email (case-insensitive)
   for (var i = 1; i < data.length; i++) {
-    if (data[i][2] === email) {
+    if (normalizeEmail_(data[i][2]) === emailNorm) {
       var existingPhone = data[i][3] || '';
       if (!existingPhone && phone) {
         customersSheet.getRange(i + 1, 4).setValue(String(phone));
@@ -650,15 +654,23 @@ function getAllCustomers() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var customersSheet = ss.getSheetByName(SHEETS.CUSTOMERS);
   var data = customersSheet.getDataRange().getValues();
-  
+  var bookingsSheet = ss.getSheetByName(SHEETS.BOOKINGS);
+  var bookingData = bookingsSheet.getDataRange().getValues();
+  var pendingSheet = ensurePendingBookingsSheet_();
+  var pendingData = pendingSheet.getDataRange().getValues();
+  var statsMap = buildCustomerBookingStatsMap_(bookingData);
+  var phoneMaps = buildPhoneLookupMaps_(data, pendingData);
+
   var customers = [];
   for (var i = 1; i < data.length; i++) {
-    var stats = getCustomerBookingStats_(data[i][0]);
+    var customerId = data[i][0];
+    var stats = statsMap[customerId] || { activeBookings: 0, nextBookingDate: '', nextBookingTime: '' };
+    var emailKey = normalizeEmail_(data[i][2]);
     customers.push({
-      customerId: data[i][0],
+      customerId: customerId,
       name: data[i][1],
       email: data[i][2],
-      phone: resolveCustomerPhone_(data[i][0], data[i][2], data[i][3]),
+      phone: phoneMaps.phoneByCustomerId[customerId] || phoneMaps.phoneByEmail[emailKey] || '',
       totalSessionsRemaining: data[i][7],
       totalSpent: data[i][8],
       activeBookings: stats.activeBookings,
@@ -666,7 +678,7 @@ function getAllCustomers() {
       nextBookingTime: stats.nextBookingTime
     });
   }
-  
+
   customers.sort(function(a, b) {
     return String(a.name).localeCompare(String(b.name), 'hu');
   });
@@ -1362,48 +1374,163 @@ function isOpenPendingStatus_(status) {
   return s !== 'confirmed' && s !== 'cancelled';
 }
 
+function normalizeEmail_(email) {
+  return String(email || '').trim().toLowerCase();
+}
+
+function normalizePersonName_(name) {
+  return String(name || '').trim().toLowerCase();
+}
+
+function resolveBookingCustomerEmail_(bookingRow, idToEmail, custData) {
+  var email = idToEmail[bookingRow[1]] || '';
+  if (email) return email;
+  for (var c = 1; c < custData.length; c++) {
+    if (custData[c][0] === bookingRow[1]) {
+      return normalizeEmail_(custData[c][2]);
+    }
+  }
+  return '';
+}
+
+function buildPendingReconcileMaps_(custData, bookingData) {
+  var idToEmail = {};
+  var nameToEmails = {};
+  for (var c = 1; c < custData.length; c++) {
+    var customerId = custData[c][0];
+    var email = normalizeEmail_(custData[c][2]);
+    var name = normalizePersonName_(custData[c][1]);
+    if (customerId && email) idToEmail[customerId] = email;
+    if (name && email) {
+      if (!nameToEmails[name]) nameToEmails[name] = {};
+      nameToEmails[name][email] = true;
+    }
+  }
+
+  var confirmedKeys = {};
+  var cancelledKeys = {};
+  var confirmedBySlot = {};
+  for (var b = 1; b < bookingData.length; b++) {
+    var bookingStatus = bookingData[b][6];
+    var slotKey = bookingSlotKey_(bookingData[b][4], bookingData[b][5]);
+    var email = resolveBookingCustomerEmail_(bookingData[b], idToEmail, custData);
+    var bookingName = normalizePersonName_(bookingData[b][2]);
+    if (bookingStatus === 'Confirmed' || bookingStatus === 'ChangeRequested') {
+      if (email) confirmedKeys[email + '|' + slotKey] = true;
+      if (!confirmedBySlot[slotKey]) confirmedBySlot[slotKey] = [];
+      confirmedBySlot[slotKey].push({
+        email: email,
+        name: bookingName
+      });
+    } else if (bookingStatus === 'Cancelled') {
+      if (email) cancelledKeys[email + '|' + slotKey] = true;
+    }
+  }
+
+  return {
+    confirmedKeys: confirmedKeys,
+    cancelledKeys: cancelledKeys,
+    confirmedBySlot: confirmedBySlot,
+    nameToEmails: nameToEmails
+  };
+}
+
+function pendingMatchesConfirmedBooking_(pendingRow, slotKey, maps) {
+  var email = normalizeEmail_(pendingRow[2]);
+  var name = normalizePersonName_(pendingRow[1]);
+  if (email && maps.confirmedKeys[email + '|' + slotKey]) return true;
+
+  var slotMatches = maps.confirmedBySlot[slotKey] || [];
+  for (var i = 0; i < slotMatches.length; i++) {
+    var match = slotMatches[i];
+    if (email && match.email && email === match.email) return true;
+    if (name && match.name && name === match.name) return true;
+    if (name && match.email && maps.nameToEmails[name] && maps.nameToEmails[name][match.email]) return true;
+  }
+  return false;
+}
+
+var PENDING_RECONCILE_CACHE_KEY = 'pendingReconcileDone';
+var PENDING_RECONCILE_CACHE_SEC = 120;
+var FIN_RECONCILE_CACHE_KEY = 'financialReconcileDone';
+var FIN_RECONCILE_CACHE_SEC = 300;
+
+function shouldSkipPendingReconcile_(force) {
+  if (force) return false;
+  return !!CacheService.getScriptCache().get(PENDING_RECONCILE_CACHE_KEY);
+}
+
+function markPendingReconcileDone_() {
+  CacheService.getScriptCache().put(PENDING_RECONCILE_CACHE_KEY, '1', PENDING_RECONCILE_CACHE_SEC);
+}
+
+function maybeReconcilePendingBookings_(force) {
+  if (shouldSkipPendingReconcile_(force)) return;
+  reconcilePendingBookings_();
+  markPendingReconcileDone_();
+}
+
+function maybeSilentReconcileFinancial_(force) {
+  if (!force && CacheService.getScriptCache().get(FIN_RECONCILE_CACHE_KEY)) return 0;
+  var voided = silentReconcileFinancial_();
+  CacheService.getScriptCache().put(FIN_RECONCILE_CACHE_KEY, '1', FIN_RECONCILE_CACHE_SEC);
+  return voided;
+}
+
 function reconcilePendingBookings_() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var custData = ss.getSheetByName(SHEETS.CUSTOMERS).getDataRange().getValues();
-  var idToEmail = {};
-  for (var c = 1; c < custData.length; c++) {
-    idToEmail[custData[c][0]] = String(custData[c][2] || '').toLowerCase();
-  }
-
   var bookingsSheet = ss.getSheetByName(SHEETS.BOOKINGS);
   var bookingData = bookingsSheet.getDataRange().getValues();
-  var confirmedKeys = {};
-  for (var b = 1; b < bookingData.length; b++) {
-    if (bookingData[b][6] !== 'Confirmed' && bookingData[b][6] !== 'ChangeRequested') continue;
-    var email = idToEmail[bookingData[b][1]] || '';
-    if (!email) continue;
-    confirmedKeys[email + '|' + bookingSlotKey_(bookingData[b][4], bookingData[b][5])] = true;
-  }
+  var maps = buildPendingReconcileMaps_(custData, bookingData);
 
   var pendingSheet = ensurePendingBookingsSheet_();
+  var lastRow = pendingSheet.getLastRow();
+  if (lastRow < 2) return;
+
   var pendingData = pendingSheet.getDataRange().getValues();
+  var statusValues = pendingSheet.getRange(2, 13, lastRow - 1, 1).getValues();
+  var changed = false;
+
   for (var i = 1; i < pendingData.length; i++) {
-    var status = String(pendingData[i][12] || '');
+    var status = String(pendingData[i][12] || '').toLowerCase();
     if (!isOpenPendingStatus_(status)) continue;
-    var email = String(pendingData[i][2] || '').toLowerCase();
-    var key = email + '|' + bookingSlotKey_(pendingData[i][5], pendingData[i][6]);
-    if (confirmedKeys[key]) {
-      pendingSheet.getRange(i + 1, 13).setValue('confirmed');
+
+    var email = normalizeEmail_(pendingData[i][2]);
+    var slotKey = bookingSlotKey_(pendingData[i][5], pendingData[i][6]);
+    var key = email + '|' + slotKey;
+    var newStatus = status;
+
+    if (pendingMatchesConfirmedBooking_(pendingData[i], slotKey, maps)) {
+      newStatus = 'confirmed';
       if (pendingData[i][3]) {
         updateCustomerPhoneByEmail_(pendingData[i][2], pendingData[i][3]);
       }
-      continue;
+    } else if (maps.cancelledKeys[key] && (status === 'paid' || status === 'pending' || status === 'awaiting_bank_transfer')) {
+      newStatus = 'cancelled';
+    } else {
+      var apptDate = normalizeBookingDate_(pendingData[i][5]);
+      var apptTime = formatTimeFromSheet(pendingData[i][6]);
+      if (apptDate && !isBookingUpcoming_(apptDate, apptTime)) {
+        newStatus = 'cancelled';
+      }
     }
-    var apptDate = normalizeBookingDate_(pendingData[i][5]);
-    var apptTime = formatTimeFromSheet(pendingData[i][6]);
-    if (apptDate && !isBookingUpcoming_(apptDate, apptTime)) {
-      pendingSheet.getRange(i + 1, 13).setValue('cancelled');
+
+    if (newStatus !== status) {
+      statusValues[i - 1][0] = newStatus;
+      changed = true;
     }
+  }
+
+  if (changed) {
+    pendingSheet.getRange(2, 13, lastRow - 1, 1).setValues(statusValues);
   }
 }
 
-function countOpenPendingBookings_() {
-  reconcilePendingBookings_();
+function countOpenPendingBookings_(runReconcile) {
+  if (runReconcile !== false) {
+    maybeReconcilePendingBookings_(runReconcile === true || runReconcile === 'true');
+  }
   var pendingSheet = ensurePendingBookingsSheet_();
   if (!pendingSheet || pendingSheet.getLastRow() < 2) return 0;
   var pendingData = pendingSheet.getDataRange().getValues();
@@ -1493,30 +1620,66 @@ function adminDeleteCustomer_(data) {
 // ============================================
 // Get All Bookings & Pending Bookings (for Admin Panel)
 // ============================================
-function getAllBookings_() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var bookingsSheet = ss.getSheetByName(SHEETS.BOOKINGS);
-  var data = bookingsSheet.getDataRange().getValues();
-
-  // Build customerId -> contact lookup maps
-  var customersSheet = ss.getSheetByName(SHEETS.CUSTOMERS);
-  var custData = customersSheet.getDataRange().getValues();
+function buildPhoneLookupMaps_(custData, pendingData) {
   var emailMap = {};
-  var phoneMap = {};
+  var phoneByCustomerId = {};
+  var phoneByEmail = {};
   for (var k = 1; k < custData.length; k++) {
-    emailMap[custData[k][0]] = custData[k][2];
-    phoneMap[custData[k][0]] = resolveCustomerPhone_(custData[k][0], custData[k][2], custData[k][3]);
+    var customerId = custData[k][0];
+    emailMap[customerId] = custData[k][2];
+    if (custData[k][3]) {
+      phoneByCustomerId[customerId] = String(custData[k][3]);
+      var storedEmail = normalizeEmail_(custData[k][2]);
+      if (storedEmail) phoneByEmail[storedEmail] = String(custData[k][3]);
+    }
   }
+  if (pendingData) {
+    for (var p = pendingData.length - 1; p >= 1; p--) {
+      var pendingEmail = normalizeEmail_(pendingData[p][2]);
+      if (pendingEmail && pendingData[p][3] && !phoneByEmail[pendingEmail]) {
+        phoneByEmail[pendingEmail] = String(pendingData[p][3]);
+      }
+    }
+  }
+  return {
+    emailMap: emailMap,
+    phoneByCustomerId: phoneByCustomerId,
+    phoneByEmail: phoneByEmail
+  };
+}
 
+function buildCustomerBookingStatsMap_(bookingData) {
+  var statsMap = {};
+  for (var i = 1; i < bookingData.length; i++) {
+    if (bookingData[i][6] !== 'Confirmed' && bookingData[i][6] !== 'ChangeRequested') continue;
+    var customerId = bookingData[i][1];
+    var d = normalizeBookingDate_(bookingData[i][4]);
+    var t = formatTimeFromSheet(bookingData[i][5]);
+    if (!isBookingUpcoming_(d, t)) continue;
+    if (!statsMap[customerId]) {
+      statsMap[customerId] = { activeBookings: 0, nextBookingDate: '', nextBookingTime: '' };
+    }
+    var stats = statsMap[customerId];
+    stats.activeBookings++;
+    if (!stats.nextBookingDate || d < stats.nextBookingDate || (d === stats.nextBookingDate && t < stats.nextBookingTime)) {
+      stats.nextBookingDate = d;
+      stats.nextBookingTime = t;
+    }
+  }
+  return statsMap;
+}
+
+function serializeAllBookings_(data, phoneMaps) {
   var bookings = [];
   for (var i = 1; i < data.length; i++) {
-    var custEmail = emailMap[data[i][1]] || '';
+    var custEmail = phoneMaps.emailMap[data[i][1]] || '';
+    var emailKey = normalizeEmail_(custEmail);
     bookings.push({
       bookingId: data[i][0],
       customerId: data[i][1],
       customerName: data[i][2],
       customerEmail: custEmail,
-      customerPhone: phoneMap[data[i][1]] || getLatestPhoneForEmail_(custEmail) || '',
+      customerPhone: phoneMaps.phoneByCustomerId[data[i][1]] || phoneMaps.phoneByEmail[emailKey] || '',
       service: data[i][3],
       date: typeof data[i][4] === 'string' ? data[i][4].slice(0,10) : formatDate(new Date(data[i][4])),
       time: formatTimeFromSheet(data[i][5]),
@@ -1526,13 +1689,10 @@ function getAllBookings_() {
       createdDate: typeof data[i][9] === 'string' ? data[i][9].slice(0,10) : (data[i][9] ? formatDate(new Date(data[i][9])) : '')
     });
   }
-  return createResponse(true, 'Összes foglálás', { bookings: bookings.reverse() });
+  return bookings.reverse();
 }
 
-function getPendingBookings_() {
-  reconcilePendingBookings_();
-  var pendingSheet = ensurePendingBookingsSheet_();
-  var data = pendingSheet.getDataRange().getValues();
+function serializeOpenPending_(data) {
   var bookings = [];
   for (var i = 1; i < data.length; i++) {
     var status = data[i][12];
@@ -1556,7 +1716,111 @@ function getPendingBookings_() {
       referenceId: data[i][14] || ''
     });
   }
-  return createResponse(true, 'Függő foglalások', { bookings: bookings.reverse() });
+  return bookings.reverse();
+}
+
+function buildDashboardSnapshot_(data, bookingsData, custData, pendingData, packagesData) {
+  data = data || {};
+  var today = data.today && /^\d{4}-\d{2}-\d{2}$/.test(String(data.today))
+    ? String(data.today)
+    : formatDate(new Date());
+  var customerCount = Math.max(0, custData.length - 1);
+  var activePackages = 0;
+  var totalSessionsRemaining = 0;
+
+  for (var i = 1; i < packagesData.length; i++) {
+    if (packagesData[i][13] === 'Active') {
+      activePackages++;
+      totalSessionsRemaining += packagesData[i][7];
+    }
+  }
+
+  var todaysBookings = [];
+  var upcomingBookings = [];
+  var activeBookingsTotal = 0;
+
+  for (var j = 1; j < bookingsData.length; j++) {
+    if (bookingsData[j][6] !== 'Confirmed') continue;
+    var bDate = normalizeBookingDate_(bookingsData[j][4]);
+    var bTime = formatTimeFromSheet(bookingsData[j][5]);
+    if (!isBookingUpcoming_(bDate, bTime)) continue;
+    activeBookingsTotal++;
+    var entry = {
+      customer: bookingsData[j][2],
+      service: bookingsData[j][3],
+      date: bDate,
+      time: bTime
+    };
+    if (bDate === today) todaysBookings.push(entry);
+    upcomingBookings.push(entry);
+  }
+
+  upcomingBookings.sort(function(a, b) {
+    var aMs = new Date(a.date + 'T' + a.time + ':00').getTime();
+    var bMs = new Date(b.date + 'T' + b.time + ':00').getTime();
+    return aMs - bMs;
+  });
+  upcomingBookings = upcomingBookings.slice(0, 6);
+
+  var pendingCount = 0;
+  for (var p = 1; p < pendingData.length; p++) {
+    if (isOpenPendingStatus_(pendingData[p][12])) pendingCount++;
+  }
+
+  var month = new Date().getMonth() + 1;
+  var year = new Date().getFullYear();
+  var pnlData = getPnLData_(month, year, { skipFinancialReconcile: true });
+
+  return {
+    customerCount: customerCount,
+    activePackages: activePackages,
+    totalSessionsRemaining: totalSessionsRemaining,
+    activeBookingsTotal: activeBookingsTotal,
+    pendingCount: pendingCount,
+    todaysBookings: todaysBookings,
+    upcomingBookings: upcomingBookings,
+    monthlyPnL: pnlData
+  };
+}
+
+function getAllBookings_() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var bookingsSheet = ss.getSheetByName(SHEETS.BOOKINGS);
+  var data = bookingsSheet.getDataRange().getValues();
+  var customersSheet = ss.getSheetByName(SHEETS.CUSTOMERS);
+  var custData = customersSheet.getDataRange().getValues();
+  var pendingSheet = ensurePendingBookingsSheet_();
+  var pendingData = pendingSheet.getDataRange().getValues();
+  var phoneMaps = buildPhoneLookupMaps_(custData, pendingData);
+  return createResponse(true, 'Összes foglálás', { bookings: serializeAllBookings_(data, phoneMaps) });
+}
+
+function getPendingBookings_(data) {
+  var force = data && (data.force === 'true' || data.force === true || data.force === '1');
+  maybeReconcilePendingBookings_(force);
+  var pendingSheet = ensurePendingBookingsSheet_();
+  var sheetData = pendingSheet.getDataRange().getValues();
+  return createResponse(true, 'Függő foglalások', { bookings: serializeOpenPending_(sheetData) });
+}
+
+function getAdminBundle_(data) {
+  data = data || {};
+  var force = data.force === 'true' || data.force === true || data.force === '1';
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var bookingsData = ss.getSheetByName(SHEETS.BOOKINGS).getDataRange().getValues();
+  var custData = ss.getSheetByName(SHEETS.CUSTOMERS).getDataRange().getValues();
+  var pendingSheet = ensurePendingBookingsSheet_();
+  var pendingData = pendingSheet.getDataRange().getValues();
+  var packagesData = ss.getSheetByName(SHEETS.SESSION_PACKAGES).getDataRange().getValues();
+
+  maybeReconcilePendingBookings_(force);
+
+  var phoneMaps = buildPhoneLookupMaps_(custData, pendingData);
+  return createResponse(true, 'Admin bundle', {
+    dashboard: buildDashboardSnapshot_(data, bookingsData, custData, pendingData, packagesData),
+    bookings: serializeAllBookings_(bookingsData, phoneMaps),
+    pending: serializeOpenPending_(pendingData)
+  });
 }
 
 // Admin: remove a pending booking (bank transfer / stripe hold / test data)
@@ -2316,8 +2580,11 @@ function flagCalendarEventForChange_(calendarEventId, bookingDate, bookingTime, 
 // ============================================
 // P&L Dashboard — simple, real-money view only
 // ============================================
-function buildPnLReport_(startDate, endDate, meta) {
-  silentReconcileFinancial_();
+function buildPnLReport_(startDate, endDate, meta, options) {
+  options = options || {};
+  if (!options.skipFinancialReconcile) {
+    maybeSilentReconcileFinancial_(!!options.forceFinancialReconcile);
+  }
 
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var financialSheet = ss.getSheetByName(SHEETS.FINANCIAL);
@@ -2382,10 +2649,10 @@ function buildPnLReport_(startDate, endDate, meta) {
   return report;
 }
 
-function getPnLData_(month, year) {
+function getPnLData_(month, year, options) {
   var start = new Date(parseInt(year), parseInt(month) - 1, 1);
   var end = new Date(parseInt(year), parseInt(month), 0);
-  return buildPnLReport_(start, end, { month: parseInt(month), year: parseInt(year) });
+  return buildPnLReport_(start, end, { month: parseInt(month), year: parseInt(year) }, options || {});
 }
 
 function getPnLDataRange_(startDateStr, endDateStr) {
@@ -2466,10 +2733,10 @@ function getDashboardData(data) {
   });
   upcomingBookings = upcomingBookings.slice(0, 6);
 
-  var pendingCount = countOpenPendingBookings_();
+  var pendingCount = countOpenPendingBookings_(false);
 
-  // Get current month P&L
-  var pnlData = getPnLData_(new Date().getMonth() + 1, new Date().getFullYear());
+  // Get current month P&L (skip heavy financial reconcile on dashboard refresh)
+  var pnlData = getPnLData_(new Date().getMonth() + 1, new Date().getFullYear(), { skipFinancialReconcile: true });
 
   return createResponse(true, 'Dashboard adatok', {
     customerCount: customerCount,
@@ -2907,13 +3174,14 @@ function handleStripeWebhook(event) {
         stripePaymentIntentId: session.payment_intent || ''
       };
 
-      if (isStripeSessionAlreadyProcessed_(session.id)) {
-        Logger.log('Stripe session already processed, skipping: ' + session.id);
-        return createResponse(true, 'Webhook már feldolgozva: ' + session.id);
-      }
-
       bookingData.date = normalizeBookingDate_(bookingData.date);
       bookingData.time = normalizeBookingTime_(bookingData.time);
+
+      if (isStripeSessionAlreadyProcessed_(session.id)) {
+        Logger.log('Stripe session already processed, syncing pending row: ' + session.id);
+        updatePendingBookingStatus(bookingData.email, 'confirmed', bookingData.date, bookingData.time);
+        return createResponse(true, 'Webhook már feldolgozva: ' + session.id);
+      }
 
       Logger.log('Creating booking from webhook: ' + JSON.stringify(bookingData));
 
@@ -2922,7 +3190,14 @@ function handleStripeWebhook(event) {
       var bookingResultJson = JSON.parse(bookingResult.getContent());
       if (!bookingResultJson.success) {
         if (isDuplicateBookingMessage_(bookingResultJson.message)) {
-          Logger.log('Duplicate booking skipped for Stripe session ' + session.id);
+          Logger.log('Duplicate booking skipped for Stripe session ' + session.id + ', syncing pending row');
+          updatePendingBookingStatus(bookingData.email, 'confirmed', bookingData.date, bookingData.time);
+          if (!bookingData.phone) {
+            bookingData.phone = getLatestPhoneForEmail_(bookingData.email);
+          }
+          if (bookingData.phone) {
+            updateCustomerPhoneByEmail_(bookingData.email, bookingData.phone);
+          }
           return createResponse(true, 'Webhook feldolgozva (duplikátum kihagyva)');
         }
         return createResponse(false, bookingResultJson.message || 'Foglalás létrehozása sikertelen');
@@ -2968,7 +3243,8 @@ function updatePendingBookingStatus(email, status, date, time) {
   for (var i = data.length - 1; i >= 1; i--) {
     if (String(data[i][2]).toLowerCase() !== String(email).toLowerCase()) continue;
     if (slotKey && bookingSlotKey_(data[i][5], data[i][6]) !== slotKey) continue;
-    if (data[i][12] === 'pending' || data[i][12] === 'awaiting_bank_transfer' || data[i][12] === 'paid') {
+    var rowStatus = String(data[i][12] || '').toLowerCase();
+    if (rowStatus === 'pending' || rowStatus === 'awaiting_bank_transfer' || rowStatus === 'paid') {
       pendingSheet.getRange(i + 1, 13).setValue(status);
       if (data[i][3]) {
         updateCustomerPhoneByEmail_(email, data[i][3]);

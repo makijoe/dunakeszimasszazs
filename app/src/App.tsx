@@ -3205,13 +3205,52 @@ function AdminPage() {
       setTabLoading(true);
       setTabLoadingLabel('Áttekintés betöltése…');
       try {
-        await Promise.all([loadDashboardData(), loadPendingBookings()]);
+        await loadAdminBundle();
       } finally {
         setTabLoading(false);
         setTabLoadingLabel('');
       }
     } else {
       toast.error('Hibás jelszó!');
+    }
+  };
+
+  const applyAdminBundleData = (bundle: {
+    dashboard?: any;
+    bookings?: any[];
+    pending?: any[];
+  }) => {
+    if (bundle.dashboard) {
+      setDashboardData(bundle.dashboard);
+      setPendingCount(bundle.dashboard.pendingCount ?? bundle.pending?.length ?? 0);
+    }
+    const phoneByEmail = buildPhoneByEmail([
+      ...(bundle.pending || []),
+      ...(bundle.bookings || []),
+    ]);
+    if (bundle.bookings) {
+      const bookings = enrichBookingsWithPhones(bundle.bookings, phoneByEmail);
+      setAllBookings(bookings);
+      setAllCustomers((prev) => enrichCustomersWithBookings(prev, bookings));
+    }
+    if (bundle.pending) {
+      setPendingBookings(bundle.pending);
+      if (!bundle.dashboard) setPendingCount(bundle.pending.length);
+    }
+  };
+
+  const loadAdminBundle = async (force = false) => {
+    try {
+      const today = getTodayInBudapest();
+      const response = await fetch(
+        `${SCRIPT_URL}?action=adminBundle&today=${today}${force ? '&force=1' : ''}`
+      );
+      const data = await response.json();
+      if (data.success) {
+        applyAdminBundleData(data.data || {});
+      }
+    } catch (error) {
+      console.error('Error loading admin bundle:', error);
     }
   };
 
@@ -3222,6 +3261,7 @@ function AdminPage() {
       const data = await response.json();
       if (data.success) {
         setDashboardData(data.data);
+        setPendingCount(data.data?.pendingCount ?? pendingCount);
       }
     } catch (error) {
       console.error('Error loading dashboard:', error);
@@ -3245,9 +3285,14 @@ function AdminPage() {
     setActiveTab(tabId);
 
     const loaders: Partial<Record<typeof activeTab, { label: string; run: () => Promise<void> }>> = {
-      dashboard: { label: 'Áttekintés betöltése…', run: loadDashboardData },
-      bookings: { label: 'Foglalások betöltése…', run: loadAllBookings },
-      pending: { label: 'Függő foglalások betöltése…', run: loadPendingBookings },
+      dashboard: { label: 'Áttekintés betöltése…', run: () => loadAdminBundle() },
+      bookings: {
+        label: 'Foglalások betöltése…',
+        run: async () => {
+          if (allBookings.length === 0) await loadAllBookings();
+        },
+      },
+      pending: { label: 'Függő foglalások betöltése…', run: () => loadPendingBookings() },
       customers: { label: 'Vendégek betöltése…', run: loadAllCustomers },
       packages: { label: 'Bérletek betöltése…', run: loadAllPackages },
       pnl: { label: 'Bevétel betöltése…', run: () => loadPnLData() },
@@ -3289,15 +3334,11 @@ function AdminPage() {
 
   const loadAllBookings = async () => {
     try {
-      const [bookingsRes, pendingRes] = await Promise.all([
-        fetch(`${SCRIPT_URL}?action=allBookings`),
-        fetch(`${SCRIPT_URL}?action=pendingBookings`),
-      ]);
+      const bookingsRes = await fetch(`${SCRIPT_URL}?action=allBookings`);
       const data = await bookingsRes.json();
-      const pendingData = await pendingRes.json();
       if (data.success) {
         const phoneByEmail = buildPhoneByEmail([
-          ...(pendingData.success ? pendingData.data?.bookings || [] : []),
+          ...pendingBookings,
           ...(data.data?.bookings || []),
         ]);
         const bookings = enrichBookingsWithPhones(data.data.bookings || [], phoneByEmail);
@@ -3334,9 +3375,11 @@ function AdminPage() {
     }
   };
 
-  const loadPendingBookings = async () => {
+  const loadPendingBookings = async (force = false) => {
     try {
-      const response = await fetch(`${SCRIPT_URL}?action=pendingBookings`);
+      const response = await fetch(
+        `${SCRIPT_URL}?action=pendingBookings${force ? '&force=1' : ''}`
+      );
       const data = await response.json();
       if (data.success) {
         const bookings = data.data.bookings || [];
@@ -3357,10 +3400,12 @@ function AdminPage() {
 
   useEffect(() => {
     if (!isAuthenticated) return;
-    loadPendingBookings();
-    const interval = setInterval(loadPendingBookings, 60000);
+    if (activeTab !== 'dashboard' && activeTab !== 'pending') return;
+    const interval = setInterval(() => {
+      loadPendingBookings();
+    }, 120000);
     return () => clearInterval(interval);
-  }, [isAuthenticated]);
+  }, [isAuthenticated, activeTab]);
 
   const confirmBankTransfer = async (referenceId: string, customerName: string) => {
     if (!referenceId || confirmedReferences.has(referenceId)) return;
@@ -3489,22 +3534,26 @@ function AdminPage() {
 
   const loadAllCustomers = async () => {
     try {
-      const [customersRes, bookingsRes, pendingRes] = await Promise.all([
-        fetch(`${SCRIPT_URL}?action=allCustomers`),
-        fetch(`${SCRIPT_URL}?action=allBookings`),
-        fetch(`${SCRIPT_URL}?action=pendingBookings`),
-      ]);
+      let bookings = allBookings;
+      if (bookings.length === 0) {
+        const bookingsRes = await fetch(`${SCRIPT_URL}?action=allBookings`);
+        const bookingsData = await bookingsRes.json();
+        if (bookingsData.success) {
+          const phoneByEmail = buildPhoneByEmail([
+            ...pendingBookings,
+            ...(bookingsData.data?.bookings || []),
+          ]);
+          bookings = enrichBookingsWithPhones(bookingsData.data?.bookings || [], phoneByEmail);
+          setAllBookings(bookings);
+        }
+      }
+      const customersRes = await fetch(`${SCRIPT_URL}?action=allCustomers`);
       const data = await customersRes.json();
-      const bookingsData = await bookingsRes.json();
-      const pendingData = await pendingRes.json();
       if (data.success) {
         const phoneByEmail = buildPhoneByEmail([
-          ...(pendingData.success ? pendingData.data?.bookings || [] : []),
-          ...(bookingsData.success ? bookingsData.data?.bookings || [] : []),
+          ...pendingBookings,
+          ...bookings,
         ]);
-        const bookings = bookingsData.success
-          ? enrichBookingsWithPhones(bookingsData.data?.bookings || [], phoneByEmail)
-          : allBookings;
         const customers = (data.data?.customers || []).map((customer: any) => ({
           ...customer,
           phone: customer.phone || phoneByEmail[String(customer.email || '').toLowerCase()] || '',
@@ -3975,9 +4024,7 @@ function AdminPage() {
               <button
                 type="button"
                 disabled={tabLoading}
-                onClick={() => runWithTabLoading('Frissítés…', async () => {
-                  await Promise.all([loadDashboardData(), loadPendingBookings()]);
-                })}
+                onClick={() => runWithTabLoading('Frissítés…', () => loadAdminBundle(true))}
                 className="px-4 py-2 bg-[#D4854A] hover:bg-[#B87333] text-white rounded-lg text-sm font-medium self-start disabled:opacity-60"
               >
                 Frissítés
@@ -4173,7 +4220,7 @@ function AdminPage() {
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold text-[#4A3F35]">Függőben lévő foglalások</h2>
-              <button type="button" disabled={tabLoading} onClick={() => runWithTabLoading('Függő foglalások betöltése…', loadPendingBookings)} className="px-4 py-2 bg-[#D4854A] text-white rounded-lg text-sm hover:bg-[#B87333] disabled:opacity-60">Frissítés</button>
+              <button type="button" disabled={tabLoading} onClick={() => runWithTabLoading('Függő foglalások betöltése…', () => loadPendingBookings(true))} className="px-4 py-2 bg-[#D4854A] text-white rounded-lg text-sm hover:bg-[#B87333] disabled:opacity-60">Frissítés</button>
             </div>
             <p className="text-sm text-[#8B7355]">
               Banki átutalások: amikor megérkezik a befizetés a bankszámlára, kattints a <strong>Befizetés megerősítése</strong> gombra.
