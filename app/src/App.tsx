@@ -47,6 +47,7 @@ import {
   formatPhoneDisplay,
   formatPhoneLink,
   getTodayInBudapest,
+  getBookingStatusDisplay,
   isActiveBookingStatus,
   isBookingUpcoming,
 } from '@/lib/utils';
@@ -3748,17 +3749,6 @@ function AdminPage() {
       return <div className="p-8 text-center text-[#8B7355]">{emptyMessage}</div>;
     }
 
-    const statusColors: Record<string, string> = {
-      Confirmed: 'bg-[#8B9A7C]/15 text-[#4A7C59]',
-      ChangeRequested: 'bg-yellow-100 text-yellow-700',
-      Cancelled: 'bg-red-100 text-red-600',
-    };
-    const statusLabels: Record<string, string> = {
-      Confirmed: '✓ Aktív',
-      ChangeRequested: '⏳ Módosítás',
-      Cancelled: '✕ Lemondva',
-    };
-
     return (
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
@@ -3781,9 +3771,14 @@ function AdminPage() {
                 <td className="px-4 py-3 text-[#8B7355] whitespace-nowrap">{formatBookingDate(b.date)}</td>
                 <td className="px-4 py-3 text-[#8B7355] whitespace-nowrap">{formatBookingTime(b.time)}</td>
                 <td className="px-4 py-3">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[b.status] || 'bg-gray-100 text-gray-500'}`}>
-                    {statusLabels[b.status] || b.status}
-                  </span>
+                  {(() => {
+                    const display = getBookingStatusDisplay(b.status, b.date, b.time);
+                    return (
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${display.className}`}>
+                        {display.label}
+                      </span>
+                    );
+                  })()}
                 </td>
                 <td className="px-4 py-3 text-[#8B7355] text-xs whitespace-nowrap">{formatBookingDate(b.createdDate)}</td>
                 <td className="px-4 py-3">
@@ -4136,7 +4131,7 @@ function AdminPage() {
                 <h2 className="text-2xl font-bold text-[#4A3F35]">Foglalások</h2>
                 {allBookings.length > 0 && (
                   <p className="text-sm text-[#8B7355] mt-0.5">
-                    {upcomingActiveBookings.length} közelgő aktív · {historyBookings.filter((b: any) => b.status === 'Cancelled').length} lemondva · {historyBookings.filter((b: any) => isActiveBookingStatus(b.status)).length} elmúlt
+                    {upcomingActiveBookings.length} közelgő aktív · {historyBookings.filter((b: any) => b.status === 'Cancelled').length} lemondva · {historyBookings.filter((b: any) => isActiveBookingStatus(b.status) && !isBookingUpcoming(b.date, b.time)).length} kész
                   </p>
                 )}
               </div>
@@ -4495,12 +4490,14 @@ function AdminPage() {
                               {formatBookingDate(booking.date)} · {formatBookingTime(booking.time)}
                             </p>
                           </div>
-                          <span className={`px-2 py-1 rounded text-xs ${booking.status === 'Confirmed'
-                            ? 'bg-[#8B9A7C]/20 text-[#8B9A7C]'
-                            : 'bg-red-100 text-red-600'
-                            }`}>
-                            {booking.status === 'Confirmed' ? 'Megerősítve' : 'Lemondva'}
-                          </span>
+                          {(() => {
+                            const display = getBookingStatusDisplay(booking.status, booking.date, booking.time);
+                            return (
+                              <span className={`px-2 py-1 rounded text-xs ${display.className}`}>
+                                {display.label}
+                              </span>
+                            );
+                          })()}
                         </div>
                       ))}
                     </div>

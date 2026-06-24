@@ -142,3 +142,29 @@ export function isBookingUpcoming(date: unknown, time: unknown): boolean {
 export function isActiveBookingStatus(status: unknown): boolean {
   return status === 'Confirmed' || status === 'ChangeRequested'
 }
+
+/** Admin/customer label: future confirmed = Aktív, past confirmed = Kész. */
+export function getBookingStatusDisplay(
+  status: unknown,
+  date: unknown,
+  time: unknown,
+): { label: string; className: string } {
+  const upcoming = isBookingUpcoming(date, time)
+
+  if (status === 'Cancelled') {
+    return { label: '✕ Lemondva', className: 'bg-red-100 text-red-600' }
+  }
+  if (status === 'ChangeRequested') {
+    if (upcoming) {
+      return { label: '⏳ Módosítás', className: 'bg-yellow-100 text-yellow-700' }
+    }
+    return { label: '✓ Kész', className: 'bg-[#8B7355]/15 text-[#6B5B4F]' }
+  }
+  if (status === 'Confirmed') {
+    if (upcoming) {
+      return { label: '✓ Aktív', className: 'bg-[#8B9A7C]/15 text-[#4A7C59]' }
+    }
+    return { label: '✓ Kész', className: 'bg-[#8B7355]/15 text-[#6B5B4F]' }
+  }
+  return { label: String(status ?? '–'), className: 'bg-gray-100 text-gray-500' }
+}
