@@ -3,14 +3,11 @@ import { useEffect } from 'react';
 export const SITE_URL = 'https://www.dunakeszimasszazs.hu';
 export const SITE_NAME = 'Dunakeszi Masszázs - Angyali Szalon';
 export const SITE_TAGLINE = 'Makra Edina Masszőr';
-export const GBP_URL = 'https://share.google/bUlkHfnNUJpZeq2Tw';
+export const GBP_URL = 'https://share.google/Wm7nkRpmnz966J4Qh';
 /** Google Maps listing — use for “view on map” and schema sameAs */
 export const GOOGLE_MAPS_URL =
   'https://www.google.com/maps/search/?api=1&query=Dunakeszi+Masszázs+Angyali+Szalon&query=47.637494,19.124045';
-/**
- * Direct “write a review” link from Google Business Profile → További értékelések.
- * Falls back to the share link until a g.page/…/review URL is pasted here.
- */
+/** Direct review link from Google Business Profile → További értékelések */
 export const GOOGLE_WRITE_REVIEW_URL = GBP_URL;
 export const OG_IMAGE = `${SITE_URL}/images/szalon-1.jpeg`;
 export const PHONE = '+36 30 487 7883';
