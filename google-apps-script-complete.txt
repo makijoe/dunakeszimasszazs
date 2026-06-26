@@ -3650,6 +3650,12 @@ function buildCustomerConfirmationHtml(data, recurringCount, recurringType, recu
   html += '<p style="margin:8px 0 0;font-size:11px;color:#6B7280;text-align:center;">&#9888;&#65039; Ingyenes lemondas / módosítás kérés 24 órával az alkalom előtt lehetkérni</p>';
   html += '</div>';
 
+  html += '<div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:16px;margin:16px 0;text-align:center;">';
+  html += '<p style="margin:0 0 8px;font-size:14px;color:#166534;font-weight:bold;">&#11088; Elégedett voltál korábban, vagy leszel a kezelés után?</p>';
+  html += '<p style="margin:0 0 12px;font-size:13px;color:#374151;">Egy rövid Google értékelés sokat segít — köszönöm szépen!</p>';
+  html += '<a href="https://share.google/bUlkHfnNUJpZeq2Tw" style="display:inline-block;background:#4285F4;color:white;text-decoration:none;padding:10px 22px;border-radius:20px;font-size:13px;font-weight:bold;">Google értékelés írása</a>';
+  html += '</div>';
+
   html += '<p style="font-size:13px;color:#666;">Ha kérdésed van, hívj bátran: <b>+36 30 487 7883</b></p>';
   html += '<p style="font-size:13px;color:#666;">Várlak szeretettel az Angyali Szalonban!</p>';
   html += '</div>';

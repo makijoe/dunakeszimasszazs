@@ -32,7 +32,9 @@ import { services, getServicePath } from '@/lib/services';
 import {
   FAQ_ITEMS,
   GBP_URL,
+  GOOGLE_MAPS_URL,
   GOOGLE_REVIEW_COUNT,
+  GOOGLE_WRITE_REVIEW_URL,
   HOME_SEO,
   SITE_NAME,
   SITE_URL,
@@ -1185,17 +1187,31 @@ function TestimonialsSection() {
           ))}
         </div>
 
-        {/* View All Reviews CTA */}
-        <div className={`text-center mt-10 transition-all duration-700 delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-          <a
-            href={GBP_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-white border border-[#E8D4C0] rounded-full text-[#4A3F35] hover:bg-[#F5E6D8] hover:border-[#D4854A] transition-all duration-300"
-          >
-            <span>Összes vélemény megtekintése</span>
-            <ArrowRight className="w-4 h-4" />
-          </a>
+        {/* Review CTAs */}
+        <div className={`text-center mt-10 space-y-4 transition-all duration-700 delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+          <p className="text-sm text-[#8B7355] max-w-xl mx-auto">
+            Elégedett voltál a kezeléssel? Egy rövid Google értékelés sokat segít másoknak — és nekünk is. Köszönjük!
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <a
+              href={GOOGLE_WRITE_REVIEW_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-[#D4854A] text-white rounded-full font-semibold hover:bg-[#B87333] transition-all duration-300 shadow-warm"
+            >
+              <Star className="w-4 h-4 fill-white" />
+              <span>Írj Google értékelést</span>
+            </a>
+            <a
+              href={GOOGLE_MAPS_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-white border border-[#E8D4C0] rounded-full text-[#4A3F35] hover:bg-[#F5E6D8] hover:border-[#D4854A] transition-all duration-300"
+            >
+              <span>Összes vélemény megtekintése</span>
+              <ArrowRight className="w-4 h-4" />
+            </a>
+          </div>
         </div>
       </div>
     </section>
@@ -2514,11 +2530,12 @@ function FooterSection() {
                   <Facebook className="w-5 h-5" />
                 </a>
                 <a
-                  href={GBP_URL}
+                  href={GOOGLE_MAPS_URL}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-[#D4854A] transition-colors"
-                  aria-label="Google Business"
+                  aria-label="Google Térkép és értékelések"
+                  title="Google Térkép és értékelések"
                 >
                   <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -2535,7 +2552,7 @@ function FooterSection() {
         <div className="mt-10 rounded-2xl overflow-hidden border border-white/10 shadow-warm">
           <iframe
             title="Angyali Szalon helye Dunakeszin – térkép"
-            src="https://maps.google.com/maps?q=47.6289,19.1406&hl=hu&z=15&output=embed"
+            src="https://maps.google.com/maps?q=Angyali+Szalon+Dunakeszi+Masszázs,Kolonics+György+utca+2%2FB,Dunakeszi&hl=hu&z=15&output=embed"
             className="w-full h-56 sm:h-64 border-0"
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
@@ -5588,6 +5605,18 @@ function BookingSuccessPage() {
           <p className="text-[#8B7355] text-sm">• 📍 Dunakeszi, Kolonics György utca 2/B — Kapucsengő: 1/43</p>
           <p className="text-[#8B7355] text-sm">• 📞 +36 30 487 7883</p>
         </div>
+        <p className="text-sm text-[#8B7355] mb-4">
+          Ha tetszett a foglalás élménye, kezelés után szívesen fogadunk egy Google értékelést is.
+        </p>
+        <a
+          href={GOOGLE_WRITE_REVIEW_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 mb-4 px-6 py-2.5 border border-[#E8D4C0] rounded-xl text-[#4A3F35] text-sm font-medium hover:bg-[#F9F1EA] transition-colors"
+        >
+          <Star className="w-4 h-4 text-[#D4854A]" />
+          Google értékelés írása
+        </a>
         <a
           href="/"
           onClick={(e) => { e.preventDefault(); navigateTo(ROUTES.home); }}
