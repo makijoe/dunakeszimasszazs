@@ -18,8 +18,15 @@ export const PHONE_TEL = '+36304877883';
 export const EMAIL = 'dunakeszimasszor@gmail.com';
 export const ADDRESS = '2120 Dunakeszi, Kolonics György utca 2/B';
 export const ADDRESS_STREET = 'Kolonics György utca 2/B';
-export const GOOGLE_REVIEW_COUNT = 21;
-export const GOOGLE_RATING = 5.0;
+export const GOOGLE_REVIEW_COUNT = 28;
+export const GOOGLE_RATING = 4.9;
+
+export function formatGoogleRating(rating = GOOGLE_RATING): string {
+  return rating.toLocaleString('hu-HU', {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  });
+}
 
 export type SeoConfig = {
   title: string;

@@ -31,10 +31,10 @@ import { getAppRoute, navigateTo, ROUTES, type AppRoute } from '@/lib/navigation
 import { services, getServicePath } from '@/lib/services';
 import {
   FAQ_ITEMS,
-  GBP_URL,
   GOOGLE_MAPS_URL,
   GOOGLE_REVIEW_COUNT,
   GOOGLE_WRITE_REVIEW_URL,
+  formatGoogleRating,
   HOME_SEO,
   SITE_NAME,
   SITE_URL,
@@ -430,30 +430,43 @@ function HeroSection() {
                 <div className="absolute inset-0 bg-gradient-to-t from-[#4A3F35]/30 via-transparent to-transparent" />
               </div>
 
-              {/* Floating Cards */}
-              <div className="absolute -bottom-6 -left-6 bg-white rounded-2xl p-4 shadow-warm animate-float">
+              {/* Floating Cards — tap to open Google */}
+              <a
+                href={GOOGLE_MAPS_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Google vélemények megtekintése"
+                className="absolute -bottom-6 -left-6 bg-white rounded-2xl p-4 shadow-warm animate-float hover:shadow-warm-lg hover:-translate-y-0.5 transition-all duration-300 cursor-pointer"
+              >
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 bg-[#8B9A7C]/20 rounded-full flex items-center justify-center">
                     <Heart className="w-6 h-6 text-[#8B9A7C]" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-[#4A3F35]">{GOOGLE_REVIEW_COUNT}+</p>
+                    <p className="text-2xl font-bold text-[#4A3F35]">{GOOGLE_REVIEW_COUNT}</p>
                     <p className="text-sm text-[#8B7355]">Google vélemény</p>
                   </div>
                 </div>
-              </div>
+              </a>
 
-              <div className="absolute -top-4 -right-4 bg-white rounded-2xl p-4 shadow-warm animate-float" style={{ animationDelay: '1s' }}>
+              <a
+                href={GOOGLE_WRITE_REVIEW_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Google értékelés írása"
+                className="absolute -top-4 -right-4 bg-white rounded-2xl p-4 shadow-warm animate-float hover:shadow-warm-lg hover:-translate-y-0.5 transition-all duration-300 cursor-pointer"
+                style={{ animationDelay: '1s' }}
+              >
                 <div className="flex items-center gap-2">
                   <div className="flex">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <Star key={star} className="w-4 h-4 fill-[#D4854A] text-[#D4854A]" />
                     ))}
                   </div>
-                  <span className="text-sm font-medium text-[#4A3F35]">5.0</span>
+                  <span className="text-sm font-medium text-[#4A3F35]">{formatGoogleRating()}</span>
                 </div>
-                <p className="text-xs text-[#8B7355] mt-1">Google értékelés</p>
-              </div>
+                <p className="text-xs text-[#8B7355] mt-1">Google értékelés · koppints</p>
+              </a>
             </div>
           </div>
         </div>
@@ -1116,13 +1129,13 @@ function TestimonialsSection() {
           {/* Google Rating Badge */}
           <div className={`flex flex-col items-center gap-4 mb-8 transition-all duration-700 delay-100 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
             <a
-              href={GBP_URL}
+              href={GOOGLE_MAPS_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-3 bg-white px-6 py-4 rounded-2xl shadow-warm hover:shadow-warm-lg transition-all duration-300 hover:-translate-y-1"
             >
               <div className="flex items-center gap-1">
-                <span className="text-3xl font-bold text-[#4A3F35]">5,0</span>
+                <span className="text-3xl font-bold text-[#4A3F35]">{formatGoogleRating()}</span>
                 <div className="flex">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <Star key={star} className="w-5 h-5 fill-[#D4854A] text-[#D4854A]" />
@@ -1132,7 +1145,7 @@ function TestimonialsSection() {
               <div className="w-px h-8 bg-[#E8D4C0]" />
               <div className="text-left">
                 <p className="text-sm text-[#8B7355]">Google értékelés</p>
-                <p className="text-sm font-medium text-[#4A3F35]">21 vélemény alapján</p>
+                <p className="text-sm font-medium text-[#4A3F35]">{GOOGLE_REVIEW_COUNT} vélemény alapján</p>
               </div>
               <svg className="w-6 h-6 text-[#4285F4]" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
