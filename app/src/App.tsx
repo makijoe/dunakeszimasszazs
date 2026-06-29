@@ -46,6 +46,7 @@ import {
 } from '@/lib/utils';
 import { MapEmbed } from '@/components/MapEmbed';
 import { PrivacyPolicyContent } from '@/components/PrivacyPolicyContent';
+import { LogoImage } from '@/components/LogoImage';
 import { ResponsiveImage } from '@/components/ResponsiveImage';
 import { YouTubeEmbed } from '@/components/YouTubeEmbed';
 import { getImageMeta } from '@/lib/images';
@@ -124,7 +125,7 @@ function Navigation() {
             onClick={(e) => { e.preventDefault(); scrollToSection('#fooldal'); }}
             className="flex items-center gap-2 group"
           >
-            <img src="/images/logo.png" alt="Dunakeszi Masszázs Logo" className="w-14 h-14 rounded-full object-cover" width={56} height={56} />
+            <LogoImage size={56} className="w-14 h-14 rounded-full object-cover" />
             <div className="hidden sm:block">
               <span className="block font-semibold text-lg leading-tight text-[#4A3F35]">
                 Dunakeszi Masszázs
@@ -279,7 +280,7 @@ function HeroSection() {
             <div className="flex flex-wrap gap-4">
               <Button
                 onClick={scrollToBooking}
-                className="bg-[#D4854A] hover:bg-[#B87333] text-white px-8 py-6 rounded-full text-base font-medium shadow-warm hover:shadow-warm-lg transition-all duration-300 hover:-translate-y-1"
+                className="bg-[#B87333] hover:bg-[#9A5A28] text-white px-8 py-6 rounded-full text-base font-semibold shadow-warm hover:shadow-warm-lg transition-all duration-300 hover:-translate-y-1"
               >
                 <Calendar className="w-5 h-5 mr-2" />
                 Időpontot szeretnék
@@ -287,7 +288,7 @@ function HeroSection() {
               <Button
                 onClick={scrollToServices}
                 variant="outline"
-                className="border-[#D4854A] text-[#D4854A] hover:bg-[#D4854A] hover:text-white px-8 py-6 rounded-full text-base font-medium transition-all duration-300"
+                className="border-2 border-[#9A5A28] text-[#7A4420] hover:bg-[#B87333] hover:border-[#B87333] hover:text-white px-8 py-6 rounded-full text-base font-semibold transition-all duration-300"
               >
                 Kezelések megtekintése
                 <ArrowRight className="w-5 h-5 ml-2" />
@@ -321,7 +322,7 @@ function HeroSection() {
                   className="w-full h-[500px] lg:h-[600px] object-cover"
                   loading="eager"
                   fetchPriority="high"
-                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 90vw, 600px"
                   width={1600}
                   height={900}
                 />
@@ -661,7 +662,7 @@ function ServicesSection() {
                   alt={`${service.name} – masszázs Dunakeszin`}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   loading="lazy"
-                  sizes="(max-width: 768px) 100vw, 33vw"
+                  sizes="(max-width: 768px) 90vw, 400px"
                   width={getImageMeta(service.image).width}
                   height={getImageMeta(service.image).height}
                 />
@@ -692,7 +693,7 @@ function ServicesSection() {
                       e.stopPropagation();
                       openModal(service);
                     }}
-                    className="text-xs text-[#635241] hover:text-[#D4854A] underline"
+                    className="text-xs text-[#635241] hover:text-[#D4854A] underline min-h-11 min-w-11 inline-flex items-center justify-center px-2"
                   >
                     Gyors áttekintés
                   </button>
@@ -2391,7 +2392,7 @@ function FooterSection() {
                         element.scrollIntoView({ behavior: 'smooth' });
                       }
                     }}
-                    className="text-white/85 hover:text-[#E8B88A] transition-colors"
+                    className="inline-flex items-center min-h-11 py-2 text-white hover:text-[#F5D4A8] transition-colors"
                   >
                     {link.label}
                   </a>
@@ -2407,7 +2408,7 @@ function FooterSection() {
               <li>
                 <a
                   href="tel:+36304877883"
-                  className="flex items-center gap-3 text-white/70 hover:text-[#D4854A] transition-colors"
+                  className="flex items-center gap-3 min-h-11 py-1 text-white/95 hover:text-[#F5D4A8] transition-colors"
                 >
                   <Phone className="w-5 h-5" />
                   <span>+36 30 487 7883</span>
@@ -2416,7 +2417,7 @@ function FooterSection() {
               <li>
                 <a
                   href="mailto:dunakeszimasszor@gmail.com"
-                  className="flex items-center gap-3 text-white/70 hover:text-[#D4854A] transition-colors break-all"
+                  className="flex items-center gap-3 min-h-11 py-1 text-white/95 hover:text-[#F5D4A8] transition-colors break-all"
                 >
                   <Mail className="w-5 h-5 flex-shrink-0" />
                   <span className="break-all">dunakeszimasszor@gmail.com</span>
@@ -2475,35 +2476,35 @@ function FooterSection() {
               <p className="text-white/80 text-sm text-center md:text-left">
               © {new Date().getFullYear()} Dunakeszi Masszázs - Angyali Szalon – Makra Edina | Minden jog fenntartva
             </p>
-            <div className="flex items-center gap-6">
+            <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4">
               <a
                 href={ROUTES.privacy}
                 onClick={(e) => {
                   e.preventDefault();
                   navigateTo(ROUTES.privacy);
                 }}
-                className="text-white/80 hover:text-[#E8B88A] transition-colors text-sm"
+                className="inline-flex items-center min-h-11 px-3 text-white hover:text-[#F5D4A8] transition-colors text-sm"
               >
                 Adatvédelmi tájékoztató
               </a>
               <button
                 type="button"
                 onClick={() => setShowPrivacyPolicy(true)}
-                className="text-white/40 hover:text-[#D4854A] transition-colors text-xs"
+                className="inline-flex items-center min-h-11 px-3 text-white/90 hover:text-[#F5D4A8] transition-colors text-sm"
               >
                 Gyors nézet
               </button>
               <a
                 href={ROUTES.admin}
                 onClick={(e) => { e.preventDefault(); navigateTo(ROUTES.admin); }}
-                className="text-white/80 hover:text-[#E8B88A] transition-colors text-sm"
+                className="inline-flex items-center min-h-11 px-3 text-white hover:text-[#F5D4A8] transition-colors text-sm"
               >
                 Admin
               </a>
               <button
                 onClick={scrollToTop}
                 aria-label="Vissza a tetejére"
-                className="flex items-center gap-2 text-white/50 hover:text-[#D4854A] transition-colors text-sm"
+                className="inline-flex items-center gap-2 min-h-11 px-3 text-white/90 hover:text-[#F5D4A8] transition-colors text-sm"
               >
                 <span>Vissza a tetejére</span>
                 <ChevronDown className="w-4 h-4 rotate-180" />

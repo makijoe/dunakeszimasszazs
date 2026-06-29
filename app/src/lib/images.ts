@@ -8,7 +8,7 @@ export const IMAGE_META: Record<string, { width: number; height: number }> = {
   '/images/professional-products.jpeg': { width: 1600, height: 1200 },
   '/images/organo-kave.jpeg': { width: 1152, height: 2048 },
   '/images/organo-zoldtea.jpeg': { width: 1152, height: 2048 },
-  '/images/logo.png': { width: 1024, height: 1024 },
+  '/images/logo.png': { width: 128, height: 128 },
   '/images/indiai-fejmasszazs.jpeg': { width: 1024, height: 1536 },
   '/images/kineziologia.jpeg': { width: 867, height: 1300 },
   '/images/ultrahangos-zsirbontas.jpeg': { width: 1630, height: 1588 },

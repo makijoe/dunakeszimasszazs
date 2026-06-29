@@ -5,27 +5,40 @@ import { defineConfig } from "vite"
 import { inspectAttr } from 'kimi-plugin-inspect-react'
 import { ViteImageOptimizer } from 'vite-plugin-image-optimizer'
 
-function asyncCssPlugin() {
+function patchHtmlFile(filePath: string) {
+  if (!fs.existsSync(filePath)) return;
+  let html = fs.readFileSync(filePath, 'utf8');
+
+  if (!html.includes('rel="preload" as="style"')) {
+    html = html.replace(
+      /<link rel="stylesheet" crossorigin href="(\/assets\/[^"]+\.css)">/,
+      '<link rel="preload" as="style" href="$1" onload="this.onload=null;this.rel=\'stylesheet\'"><noscript><link rel="stylesheet" crossorigin href="$1"></noscript>'
+    );
+  }
+
+  const entryMatch = html.match(/<script type="module" crossorigin src="(\/assets\/index-[^"]+\.js)"><\/script>/);
+  if (entryMatch && !html.includes('rel="modulepreload"')) {
+    const href = entryMatch[1];
+    html = html.replace(
+      /<script type="module"/,
+      `<link rel="modulepreload" href="${href}" crossorigin />\n    <script type="module"`
+    );
+  }
+
+  fs.writeFileSync(filePath, html);
+}
+
+function postBuildHtmlPlugin() {
   return {
-    name: 'async-css',
+    name: 'post-build-html',
     closeBundle() {
       const distDir = path.resolve(__dirname, 'dist');
-      const patch = (filePath: string) => {
-        if (!fs.existsSync(filePath)) return;
-        let html = fs.readFileSync(filePath, 'utf8');
-        if (html.includes('rel="preload" as="style"')) return;
-        html = html.replace(
-          /<link rel="stylesheet" crossorigin href="(\/assets\/[^"]+\.css)">/,
-          '<link rel="preload" as="style" href="$1" onload="this.onload=null;this.rel=\'stylesheet\'"><noscript><link rel="stylesheet" crossorigin href="$1"></noscript>'
-        );
-        fs.writeFileSync(filePath, html);
-      };
-      patch(path.join(distDir, 'index.html'));
+      patchHtmlFile(path.join(distDir, 'index.html'));
       const walk = (dir: string) => {
         for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
           const full = path.join(dir, entry.name);
           if (entry.isDirectory()) walk(full);
-          else if (entry.name === 'index.html') patch(full);
+          else if (entry.name === 'index.html') patchHtmlFile(full);
         }
       };
       walk(distDir);
@@ -52,9 +65,9 @@ export default defineConfig({
     },
   },
   plugins: [
-    inspectAttr(),
+    ...(process.env.NODE_ENV !== 'production' ? [inspectAttr()] : []),
     react(),
-    asyncCssPlugin(),
+    postBuildHtmlPlugin(),
     ViteImageOptimizer({
       jpg: { quality: 82 },
       jpeg: { quality: 82 },

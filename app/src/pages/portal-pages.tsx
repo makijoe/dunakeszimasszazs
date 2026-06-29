@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import { LogoImage } from '@/components/LogoImage';
 import { navigateTo, ROUTES } from '@/lib/navigation';
 import { GOOGLE_WRITE_REVIEW_URL, SITE_NAME, SITE_URL, useSeo } from '@/lib/seo';
 import {
@@ -187,7 +188,7 @@ export function ManageBookingsPage() {
       <header className="bg-white shadow-sm py-4 px-4">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
           <a href={ROUTES.home} onClick={(e) => { e.preventDefault(); navigateTo(ROUTES.home); }} className="flex items-center gap-2">
-            <img src="/images/logo.png" alt="Dunakeszi Masszázs Logo" className="w-10 h-10 rounded-full object-cover" width={40} height={40} />
+            <LogoImage size={40} className="w-10 h-10 rounded-full object-cover" />
             <div>
               <p className="font-semibold text-[#4A3F35] text-sm">Dunakeszi Masszázs</p>
               <p className="text-xs text-[#635241]">Angyali Szalon</p>

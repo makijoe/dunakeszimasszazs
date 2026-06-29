@@ -46,11 +46,26 @@ for (const file of TARGETS) {
     const resized = sharp(input).resize({ width, withoutEnlargement: true });
 
     const webpOut = path.join(imagesDir, `${base}-${width}w.webp`);
-    await resized.clone().webp({ quality: 82 }).toFile(webpOut);
+    await resized.clone().webp({ quality: 72, effort: 6 }).toFile(webpOut);
 
     const jpegOut = path.join(imagesDir, `${base}-${width}w.jpeg`);
-    await resized.clone().jpeg({ quality: 82, mozjpeg: true }).toFile(jpegOut);
+    await resized.clone().jpeg({ quality: 78, mozjpeg: true }).toFile(jpegOut);
 
+    generated += 2;
+  }
+}
+
+const logoInput = path.join(imagesDir, 'logo.png');
+if (fs.existsSync(logoInput)) {
+  for (const width of [96, 128, 192]) {
+    await sharp(logoInput)
+      .resize({ width, height: width, fit: 'cover' })
+      .webp({ quality: 80 })
+      .toFile(path.join(imagesDir, `logo-${width}w.webp`));
+    await sharp(logoInput)
+      .resize({ width, height: width, fit: 'cover' })
+      .png({ quality: 90, compressionLevel: 9 })
+      .toFile(path.join(imagesDir, `logo-${width}w.png`));
     generated += 2;
   }
 }
