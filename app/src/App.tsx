@@ -46,7 +46,9 @@ import {
 } from '@/lib/utils';
 import { MapEmbed } from '@/components/MapEmbed';
 import { PrivacyPolicyContent } from '@/components/PrivacyPolicyContent';
+import { ResponsiveImage } from '@/components/ResponsiveImage';
 import { YouTubeEmbed } from '@/components/YouTubeEmbed';
+import { getImageMeta } from '@/lib/images';
 import { BANK_ACCOUNT, SCRIPT_URL } from '@/lib/script-api';
 import { PrivacyPage } from '@/pages/PrivacyPage';
 import { ServiceLandingPage } from '@/pages/ServiceLandingPage';
@@ -124,12 +126,12 @@ function Navigation() {
           >
             <img src="/images/logo.png" alt="Dunakeszi Masszázs Logo" className="w-14 h-14 rounded-full object-cover" width={56} height={56} />
             <div className="hidden sm:block">
-              <p className={`font-semibold text-lg leading-tight transition-colors ${isScrolled ? 'text-[#4A3F35]' : 'text-[#4A3F35]'}`}>
+              <span className="block font-semibold text-lg leading-tight text-[#4A3F35]">
                 Dunakeszi Masszázs
-              </p>
-              <p className={`text-xs transition-colors ${isScrolled ? 'text-[#635241]' : 'text-[#635241]'}`}>
+              </span>
+              <span className="block text-xs text-[#635241]">
                 Angyali Szalon - Makra Edina
-              </p>
+              </span>
             </div>
           </a>
 
@@ -208,11 +210,7 @@ function Navigation() {
 
 // Hero Section
 function HeroSection() {
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    setIsVisible(true);
-  }, []);
+  const [isVisible] = useState(true);
 
   const scrollToBooking = () => {
     const element = document.querySelector('#idopont');
@@ -247,10 +245,11 @@ function HeroSection() {
 
             <div className="space-y-4">
               <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold text-[#4A3F35] leading-tight">
-                Masszázs <span className="text-[#B87333]">Dunakeszin</span>
-                <br />
-                <span className="text-xl sm:text-2xl lg:text-5xl font-medium">Testi-Lelki Feltöltődés</span>
+                Masszázs Dunakeszin – testi-lelki feltöltődés
               </h1>
+              <p className="text-xl sm:text-2xl lg:text-3xl font-medium text-[#B87333]">
+                Angyali Szalon · Makra Edina masszőr
+              </p>
 
               <p className="text-base sm:text-lg text-[#635241] max-w-lg leading-relaxed mt-2">
                 Nyugtató, harmonizáló kezelések egy békés, biztonságos környezetben az
@@ -316,14 +315,15 @@ function HeroSection() {
             <div className="relative">
               {/* Main Image Container */}
               <div className="relative rounded-3xl overflow-hidden shadow-warm-lg">
-                <img
+                <ResponsiveImage
                   src="/images/szalon-1.jpeg"
                   alt="Relaxáló masszázs környezet az Angyali Szalonban, Dunakeszi"
                   className="w-full h-[500px] lg:h-[600px] object-cover"
                   loading="eager"
                   fetchPriority="high"
-                  width={800}
-                  height={1000}
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  width={1600}
+                  height={900}
                 />
                 {/* Overlay Gradient */}
                 <div className="absolute inset-0 bg-gradient-to-t from-[#4A3F35]/30 via-transparent to-transparent" />
@@ -492,13 +492,13 @@ function ServiceModal({ service, isOpen, onClose }: { service: typeof services[0
 
         {/* Image */}
         <div className="relative h-64 sm:h-80">
-          <img
+          <ResponsiveImage
             src={service.image}
             alt={service.name}
             className="w-full h-full object-cover"
             loading="lazy"
-            width={800}
-            height={500}
+            width={getImageMeta(service.image).width}
+            height={getImageMeta(service.image).height}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
           <div className="absolute bottom-4 left-4 right-4">
@@ -656,13 +656,14 @@ function ServicesSection() {
               onClick={() => navigateTo(getServicePath(service.id))}
             >
               <div className="relative h-48 overflow-hidden">
-                <img
+                <ResponsiveImage
                   src={service.image}
                   alt={`${service.name} – masszázs Dunakeszin`}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   loading="lazy"
-                  width={600}
-                  height={400}
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                  width={getImageMeta(service.image).width}
+                  height={getImageMeta(service.image).height}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#4A3F35]/60 via-transparent to-transparent" />
                 <div className="absolute bottom-4 left-4 right-4">
@@ -1154,9 +1155,9 @@ function OrganoCoffeeSection() {
           <span className="inline-block px-4 py-2 bg-[#8B4513]/10 rounded-full text-sm font-medium text-[#8B4513] mb-4">
             Különleges kínálat
           </span>
-          <h2 className="text-3xl sm:text-4xl font-bold text-[#4A3F35] mb-4">
+          <p className="text-3xl sm:text-4xl font-bold text-[#4A3F35] mb-4" role="doc-subtitle">
             Organo Prémium Kávé & Zöld Tea
-          </h2>
+          </p>
         </div>
 
         <div className={`bg-white rounded-3xl shadow-warm-lg p-8 transition-all duration-700 delay-200 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
@@ -1214,13 +1215,14 @@ function OrganoCoffeeSection() {
             <div className="space-y-6">
               {/* Coffee Image */}
               <div className="relative rounded-2xl overflow-hidden shadow-warm">
-                <img
+                <ResponsiveImage
                   loading="lazy"
                   src="/images/organo-kave.jpeg"
                   alt="Organo kávé választék - Fekete kávé, Gourmet Latte, Mocha Cappuccino, Forró csokoládé"
                   className="w-full h-64 object-cover"
-                  width={600}
-                  height={256}
+                  sizes="(max-width: 768px) 100vw, 40vw"
+                  width={1152}
+                  height={2048}
                 />
                 <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
                   <p className="text-white font-semibold">Organo Kávé Választék</p>
@@ -1229,13 +1231,14 @@ function OrganoCoffeeSection() {
 
               {/* Green Tea Image */}
               <div className="relative rounded-2xl overflow-hidden shadow-warm">
-                <img
+                <ResponsiveImage
                   loading="lazy"
                   src="/images/organo-zoldtea.jpeg"
                   alt="Organo Reishi Ganoderma zöld tea"
                   className="w-full h-64 object-cover"
-                  width={600}
-                  height={256}
+                  sizes="(max-width: 768px) 100vw, 40vw"
+                  width={1152}
+                  height={2048}
                 />
                 <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
                   <p className="text-white font-semibold">Organo Reishi Ganoderma Zöld Tea</p>
@@ -1279,13 +1282,14 @@ function AboutSection() {
           {/* Image */}
           <div className={`relative transition-all duration-700 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-10'}`}>
             <div className="relative rounded-3xl overflow-hidden shadow-warm-lg">
-              <img
+              <ResponsiveImage
                 loading="lazy"
                 src="/images/edina.jpeg"
                 alt="Makra Edina - Masszőr, kineziológus"
                 className="w-full h-[400px] lg:h-[500px] object-cover"
-                width={800}
-                height={1000}
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                width={1200}
+                height={1599}
               />
             </div>
 
@@ -1369,10 +1373,10 @@ function GallerySection() {
   }, []);
 
   const images = [
-    { src: '/images/szalon-1.jpeg', alt: 'Angyali Szalon - belső tér' },
-    { src: '/images/szalon-2.jpeg', alt: 'Angyali Szalon - kezelőhelyiség' },
-    { src: '/images/szalon-3.jpeg', alt: 'Angyali Szalon - nyugodt környezet' },
-    { src: '/images/szalon-4.jpeg', alt: 'Angyali Szalon - külső megjelenés' },
+    { src: '/images/szalon-1.jpeg', alt: 'Angyali Szalon - belső tér', aspect: 'aspect-video' },
+    { src: '/images/szalon-2.jpeg', alt: 'Angyali Szalon - kezelőhelyiség', aspect: 'aspect-[4/3]' },
+    { src: '/images/szalon-3.jpeg', alt: 'Angyali Szalon - nyugodt környezet', aspect: 'aspect-video' },
+    { src: '/images/szalon-4.jpeg', alt: 'Angyali Szalon - külső megjelenés', aspect: 'aspect-[4/3]' },
   ];
 
   return (
@@ -1382,9 +1386,9 @@ function GallerySection() {
           <span className="inline-block px-4 py-2 bg-[#D4854A]/10 rounded-full text-sm font-medium text-[#D4854A] mb-4">
             Galéria
           </span>
-          <h2 className="text-3xl sm:text-4xl font-bold text-[#4A3F35] mb-4">
+          <p className="text-3xl sm:text-4xl font-bold text-[#4A3F35] mb-4" role="doc-subtitle">
             Az Angyali Szalon
-          </h2>
+          </p>
           <p className="text-lg text-[#635241]">
             Egy békés, nyugodt környezet Dunakeszin, ahol feltöltődhetsz és kikapcsolódhatsz.
           </p>
@@ -1398,14 +1402,15 @@ function GallerySection() {
                 }`}
               style={{ transitionDelay: `${index * 100}ms` }}
             >
-              <div className="aspect-[4/3] overflow-hidden">
-                <img
+              <div className={`${image.aspect} overflow-hidden`}>
+                <ResponsiveImage
                   src={image.src}
                   alt={image.alt}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   loading="lazy"
-                  width={800}
-                  height={600}
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  width={getImageMeta(image.src).width}
+                  height={getImageMeta(image.src).height}
                 />
               </div>
               <div className="absolute inset-0 bg-gradient-to-t from-[#4A3F35]/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -1447,9 +1452,9 @@ function ProductsSection() {
           <span className="inline-block px-4 py-2 bg-[#D4854A]/10 rounded-full text-sm font-medium text-[#D4854A] mb-4">
             Professzionális termékek
           </span>
-          <h2 className="text-3xl sm:text-4xl font-bold text-[#4A3F35] mb-4">
+          <p className="text-3xl sm:text-4xl font-bold text-[#4A3F35] mb-4" role="doc-subtitle">
             Prémium minőségű kozmetikumok
-          </h2>
+          </p>
           <p className="text-lg text-[#635241]">
             Az Angyali Szalonban kizárólag professzionális, prémium minőségű termékekkel dolgozom, hogy a legjobb eredményt érjük el.
           </p>
@@ -1458,13 +1463,14 @@ function ProductsSection() {
         <div className={`grid lg:grid-cols-2 gap-8 items-center transition-all duration-700 delay-200 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           {/* Product Image */}
           <div className="relative rounded-2xl overflow-hidden shadow-warm-lg">
-            <img
+            <ResponsiveImage
               loading="lazy"
               src="/images/professional-products.jpeg"
               alt="Professzionális kozmetikai termékek - Magic brand"
               className="w-full h-auto object-cover"
-              width={800}
-              height={600}
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              width={1600}
+              height={1200}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[#4A3F35]/30 to-transparent" />
           </div>

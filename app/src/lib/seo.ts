@@ -34,10 +34,12 @@ export type SeoConfig = {
   jsonLd?: Record<string, unknown> | Array<Record<string, unknown>>;
 };
 
+export const META_DESCRIPTION =
+  'Makra Edina masszőr az Angyali Szalonban, Dunakeszin. Relaxáló és terápiás masszázs, nyirokmasszázs, kineziológia és BEMER kezelés. RTL & TV2 szereplések. Foglalj időpontot online!';
+
 export const HOME_SEO: SeoConfig = {
   title: `${SITE_NAME} | ${SITE_TAGLINE}`,
-  description:
-    'Makra Edina masszőr az Angyali Szalonban, Dunakeszin. Relaxáló és terápiás kezelések, nyirokmasszázs, kineziológia. RTL & TV2. Foglalj online!',
+  description: META_DESCRIPTION,
   canonical: `${SITE_URL}/`,
 };
 

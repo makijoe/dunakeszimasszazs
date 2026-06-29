@@ -31,7 +31,7 @@ export function YouTubeEmbed({ videoId, title }: YouTubeEmbedProps) {
     >
       <img
         src={`https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`}
-        alt=""
+        alt={`${title} – YouTube előnézet`}
         className="absolute inset-0 w-full h-full object-cover"
         loading="lazy"
         width={480}

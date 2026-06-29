@@ -30,9 +30,14 @@
     
     <title>Aromamasszázs Dunakeszin | Illóolajos masszázs</title>
 
-    <!-- Google Analytics (deferred — nem blokkolja a fő tartalom betöltését) -->
+    <link rel="preconnect" href="https://script.google.com" crossorigin />
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+
+    <!-- Google Analytics — idle/load után, LCP-t nem blokkolja -->
     <script>
-      window.addEventListener('load', function () {
+      function loadGA() {
+        if (window.__gaLoaded) return;
+        window.__gaLoaded = true;
         var s = document.createElement('script');
         s.src = 'https://www.googletagmanager.com/gtag/js?id=G-GPBVK15P0N';
         s.async = true;
@@ -42,10 +47,17 @@
         window.gtag = gtag;
         gtag('js', new Date());
         gtag('config', 'G-GPBVK15P0N');
+      }
+      window.addEventListener('load', function () {
+        if ('requestIdleCallback' in window) {
+          requestIdleCallback(loadGA, { timeout: 5000 });
+        } else {
+          setTimeout(loadGA, 3000);
+        }
       });
     </script>
-    
-    <link rel="preload" as="image" href="/images/szalon-1.jpeg" />
+
+    <link rel="preload" as="image" href="/images/szalon-1-800w.webp" type="image/webp" fetchpriority="high" />
     <link rel="icon" type="image/png" href="/images/logo.png" />
     <link rel="apple-touch-icon" href="/images/logo.png" />
     
@@ -151,12 +163,12 @@
       ]
     }
     </script>
-    <script type="module" crossorigin src="/assets/index-BT6KmtTV.js"></script>
+    <script type="module" crossorigin src="/assets/index-D2yIf7Al.js"></script>
     <link rel="modulepreload" crossorigin href="/assets/vendor-react-DVLw__5b.js">
     <link rel="modulepreload" crossorigin href="/assets/vendor-ui-DOEYZ0Lh.js">
     <link rel="modulepreload" crossorigin href="/assets/vendor-icons-DgfX1-O4.js">
-    <link rel="modulepreload" crossorigin href="/assets/portal-pages-uie0zYwD.js">
-    <link rel="stylesheet" crossorigin href="/assets/index-YqBmK6FQ.css">
+    <link rel="modulepreload" crossorigin href="/assets/portal-pages-DpkGkP2N.js">
+    <link rel="preload" as="style" href="/assets/index-DQkz7isR.css" onload="this.onload=null;this.rel='stylesheet'"><noscript><link rel="stylesheet" crossorigin href="/assets/index-DQkz7isR.css"></noscript>
   </head>
   <body>
     <div id="root">

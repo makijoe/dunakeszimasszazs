@@ -39,7 +39,7 @@ const routes = [
     dir: null,
     title: 'Dunakeszi Masszázs - Angyali Szalon | Makra Edina Masszőr',
     description:
-      'Makra Edina masszőr az Angyali Szalonban, Dunakeszin. Relaxáló és terápiás kezelések, nyirokmasszázs, kineziológia. RTL & TV2. Foglalj online!',
+      'Makra Edina masszőr az Angyali Szalonban, Dunakeszin. Relaxáló és terápiás masszázs, nyirokmasszázs, kineziológia és BEMER kezelés. RTL & TV2 szereplések. Foglalj időpontot online!',
     canonical: `${SITE_URL}/`,
     robots: 'index, follow',
     staticHtml: buildHomeStaticHtml(),
@@ -130,6 +130,25 @@ for (const route of routes) {
   fs.mkdirSync(outDir, { recursive: true });
   fs.writeFileSync(path.join(outDir, 'index.html'), html);
   console.log(`Prerendered /${route.dir}`);
+}
+
+function patchAsyncCss(html) {
+  if (html.includes('rel="preload" as="style"')) return html;
+  return html.replace(
+    /<link rel="stylesheet" crossorigin href="(\/assets\/[^"]+\.css)">/,
+    '<link rel="preload" as="style" href="$1" onload="this.onload=null;this.rel=\'stylesheet\'"><noscript><link rel="stylesheet" crossorigin href="$1"></noscript>'
+  );
+}
+
+// Re-apply async CSS after prerender copies (vite closeBundle runs before this script).
+const rootHtml = fs.readFileSync(indexPath, 'utf8');
+fs.writeFileSync(indexPath, patchAsyncCss(rootHtml));
+for (const route of routes) {
+  if (!route.dir) continue;
+  const routeHtmlPath = path.join(distDir, route.dir, 'index.html');
+  if (fs.existsSync(routeHtmlPath)) {
+    fs.writeFileSync(routeHtmlPath, patchAsyncCss(fs.readFileSync(routeHtmlPath, 'utf8')));
+  }
 }
 
 console.log(`Done. ${routes.length} routes generated.`);

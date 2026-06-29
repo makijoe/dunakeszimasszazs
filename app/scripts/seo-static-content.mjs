@@ -40,7 +40,7 @@ export function buildHomeStaticHtml() {
       </header>
 
       <article>
-        <h1>Masszázs Dunakeszin – Testi-Lelki Feltöltődés</h1>
+        <h1>Masszázs Dunakeszin – testi-lelki feltöltődés</h1>
         <p>
           Nyugtató, harmonizáló kezelések egy békés, biztonságos környezetben az
           <strong>Angyali Szalonban</strong>. Személyre szabott masszázskezelésekkel várlak szeretettel

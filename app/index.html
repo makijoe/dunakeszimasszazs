@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Makra Edina masszőr az Angyali Szalonban, Dunakeszin. Relaxáló és terápiás kezelések, nyirokmasszázs, kineziológia. RTL & TV2. Foglalj online!" />
+    <meta name="description" content="Makra Edina masszőr az Angyali Szalonban, Dunakeszin. Relaxáló és terápiás masszázs, nyirokmasszázs, kineziológia és BEMER kezelés. RTL &amp; TV2 szereplések. Foglalj időpontot online!" />
     <meta name="keywords" content="masszázs dunakeszi, angyali szalon, makra edina, masszőr dunakeszi, frissítő masszázs, nyirokmasszázs, indiai fejmasszázs, kineziológia, auchan dunakeszi" />
     <meta name="author" content="Makra Edina" />
     <meta name="robots" content="index, follow" />
@@ -30,9 +30,14 @@
     
     <title>Dunakeszi Masszázs - Angyali Szalon | Makra Edina Masszőr</title>
 
-    <!-- Google Analytics (deferred — nem blokkolja a fő tartalom betöltését) -->
+    <link rel="preconnect" href="https://script.google.com" crossorigin />
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+
+    <!-- Google Analytics — idle/load után, LCP-t nem blokkolja -->
     <script>
-      window.addEventListener('load', function () {
+      function loadGA() {
+        if (window.__gaLoaded) return;
+        window.__gaLoaded = true;
         var s = document.createElement('script');
         s.src = 'https://www.googletagmanager.com/gtag/js?id=G-GPBVK15P0N';
         s.async = true;
@@ -42,10 +47,17 @@
         window.gtag = gtag;
         gtag('js', new Date());
         gtag('config', 'G-GPBVK15P0N');
+      }
+      window.addEventListener('load', function () {
+        if ('requestIdleCallback' in window) {
+          requestIdleCallback(loadGA, { timeout: 5000 });
+        } else {
+          setTimeout(loadGA, 3000);
+        }
       });
     </script>
-    
-    <link rel="preload" as="image" href="/images/szalon-1.jpeg" />
+
+    <link rel="preload" as="image" href="/images/szalon-1-800w.webp" type="image/webp" fetchpriority="high" />
     <link rel="icon" type="image/png" href="/images/logo.png" />
     <link rel="apple-touch-icon" href="/images/logo.png" />
     
@@ -155,7 +167,7 @@
   <body>
     <div id="root">
       <main id="seo-prerender" lang="hu">
-        <h1>Masszázs Dunakeszin – Testi-Lelki Feltöltődés</h1>
+        <h1>Masszázs Dunakeszin – testi-lelki feltöltődés</h1>
         <p>
           Nyugtató, harmonizáló kezelések az Angyali Szalonban, Makra Edina masszőrnél.
           Frissítő masszázs, nyirokmasszázs, kineziológia, BEMER kezelés és online időpontfoglalás Dunakeszin.
