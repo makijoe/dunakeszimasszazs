@@ -1,6 +1,13 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import {
+  buildHomeStaticHtml,
+  buildPrivacyStaticHtml,
+  buildServiceStaticHtml,
+  injectRootContent,
+  services as serviceBodies,
+} from './seo-static-content.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const distDir = path.resolve(__dirname, '../dist');
@@ -23,24 +30,49 @@ const services = [
   ['bemer', 'BEMER kezelés Dunakeszin | Mikrokeringés', 'BEMER kezelés Dunakeszin az Angyali Szalonban. Mikrokeringés-javító matrackezelés 20 vagy 40 percben. Makra Edina.'],
 ];
 
+const serviceBodyBySlug = Object.fromEntries(
+  serviceBodies.map(([slug, name, body]) => [slug, { name, body }])
+);
+
 const routes = [
+  {
+    dir: null,
+    title: 'Dunakeszi Masszázs - Angyali Szalon | Makra Edina Masszőr',
+    description:
+      'Makra Edina masszőr az Angyali Szalonban, Dunakeszin. Relaxáló és terápiás kezelések, nyirokmasszázs, kineziológia. RTL & TV2. Foglalj online!',
+    canonical: `${SITE_URL}/`,
+    robots: 'index, follow',
+    staticHtml: buildHomeStaticHtml(),
+  },
   {
     dir: 'adatvedelem',
     title: 'Adatvédelmi tájékoztató | Dunakeszi Masszázs - Angyali Szalon',
-    description: 'Adatvédelmi tájékoztató a Dunakeszi Masszázs – Angyali Szalon online foglalási rendszeréhez. Makra Edina, Dunakeszi.',
+    description:
+      'Adatvédelmi tájékoztató a Dunakeszi Masszázs – Angyali Szalon online foglalási rendszeréhez. Makra Edina, Dunakeszi.',
     canonical: `${SITE_URL}/adatvedelem`,
     robots: 'index, follow',
+    staticHtml: buildPrivacyStaticHtml(),
   },
-  ...services.map(([slug, title, description]) => ({
-    dir: `kezelesek/${slug}`,
-    title,
-    description,
-    canonical: `${SITE_URL}/kezelesek/${slug}`,
-    robots: 'index, follow',
-  })),
+  ...services.map(([slug, title, description]) => {
+    const meta = serviceBodyBySlug[slug];
+    return {
+      dir: `kezelesek/${slug}`,
+      title,
+      description,
+      canonical: `${SITE_URL}/kezelesek/${slug}`,
+      robots: 'index, follow',
+      staticHtml: buildServiceStaticHtml(
+        slug,
+        title,
+        description,
+        meta?.name || slug,
+        meta?.body || description
+      ),
+    };
+  }),
 ];
 
-function patchHtml(baseHtml, { title, description, canonical, robots }) {
+function patchHtml(baseHtml, { title, description, canonical, robots, staticHtml }) {
   let html = baseHtml;
   html = html.replace(/<title>.*?<\/title>/, `<title>${title}</title>`);
   html = html.replace(
@@ -72,6 +104,10 @@ function patchHtml(baseHtml, { title, description, canonical, robots }) {
     html = html.replace(regex, `<meta ${attr}="${key}" content="${value}" />`);
   }
 
+  if (staticHtml) {
+    html = injectRootContent(html, staticHtml);
+  }
+
   return html;
 }
 
@@ -83,9 +119,15 @@ if (!fs.existsSync(indexPath)) {
 const baseHtml = fs.readFileSync(indexPath, 'utf8');
 
 for (const route of routes) {
+  const html = patchHtml(baseHtml, route);
+  if (route.dir === null) {
+    fs.writeFileSync(indexPath, html);
+    console.log('Prerendered / (homepage)');
+    continue;
+  }
+
   const outDir = path.join(distDir, route.dir);
   fs.mkdirSync(outDir, { recursive: true });
-  const html = patchHtml(baseHtml, route);
   fs.writeFileSync(path.join(outDir, 'index.html'), html);
   console.log(`Prerendered /${route.dir}`);
 }

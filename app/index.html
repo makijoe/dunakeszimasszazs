@@ -29,13 +29,19 @@
     
     <title>Dunakeszi Masszázs - Angyali Szalon | Makra Edina Masszőr</title>
 
-    <!-- Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-GPBVK15P0N"></script>
+    <!-- Google Analytics (deferred — nem blokkolja a fő tartalom betöltését) -->
     <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-GPBVK15P0N');
+      window.addEventListener('load', function () {
+        var s = document.createElement('script');
+        s.src = 'https://www.googletagmanager.com/gtag/js?id=G-GPBVK15P0N';
+        s.async = true;
+        document.head.appendChild(s);
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        window.gtag = gtag;
+        gtag('js', new Date());
+        gtag('config', 'G-GPBVK15P0N');
+      });
     </script>
     
     <link rel="preload" as="image" href="/images/szalon-1.jpeg" />
@@ -146,7 +152,28 @@
     </script>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <main id="seo-prerender" lang="hu">
+        <h1>Masszázs Dunakeszin – Testi-Lelki Feltöltődés</h1>
+        <p>
+          Nyugtató, harmonizáló kezelések az Angyali Szalonban, Makra Edina masszőrnél.
+          Frissítő masszázs, nyirokmasszázs, kineziológia, BEMER kezelés és online időpontfoglalás Dunakeszin.
+        </p>
+        <nav aria-label="Kezelések">
+          <ul>
+            <li><a href="/kezelesek/frissito">Frissítő masszázs</a></li>
+            <li><a href="/kezelesek/nyirok">Nyirokmasszázs</a></li>
+            <li><a href="/kezelesek/kineziologia">Kineziológia</a></li>
+            <li><a href="/#idopont">Időpontfoglalás</a></li>
+            <li><a href="/adatvedelem">Adatvédelem</a></li>
+          </ul>
+        </nav>
+        <p>
+          <a href="https://www.facebook.com/61577273747405" rel="noopener noreferrer">Facebook</a> ·
+          <a href="https://www.google.com/maps/search/?api=1&amp;query=Dunakeszi+Masszázs+Angyali+Szalon&amp;query=47.637494,19.124045" rel="noopener noreferrer">Google Térkép</a>
+        </p>
+      </main>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

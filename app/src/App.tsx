@@ -54,6 +54,7 @@ import {
   isBookingUpcoming,
 } from '@/lib/utils';
 import { PrivacyPolicyContent } from '@/components/PrivacyPolicyContent';
+import { YouTubeEmbed } from '@/components/YouTubeEmbed';
 import { PrivacyPage } from '@/pages/PrivacyPage';
 import { ServiceLandingPage } from '@/pages/ServiceLandingPage';
 
@@ -993,13 +994,7 @@ function TVSection() {
               }`}
           >
             <div className="relative aspect-video">
-              <iframe
-                src="https://www.youtube.com/embed/F8xyJXDlgNM"
-                title="TV2 Szereplés"
-                className="absolute inset-0 w-full h-full"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
+              <YouTubeEmbed videoId="F8xyJXDlgNM" title="TV2 Szereplés" />
             </div>
             <div className="p-6">
               <div className="flex items-center gap-3 mb-4">
@@ -1024,13 +1019,7 @@ function TVSection() {
             style={{ transitionDelay: '1s' }}
           >
             <div className="relative aspect-video">
-              <iframe
-                src="https://www.youtube.com/embed/AbujjtXl-E0"
-                title="RTL Szereplés"
-                className="absolute inset-0 w-full h-full"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
+              <YouTubeEmbed videoId="AbujjtXl-E0" title="RTL Szereplés" />
             </div>
             <div className="p-6">
               <div className="flex items-center gap-3 mb-4">
