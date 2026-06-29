@@ -37,6 +37,28 @@ export function getAppRoute(): AppRoute {
   return 'home';
 }
 
+export function isHomePath(): boolean {
+  const path = window.location.pathname.replace(/\/$/, '') || '/';
+  return path === '/' && !getServiceSlugFromPath(path);
+}
+
+/** Scroll to a homepage section, navigating home first when on a sub-page. */
+export function navigateToSection(section: string) {
+  const sectionId = section.startsWith('#') ? section : `#${section}`;
+
+  if (!isHomePath()) {
+    navigateTo('/', sectionId);
+    return;
+  }
+
+  const element = document.querySelector(sectionId);
+  if (element) {
+    element.scrollIntoView({ behavior: 'smooth' });
+  } else {
+    navigateTo('/', sectionId);
+  }
+}
+
 export function navigateTo(path: string, hash = '') {
   const url = hash ? `${path}${hash}` : path;
   window.history.pushState({}, '', url);

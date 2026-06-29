@@ -12,7 +12,7 @@ import {
 import { ResponsiveImage } from '@/components/ResponsiveImage';
 import { getImageMeta } from '@/lib/images';
 import { getServiceBySlug, getServicePath, services, type ServiceItem } from '@/lib/services';
-import { navigateTo } from '@/lib/navigation';
+import { navigateTo, navigateToSection } from '@/lib/navigation';
 
 type ServiceLandingPageProps = {
   slug: string;
@@ -83,7 +83,7 @@ export function ServiceLandingPage({ slug, Navigation, Footer }: ServiceLandingP
         <Navigation />
         <main className="max-w-3xl mx-auto px-4 py-28 text-center">
           <h1 className="text-3xl font-bold text-[#4A3F35] mb-4">Kezelés nem található</h1>
-          <Button onClick={() => navigateTo('/#kezelesek')} className="bg-[#D4854A] hover:bg-[#B87333] text-white">
+          <Button onClick={() => navigateToSection('#kezelesek')} className="bg-[#D4854A] hover:bg-[#B87333] text-white">
             Összes kezelés
           </Button>
         </main>
@@ -93,10 +93,7 @@ export function ServiceLandingPage({ slug, Navigation, Footer }: ServiceLandingP
   }
 
   const goToBooking = () => {
-    navigateTo('/#idopont');
-    window.setTimeout(() => {
-      document.querySelector('#idopont')?.scrollIntoView({ behavior: 'smooth' });
-    }, 100);
+    navigateToSection('#idopont');
   };
 
   return (
@@ -110,7 +107,7 @@ export function ServiceLandingPage({ slug, Navigation, Footer }: ServiceLandingP
                 Főoldal
               </a>
               <span className="mx-2">/</span>
-              <a href="/#kezelesek" onClick={(e) => { e.preventDefault(); navigateTo('/#kezelesek'); }} className="hover:text-[#D4854A]">
+              <a href="/#kezelesek" onClick={(e) => { e.preventDefault(); navigateToSection('#kezelesek'); }} className="hover:text-[#D4854A]">
                 Kezelések
               </a>
               <span className="mx-2">/</span>
@@ -142,7 +139,7 @@ export function ServiceLandingPage({ slug, Navigation, Footer }: ServiceLandingP
                   </Button>
                   <a
                     href="/#kezelesek"
-                    onClick={(e) => { e.preventDefault(); navigateTo('/#kezelesek'); }}
+                    onClick={(e) => { e.preventDefault(); navigateToSection('#kezelesek'); }}
                     className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#D4854A] text-[#D4854A] hover:bg-[#D4854A] hover:text-white transition-colors"
                   >
                     <ArrowLeft className="w-4 h-4" />

@@ -27,7 +27,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { getAppRoute, navigateTo, ROUTES, type AppRoute } from '@/lib/navigation';
+import { getAppRoute, navigateTo, navigateToSection, ROUTES, type AppRoute } from '@/lib/navigation';
 import { services, getServicePath } from '@/lib/services';
 import {
   FAQ_ITEMS,
@@ -102,10 +102,7 @@ function Navigation() {
   ];
 
   const scrollToSection = (href: string) => {
-    const element = document.querySelector(href);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
+    navigateToSection(href);
     setIsMobileMenuOpen(false);
   };
 
@@ -2387,10 +2384,7 @@ function FooterSection() {
                         navigateTo(link.href);
                         return;
                       }
-                      const element = document.querySelector(link.href);
-                      if (element) {
-                        element.scrollIntoView({ behavior: 'smooth' });
-                      }
+                      navigateToSection(link.href);
                     }}
                     className="inline-flex items-center min-h-11 py-2 text-white hover:text-[#F5D4A8] transition-colors"
                   >
@@ -2556,6 +2550,17 @@ function App() {
       window.removeEventListener('popstate', onRouteChange);
     };
   }, []);
+
+  // After navigating home with a hash (e.g. from a service page), scroll to the target section.
+  useEffect(() => {
+    if (route !== 'home') return;
+    const hash = window.location.hash;
+    if (!hash) return;
+    const timer = window.setTimeout(() => {
+      document.querySelector(hash)?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
+    return () => window.clearTimeout(timer);
+  }, [route]);
 
   if (route === 'admin') {
     return (
