@@ -22,6 +22,10 @@ const TARGETS = [
   'bemer-1.jpeg',
   'bemer-2.jpeg',
   'bemer-3.jpeg',
+  'arany-before-1.jpeg',
+  'arany-after-1.jpeg',
+  'arany-before-2.jpeg',
+  'arany-after-2.jpeg',
 ];
 
 let generated = 0;

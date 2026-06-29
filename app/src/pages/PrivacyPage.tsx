@@ -27,7 +27,7 @@ export function PrivacyPage({ Navigation, Footer }: PrivacyPageProps) {
             e.preventDefault();
             navigateTo('/');
           }}
-          className="inline-flex items-center gap-2 text-sm text-[#8B7355] hover:text-[#D4854A] mb-6"
+          className="inline-flex items-center gap-2 text-sm text-[#635241] hover:text-[#D4854A] mb-6"
         >
           <ArrowLeft className="w-4 h-4" />
           Vissza a főoldalra

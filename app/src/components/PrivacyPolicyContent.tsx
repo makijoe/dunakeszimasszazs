@@ -3,7 +3,7 @@ import { EMAIL, PHONE } from '@/lib/seo';
 export function PrivacyPolicyContent() {
   return (
     <div className="space-y-5 text-sm text-[#4A3F35] leading-relaxed">
-      <p className="text-[#8B7355]">Hatályos: 2024. január 1-től</p>
+      <p className="text-[#635241]">Hatályos: 2024. január 1-től</p>
 
       <div>
         <h2 className="font-semibold text-base mb-2">1. Adatkezelő</h2>

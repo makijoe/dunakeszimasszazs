@@ -9,6 +9,8 @@ import {
   SITE_URL,
   useSeo,
 } from '@/lib/seo';
+import { ResponsiveImage } from '@/components/ResponsiveImage';
+import { getImageMeta } from '@/lib/images';
 import { getServiceBySlug, getServicePath, services, type ServiceItem } from '@/lib/services';
 import { navigateTo } from '@/lib/navigation';
 
@@ -33,7 +35,7 @@ function RelatedServices({ current }: { current: ServiceItem }) {
           className="bg-white rounded-2xl border border-[#E8D4C0]/60 p-4 hover:border-[#D4854A]/40 transition-colors"
         >
           <p className="font-semibold text-[#4A3F35]">{service.name}</p>
-          <p className="text-sm text-[#8B7355] mt-1">{service.price.toLocaleString('hu-HU')} Ft</p>
+          <p className="text-sm text-[#635241] mt-1">{service.price.toLocaleString('hu-HU')} Ft</p>
         </a>
       ))}
     </div>
@@ -103,7 +105,7 @@ export function ServiceLandingPage({ slug, Navigation, Footer }: ServiceLandingP
       <main>
         <section className="pt-28 pb-12 bg-gradient-hero">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <nav className="text-sm text-[#8B7355] mb-6" aria-label="Breadcrumb">
+            <nav className="text-sm text-[#635241] mb-6" aria-label="Breadcrumb">
               <a href="/" onClick={(e) => { e.preventDefault(); navigateTo('/'); }} className="hover:text-[#D4854A]">
                 Főoldal
               </a>
@@ -123,7 +125,7 @@ export function ServiceLandingPage({ slug, Navigation, Footer }: ServiceLandingP
                 <h1 className="text-3xl sm:text-4xl font-bold text-[#4A3F35] mb-4">
                   {service.name} Dunakeszin
                 </h1>
-                <p className="text-lg text-[#8B7355] leading-relaxed mb-6">{service.shortDescription}</p>
+                <p className="text-lg text-[#635241] leading-relaxed mb-6">{service.shortDescription}</p>
                 <div className="flex flex-wrap gap-4 text-sm text-[#4A3F35] mb-8">
                   <span className="inline-flex items-center gap-2 bg-white/70 px-4 py-2 rounded-full">
                     <Clock className="w-4 h-4 text-[#D4854A]" />
@@ -150,13 +152,15 @@ export function ServiceLandingPage({ slug, Navigation, Footer }: ServiceLandingP
               </div>
 
               <div className="rounded-3xl overflow-hidden shadow-warm-lg">
-                <img
+                <ResponsiveImage
                   src={service.image}
                   alt={`${service.name} – Makra Edina masszázs Dunakeszin`}
                   className="w-full h-[320px] lg:h-[420px] object-cover"
                   loading="eager"
-                  width={800}
-                  height={600}
+                  fetchPriority="high"
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  width={getImageMeta(service.image).width}
+                  height={getImageMeta(service.image).height}
                 />
               </div>
             </div>
@@ -171,7 +175,7 @@ export function ServiceLandingPage({ slug, Navigation, Footer }: ServiceLandingP
             </div>
 
             <div className="bg-white rounded-3xl border border-[#E8D4C0]/50 p-6 sm:p-8 shadow-warm">
-              <h2 className="text-2xl font-bold text-[#4A3F35] mb-4">Előnyök</h2>
+              <p className="text-2xl font-bold text-[#4A3F35] mb-4" role="doc-subtitle">Előnyök</p>
               <ul className="grid sm:grid-cols-2 gap-3">
                 {service.benefits.map((benefit) => (
                   <li key={benefit} className="flex items-start gap-2 text-[#4A3F35]">
@@ -184,12 +188,26 @@ export function ServiceLandingPage({ slug, Navigation, Footer }: ServiceLandingP
 
             {service.beforeAfter && (
               <div className="bg-white rounded-3xl border border-[#E8D4C0]/50 p-6 sm:p-8 shadow-warm">
-                <h2 className="text-2xl font-bold text-[#4A3F35] mb-4">Előtte / utána</h2>
+                <p className="text-2xl font-bold text-[#4A3F35] mb-4" role="doc-subtitle">Előtte / utána</p>
                 <div className="grid sm:grid-cols-2 gap-4">
                   {service.beforeAfter.map((pair, index) => (
                     <div key={index} className="grid grid-cols-2 gap-2">
-                      <img src={pair.before} alt={`${service.name} előtte`} className="rounded-xl object-cover h-40 w-full" loading="lazy" />
-                      <img src={pair.after} alt={`${service.name} utána`} className="rounded-xl object-cover h-40 w-full" loading="lazy" />
+                      <ResponsiveImage
+                        src={pair.before}
+                        alt={`${service.name} előtte`}
+                        className="rounded-xl object-cover h-40 w-full"
+                        sizes="(max-width: 640px) 45vw, 200px"
+                        width={getImageMeta(pair.before).width}
+                        height={getImageMeta(pair.before).height}
+                      />
+                      <ResponsiveImage
+                        src={pair.after}
+                        alt={`${service.name} utána`}
+                        className="rounded-xl object-cover h-40 w-full"
+                        sizes="(max-width: 640px) 45vw, 200px"
+                        width={getImageMeta(pair.after).width}
+                        height={getImageMeta(pair.after).height}
+                      />
                     </div>
                   ))}
                 </div>
@@ -197,8 +215,8 @@ export function ServiceLandingPage({ slug, Navigation, Footer }: ServiceLandingP
             )}
 
             <div className="bg-[#FFF3E8] rounded-3xl border border-[#F5D5B8]/70 p-6 sm:p-8">
-              <h2 className="text-2xl font-bold text-[#4A3F35] mb-3">Foglalj időpontot Dunakeszin</h2>
-              <p className="text-[#8B7355] mb-4">
+              <p className="text-2xl font-bold text-[#4A3F35] mb-3" role="doc-subtitle">Foglalj időpontot Dunakeszin</p>
+              <p className="text-[#635241] mb-4">
                 {ADDRESS} · Makra Edina · Online foglalás bankkártyával vagy átutalással.
               </p>
               <Button onClick={goToBooking} className="bg-[#D4854A] hover:bg-[#B87333] text-white">
@@ -208,7 +226,7 @@ export function ServiceLandingPage({ slug, Navigation, Footer }: ServiceLandingP
             </div>
 
             <div>
-              <h2 className="text-xl font-bold text-[#4A3F35] mb-4">További kezelések</h2>
+              <p className="text-xl font-bold text-[#4A3F35] mb-4" role="doc-subtitle">További kezelések</p>
               <RelatedServices current={service} />
             </div>
           </div>
