@@ -1,32 +1,38 @@
 # Dunakeszi Masszázs - Angyali Szalon
 
-> Makra Edina okleveles masszőr és kineziológus prémium kezelései Dunakeszin, RTL Klub és TV2 szereplésekkel.
+> Makra Edina okleveles masszőr és kineziológus prémium kezelései Dunakeszin. RTL Klub és TV2 szereplések, online időpontfoglalás.
 
-## Rólunk
-Makra Edina okleveles masszőr és kineziológus. Az Angyali Szalonban személyre szabott, relaxáló és terápiás masszázskezeléseket nyújt Dunakeszin. Vendégeit Organo prémium kávéval és zöld teával vendégeli.
+Az Angyali Szalonban személyre szabott, relaxáló és terápiás masszázskezeléseket nyújtunk Dunakeszin, az Auchan közelében. Vendégeinket Organo prémium kávéval és zöld teával vendégeljük.
 
 ## Kezelések
-- Frissítő masszázs (60 perc, 15 000 Ft) — https://www.dunakeszimasszazs.hu/kezelesek/frissito
-- Nepáli masszázs (60 perc, 15 000 Ft) — https://www.dunakeszimasszazs.hu/kezelesek/nepali
-- Nyirokmasszázs – gépi (60 perc, 15 000 Ft) — https://www.dunakeszimasszazs.hu/kezelesek/nyirok
-- Aromamasszázs (60 perc, 15 000 Ft) — https://www.dunakeszimasszazs.hu/kezelesek/aroma
-- Indiai fejmasszázs (60 perc, 15 000 Ft) — https://www.dunakeszimasszazs.hu/kezelesek/indiai
-- Nehézfém-kivezetés (60 perc, 15 000 Ft) — https://www.dunakeszimasszazs.hu/kezelesek/nehezfem
-- Kineziológia (60 perc, 15 000 Ft) — https://www.dunakeszimasszazs.hu/kezelesek/kineziologia
-- Arany kollagén arckezelés (60 perc, 30 000 Ft) — https://www.dunakeszimasszazs.hu/kezelesek/kollagen
-- Ultrahangos zsírbontás (60 perc, 15 000 Ft) — https://www.dunakeszimasszazs.hu/kezelesek/zsirbontas
-- Metamorf masszázs (60 perc, 15 000 Ft) — https://www.dunakeszimasszazs.hu/kezelesek/metamorf
-- BEMER kezelés (20 perc: 7 500 Ft / 40 perc: 15 000 Ft) — https://www.dunakeszimasszazs.hu/kezelesek/bemer
+
+- [Frissítő masszázs](https://www.dunakeszimasszazs.hu/kezelesek/frissito): 60 perc, 15 000 Ft
+- [Nepáli masszázs](https://www.dunakeszimasszazs.hu/kezelesek/nepali): 60 perc, 15 000 Ft
+- [Nyirokmasszázs](https://www.dunakeszimasszazs.hu/kezelesek/nyirok): gépi, 60 perc, 15 000 Ft
+- [Aromamasszázs](https://www.dunakeszimasszazs.hu/kezelesek/aroma): 60 perc, 15 000 Ft
+- [Indiai fejmasszázs](https://www.dunakeszimasszazs.hu/kezelesek/indiai): 60 perc, 15 000 Ft
+- [Nehézfém-kivezetés](https://www.dunakeszimasszazs.hu/kezelesek/nehezfem): 60 perc, 15 000 Ft
+- [Kineziológia](https://www.dunakeszimasszazs.hu/kezelesek/kineziologia): 60 perc, 15 000 Ft
+- [Arany kollagén arckezelés](https://www.dunakeszimasszazs.hu/kezelesek/kollagen): 60–90 perc, 30 000 Ft
+- [Ultrahangos zsírbontás](https://www.dunakeszimasszazs.hu/kezelesek/zsirbontas): 60 perc, 15 000 Ft
+- [Metamorf masszázs](https://www.dunakeszimasszazs.hu/kezelesek/metamorf): 60 perc, 15 000 Ft
+- [BEMER kezelés](https://www.dunakeszimasszazs.hu/kezelesek/bemer): 20 perc 7 500 Ft / 40 perc 15 000 Ft
 
 ## Elérhetőség
+
+- [Főoldal és időpontfoglalás](https://www.dunakeszimasszazs.hu/): online foglalás
+- [Adatvédelmi tájékoztató](https://www.dunakeszimasszazs.hu/adatvedelem)
 - Cím: 2120 Dunakeszi, Kolonics György utca 2/B (kapucsengő: 1/43)
 - Telefon: +36 30 487 7883
 - Email: dunakeszimasszor@gmail.com
 - Nyitvatartás: Hétfő–Vasárnap 8:30–18:30
-- Online foglalás: https://www.dunakeszimasszazs.hu/#idopont
-- Adatvédelem: https://www.dunakeszimasszazs.hu/adatvedelem
 
 ## Közösségi média
-- Facebook: https://www.facebook.com/61577273747405
-- Google Térkép: https://www.google.com/maps/search/?api=1&query=Dunakeszi+Masszázs+Angyali+Szalon&query=47.637494,19.124045
-- Google értékelés írása: https://share.google/Wm7nkRpmnz966J4Qh
+
+- [Facebook](https://www.facebook.com/61577273747405)
+- [Google Térkép](https://www.google.com/maps/search/?api=1&query=Dunakeszi+Masszázs+Angyali+Szalon&query=47.637494,19.124045)
+- [Google értékelés írása](https://share.google/Wm7nkRpmnz966J4Qh)
+
+## Optional
+
+- [Teljes tartalom LLM-eknek](https://www.dunakeszimasszazs.hu/llms-full.txt): részletes szöveges összefoglaló
