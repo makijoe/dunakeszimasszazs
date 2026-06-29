@@ -651,7 +651,10 @@ function ServicesSection() {
               className={`group bg-white rounded-2xl overflow-hidden shadow-warm hover:shadow-warm-lg transition-all duration-500 hover:-translate-y-2 cursor-pointer ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
                 }`}
               style={{ transitionDelay: `${index * 100}ms` }}
-              onClick={() => navigateTo(getServicePath(service.id))}
+              onClick={() => {
+                window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+                navigateTo(getServicePath(service.id));
+              }}
             >
               <div className="relative h-48 overflow-hidden">
                 <ResponsiveImage
@@ -2551,14 +2554,35 @@ function App() {
     };
   }, []);
 
+  // Scroll to top when opening a sub-page (service, privacy, etc.).
+  useEffect(() => {
+    if (route.startsWith('service:') || route === 'privacy') {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    }
+  }, [route]);
+
   // After navigating home with a hash (e.g. from a service page), scroll to the target section.
   useEffect(() => {
     if (route !== 'home') return;
     const hash = window.location.hash;
     if (!hash) return;
-    const timer = window.setTimeout(() => {
-      document.querySelector(hash)?.scrollIntoView({ behavior: 'smooth' });
-    }, 100);
+
+    let attempts = 0;
+    let timer: ReturnType<typeof setTimeout>;
+
+    const scrollToHash = () => {
+      const el = document.querySelector(hash);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+        return;
+      }
+      if (attempts < 12) {
+        attempts += 1;
+        timer = window.setTimeout(scrollToHash, 50);
+      }
+    };
+
+    timer = window.setTimeout(scrollToHash, 50);
     return () => window.clearTimeout(timer);
   }, [route]);
 

@@ -60,7 +60,13 @@ export function navigateToSection(section: string) {
 }
 
 export function navigateTo(path: string, hash = '') {
+  const oldPath = window.location.pathname;
   const url = hash ? `${path}${hash}` : path;
   window.history.pushState({}, '', url);
   window.dispatchEvent(new PopStateEvent('popstate'));
+
+  // Reset scroll when switching pages (e.g. home → service detail).
+  if (oldPath !== window.location.pathname) {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }
 }
