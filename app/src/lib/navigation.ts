@@ -15,13 +15,40 @@ export const ROUTES = {
   privacy: '/adatvedelem',
 } as const;
 
+const navListeners = new Set<() => void>();
+
+/** Stop the browser from restoring scroll position on SPA navigations. */
+if (typeof window !== 'undefined' && 'scrollRestoration' in history) {
+  history.scrollRestoration = 'manual';
+}
+
+export function onNavigate(listener: () => void) {
+  navListeners.add(listener);
+  return () => navListeners.delete(listener);
+}
+
+function notifyNavigate() {
+  navListeners.forEach((listener) => listener());
+  window.dispatchEvent(new PopStateEvent('popstate'));
+}
+
+export function scrollToTop() {
+  window.scrollTo(0, 0);
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
+}
+
 export function getServiceSlugFromPath(path: string): string | null {
   const match = path.match(/^\/kezelesek\/([^/]+)/);
   return match ? match[1] : null;
 }
 
+export function normalizePath(path: string): string {
+  return path.replace(/\/$/, '') || '/';
+}
+
 export function getAppRoute(): AppRoute {
-  const path = window.location.pathname.replace(/\/$/, '') || '/';
+  const path = normalizePath(window.location.pathname);
   const hash = window.location.hash;
 
   const serviceSlug = getServiceSlugFromPath(path);
@@ -38,11 +65,29 @@ export function getAppRoute(): AppRoute {
 }
 
 export function isHomePath(): boolean {
-  const path = window.location.pathname.replace(/\/$/, '') || '/';
-  return path === '/' && !getServiceSlugFromPath(path);
+  return normalizePath(window.location.pathname) === '/';
 }
 
-/** Scroll to a homepage section, navigating home first when on a sub-page. */
+export function homeSectionHref(section: string): string {
+  const sectionId = section.startsWith('#') ? section : `#${section}`;
+  return `/${sectionId}`;
+}
+
+export function navigateTo(path: string, hash = '') {
+  const oldPath = normalizePath(window.location.pathname);
+  const url = hash ? `${path}${hash}` : path;
+
+  window.history.pushState({}, '', url);
+  notifyNavigate();
+
+  const newPath = normalizePath(window.location.pathname);
+  if (oldPath !== newPath) {
+    scrollToTop();
+    requestAnimationFrame(scrollToTop);
+  }
+}
+
+/** Scroll to a homepage section; from sub-pages always returns to / first. */
 export function navigateToSection(section: string) {
   const sectionId = section.startsWith('#') ? section : `#${section}`;
 
@@ -51,22 +96,33 @@ export function navigateToSection(section: string) {
     return;
   }
 
-  const element = document.querySelector(sectionId);
+  const element =
+    document.querySelector(`#home-site ${sectionId}`) ?? document.querySelector(sectionId);
   if (element) {
     element.scrollIntoView({ behavior: 'smooth' });
-  } else {
-    navigateTo('/', sectionId);
+    return;
   }
+
+  navigateTo('/', sectionId);
 }
 
-export function navigateTo(path: string, hash = '') {
-  const oldPath = window.location.pathname;
-  const url = hash ? `${path}${hash}` : path;
-  window.history.pushState({}, '', url);
-  window.dispatchEvent(new PopStateEvent('popstate'));
+/** Scroll to a hash on the homepage after the home view has mounted. */
+export function scrollToHomeHash(hash: string, maxAttempts = 20) {
+  const sectionId = hash.startsWith('#') ? hash : `#${hash}`;
+  let attempts = 0;
 
-  // Reset scroll when switching pages (e.g. home → service detail).
-  if (oldPath !== window.location.pathname) {
-    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-  }
+  const tryScroll = () => {
+    const el =
+      document.querySelector(`#home-site ${sectionId}`) ?? document.querySelector(sectionId);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+    if (attempts < maxAttempts) {
+      attempts += 1;
+      window.setTimeout(tryScroll, 50);
+    }
+  };
+
+  window.setTimeout(tryScroll, 0);
 }

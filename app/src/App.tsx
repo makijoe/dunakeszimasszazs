@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState, useRef } from 'react';
+import { lazy, Suspense, useEffect, useLayoutEffect, useState, useRef } from 'react';
 import {
   Menu,
   X,
@@ -27,7 +27,18 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { getAppRoute, navigateTo, navigateToSection, ROUTES, type AppRoute } from '@/lib/navigation';
+import {
+  getAppRoute,
+  homeSectionHref,
+  isHomePath,
+  navigateTo,
+  navigateToSection,
+  onNavigate,
+  ROUTES,
+  scrollToHomeHash,
+  scrollToTop,
+  type AppRoute,
+} from '@/lib/navigation';
 import { services, getServicePath } from '@/lib/services';
 import {
   FAQ_ITEMS,
@@ -101,6 +112,8 @@ function Navigation() {
     { href: '#kapcsolat', label: 'Kapcsolat' },
   ];
 
+  const onSubPage = !isHomePath();
+
   const scrollToSection = (href: string) => {
     navigateToSection(href);
     setIsMobileMenuOpen(false);
@@ -118,8 +131,12 @@ function Navigation() {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <a
-            href="#fooldal"
-            onClick={(e) => { e.preventDefault(); scrollToSection('#fooldal'); }}
+            href={onSubPage ? '/' : '#fooldal'}
+            onClick={(e) => {
+              e.preventDefault();
+              if (onSubPage) navigateTo('/');
+              else scrollToSection('#fooldal');
+            }}
             className="flex items-center gap-2 group"
           >
             <LogoImage size={56} className="w-14 h-14 rounded-full object-cover" />
@@ -138,7 +155,7 @@ function Navigation() {
             {navLinks.map((link) => (
               <a
                 key={link.href}
-                href={link.href}
+                href={onSubPage ? homeSectionHref(link.href) : link.href}
                 onClick={(e) => { e.preventDefault(); scrollToSection(link.href); }}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${link.href === '#idopont'
                   ? 'bg-[#D4854A] text-white hover:bg-[#B87333]'
@@ -180,7 +197,7 @@ function Navigation() {
               {navLinks.map((link) => (
                 <a
                   key={link.href}
-                  href={link.href}
+                  href={onSubPage ? homeSectionHref(link.href) : link.href}
                   onClick={(e) => { e.preventDefault(); scrollToSection(link.href); }}
                   className={`px-4 py-3 rounded-xl text-sm font-medium transition-all ${link.href === '#idopont'
                     ? 'bg-[#D4854A] text-white'
@@ -651,10 +668,7 @@ function ServicesSection() {
               className={`group bg-white rounded-2xl overflow-hidden shadow-warm hover:shadow-warm-lg transition-all duration-500 hover:-translate-y-2 cursor-pointer ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
                 }`}
               style={{ transitionDelay: `${index * 100}ms` }}
-              onClick={() => {
-                window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-                navigateTo(getServicePath(service.id));
-              }}
+              onClick={() => navigateTo(getServicePath(service.id))}
             >
               <div className="relative h-48 overflow-hidden">
                 <ResponsiveImage
@@ -2340,6 +2354,7 @@ function PrivacyPolicyModal({ onClose }: { onClose: () => void }) {
 // Footer/Contact Section
 function FooterSection() {
   const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
+  const onSubPage = !isHomePath();
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -2380,7 +2395,7 @@ function FooterSection() {
               ] as const).map((link) => (
                 <li key={link.href}>
                   <a
-                    href={link.href}
+                    href={'route' in link && link.route ? link.href : onSubPage ? homeSectionHref(link.href) : link.href}
                     onClick={(e) => {
                       e.preventDefault();
                       if ('route' in link && link.route) {
@@ -2519,7 +2534,7 @@ function HomeSite() {
   useSeo(HOME_SEO);
 
   return (
-    <div className="min-h-screen bg-[#FFFBF7]">
+    <div id="home-site" className="min-h-screen bg-[#FFFBF7]">
       <Navigation />
       <main>
         <HeroSection />
@@ -2548,42 +2563,28 @@ function App() {
     const onRouteChange = () => setRoute(getAppRoute());
     window.addEventListener('hashchange', onRouteChange);
     window.addEventListener('popstate', onRouteChange);
+    const unsub = onNavigate(onRouteChange);
     return () => {
       window.removeEventListener('hashchange', onRouteChange);
       window.removeEventListener('popstate', onRouteChange);
+      unsub();
     };
   }, []);
 
-  // Scroll to top when opening a sub-page (service, privacy, etc.).
-  useEffect(() => {
+  // Scroll to top when opening a sub-page (before paint).
+  useLayoutEffect(() => {
     if (route.startsWith('service:') || route === 'privacy') {
-      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+      scrollToTop();
+      requestAnimationFrame(scrollToTop);
     }
   }, [route]);
 
   // After navigating home with a hash (e.g. from a service page), scroll to the target section.
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (route !== 'home') return;
     const hash = window.location.hash;
     if (!hash) return;
-
-    let attempts = 0;
-    let timer: ReturnType<typeof setTimeout>;
-
-    const scrollToHash = () => {
-      const el = document.querySelector(hash);
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth' });
-        return;
-      }
-      if (attempts < 12) {
-        attempts += 1;
-        timer = window.setTimeout(scrollToHash, 50);
-      }
-    };
-
-    timer = window.setTimeout(scrollToHash, 50);
-    return () => window.clearTimeout(timer);
+    scrollToHomeHash(hash);
   }, [route]);
 
   if (route === 'admin') {

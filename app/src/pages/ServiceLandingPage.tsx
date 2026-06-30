@@ -1,4 +1,4 @@
-import type { ComponentType } from 'react';
+import { useLayoutEffect, type ComponentType } from 'react';
 import { ArrowLeft, ArrowRight, Calendar, CheckCircle2, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,7 +12,7 @@ import {
 import { ResponsiveImage } from '@/components/ResponsiveImage';
 import { getImageMeta } from '@/lib/images';
 import { getServiceBySlug, getServicePath, services, type ServiceItem } from '@/lib/services';
-import { navigateTo, navigateToSection } from '@/lib/navigation';
+import { navigateTo, navigateToSection, scrollToTop } from '@/lib/navigation';
 
 type ServiceLandingPageProps = {
   slug: string;
@@ -45,6 +45,11 @@ function RelatedServices({ current }: { current: ServiceItem }) {
 export function ServiceLandingPage({ slug, Navigation, Footer }: ServiceLandingPageProps) {
   const service = getServiceBySlug(slug);
   const canonical = `${SITE_URL}${service ? getServicePath(service.id) : `/kezelesek/${slug}`}`;
+
+  useLayoutEffect(() => {
+    scrollToTop();
+    requestAnimationFrame(scrollToTop);
+  }, [slug]);
 
   useSeo(
     service
