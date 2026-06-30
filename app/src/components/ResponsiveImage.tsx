@@ -27,7 +27,7 @@ export function ResponsiveImage({
   const { webpSrcSet, fallbackSrcSet } = buildResponsivePicture(src);
 
   return (
-    <picture>
+    <picture className="block w-full h-full">
       <source type="image/webp" srcSet={webpSrcSet} sizes={sizes} />
       <source type="image/jpeg" srcSet={fallbackSrcSet} sizes={sizes} />
       <img

@@ -1388,10 +1388,10 @@ function GallerySection() {
   }, []);
 
   const images = [
-    { src: '/images/szalon-1.jpeg', alt: 'Angyali Szalon - belső tér', aspect: 'aspect-video' },
-    { src: '/images/szalon-2.jpeg', alt: 'Angyali Szalon - kezelőhelyiség', aspect: 'aspect-[4/3]' },
-    { src: '/images/szalon-3.jpeg', alt: 'Angyali Szalon - nyugodt környezet', aspect: 'aspect-video' },
-    { src: '/images/szalon-4.jpeg', alt: 'Angyali Szalon - külső megjelenés', aspect: 'aspect-[4/3]' },
+    { src: '/images/szalon-1.jpeg', alt: 'Angyali Szalon - belső tér' },
+    { src: '/images/szalon-2.jpeg', alt: 'Angyali Szalon - kezelőhelyiség' },
+    { src: '/images/szalon-3.jpeg', alt: 'Angyali Szalon - nyugodt környezet' },
+    { src: '/images/szalon-4.jpeg', alt: 'Angyali Szalon - külső megjelenés' },
   ];
 
   return (
@@ -1417,11 +1417,11 @@ function GallerySection() {
                 }`}
               style={{ transitionDelay: `${index * 100}ms` }}
             >
-              <div className={`${image.aspect} overflow-hidden`}>
+              <div className="aspect-[4/3] overflow-hidden">
                 <ResponsiveImage
                   src={image.src}
                   alt={image.alt}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
                   loading="lazy"
                   sizes="(max-width: 768px) 100vw, 50vw"
                   width={getImageMeta(image.src).width}
