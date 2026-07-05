@@ -61,7 +61,7 @@ import { LogoImage } from '@/components/LogoImage';
 import { ResponsiveImage } from '@/components/ResponsiveImage';
 import { YouTubeEmbed } from '@/components/YouTubeEmbed';
 import { getImageMeta } from '@/lib/images';
-import { BANK_ACCOUNT, SCRIPT_URL } from '@/lib/script-api';
+import { BANK_ACCOUNT, callScriptAction, SCRIPT_URL } from '@/lib/script-api';
 import { PrivacyPage } from '@/pages/PrivacyPage';
 import { ServiceLandingPage } from '@/pages/ServiceLandingPage';
 
@@ -1691,49 +1691,46 @@ function BookingSection() {
 
       console.log('Sending payment amount:', depositAmount, 'Ft');
 
-      // Use fetch to call Google Apps Script, read the Stripe URL from the
-      // JSON response, then redirect the user to Stripe Checkout.
-      const params = new URLSearchParams();
-      params.append('action', action);
-      params.append('name', formData.name);
-      params.append('email', formData.email);
-      params.append('phone', formData.phone || '');
-      params.append('service', serviceName);
-      params.append('date', formData.date);
-      params.append('time', formData.time);
-      params.append('notes', formData.notes || '');
-      params.append('recurring', formData.recurring ? 'yes' : 'no');
-      params.append('recurringType', formData.recurringType);
-      params.append('recurringCount', String(formData.recurringCount));
-      params.append('amount', String(depositAmount));
-      params.append('successUrl', window.location.origin + '/booking-success');
-      params.append('cancelUrl', window.location.origin + '/booking-cancel');
-
-      const response = await fetch(SCRIPT_URL, {
-        method: 'POST',
-        body: params,
-        redirect: 'follow',
+      const result = await callScriptAction(action, {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone || '',
+        service: serviceName,
+        date: formData.date,
+        time: formData.time,
+        notes: formData.notes || '',
+        recurring: formData.recurring ? 'yes' : 'no',
+        recurringType: formData.recurringType,
+        recurringCount: formData.recurringCount,
+        amount: depositAmount,
+        successUrl: `${window.location.origin}/booking-success`,
+        cancelUrl: `${window.location.origin}/booking-cancel`,
       });
 
-      const result = await response.json();
+      const data = result.data as {
+        url?: string;
+        referenceId?: string;
+        amount?: number;
+        bankAccount?: typeof BANK_ACCOUNT;
+      } | undefined;
 
       if (action === 'createStripeCheckout') {
-        if (result.success && result.data?.url) {
-          window.location.href = result.data.url;
+        if (result.success && data?.url) {
+          window.location.href = data.url;
           return;
         }
         throw new Error(result.message || 'Ismeretlen hiba a fizetési folyamatban');
       }
 
-      if (result.success && result.data?.referenceId) {
+      if (result.success && data?.referenceId) {
         sessionStorage.setItem('bankTransferBooking', JSON.stringify({
-          referenceId: result.data.referenceId,
-          amount: result.data.amount,
+          referenceId: data.referenceId,
+          amount: data.amount,
           name: formData.name,
           service: formData.service,
           date: formData.date,
           time: formData.time,
-          bankAccount: result.data.bankAccount || BANK_ACCOUNT,
+          bankAccount: data.bankAccount || BANK_ACCOUNT,
         }));
         navigateTo('/', '#booking-bank-pending');
         return;

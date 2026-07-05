@@ -224,9 +224,16 @@ function doGet(e) {
         return adminDeleteCustomer_(e.parameter);
       case 'reconcilePnL':
         return adminReconcilePnL_();
+      case 'ping':
+        return createResponse(true, 'pong');
+      // Booking payments via GET — browser POST to GAS loses the body on redirect
+      case 'createStripeCheckout':
+        return createStripeCheckout(e.parameter);
+      case 'createBankTransferBooking':
+        return createBankTransferBooking(e.parameter);
       default:
         return createResponse(true, 'API is running', { 
-          endpoints: ['dashboard', 'customer', 'pnl'] 
+          endpoints: ['dashboard', 'customer', 'pnl', 'createStripeCheckout', 'createBankTransferBooking'] 
         });
     }
   } catch (error) {
