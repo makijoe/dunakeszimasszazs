@@ -7,6 +7,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const imagesDir = path.resolve(__dirname, '../public/images');
 const WIDTHS = [480, 800, 1200];
 
+const WEBP_QUALITY_OVERRIDES = {
+  'professional-products.jpeg': 50,
+};
+
 const TARGETS = [
   'szalon-1.jpeg',
   'szalon-2.jpeg',
@@ -45,8 +49,9 @@ for (const file of TARGETS) {
 
     const resized = sharp(input).resize({ width, withoutEnlargement: true });
 
+    const webpQuality = WEBP_QUALITY_OVERRIDES[file] ?? 72;
     const webpOut = path.join(imagesDir, `${base}-${width}w.webp`);
-    await resized.clone().webp({ quality: 72, effort: 6 }).toFile(webpOut);
+    await resized.clone().webp({ quality: webpQuality, effort: 6 }).toFile(webpOut);
 
     const jpegOut = path.join(imagesDir, `${base}-${width}w.jpeg`);
     await resized.clone().jpeg({ quality: 78, mozjpeg: true }).toFile(jpegOut);

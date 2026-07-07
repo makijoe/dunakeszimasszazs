@@ -157,8 +157,8 @@ function Navigation() {
                 key={link.href}
                 href={onSubPage ? homeSectionHref(link.href) : link.href}
                 onClick={(e) => { e.preventDefault(); scrollToSection(link.href); }}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${link.href === '#idopont'
-                  ? 'bg-[#D4854A] text-white hover:bg-[#B87333]'
+                className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 ${link.href === '#idopont'
+                  ? 'bg-[#9A4A18] text-white hover:bg-[#B87333] shadow-sm'
                   : 'text-[#4A3F35] hover:bg-[#F5E6D8] hover:text-[#D4854A]'
                   }`}
               >
@@ -199,8 +199,8 @@ function Navigation() {
                   key={link.href}
                   href={onSubPage ? homeSectionHref(link.href) : link.href}
                   onClick={(e) => { e.preventDefault(); scrollToSection(link.href); }}
-                  className={`px-4 py-3 rounded-xl text-sm font-medium transition-all ${link.href === '#idopont'
-                    ? 'bg-[#D4854A] text-white'
+                  className={`px-4 py-3 rounded-xl text-sm font-semibold transition-all ${link.href === '#idopont'
+                    ? 'bg-[#9A4A18] text-white'
                     : 'text-[#4A3F35] hover:bg-[#F5E6D8]'
                     }`}
                 >
