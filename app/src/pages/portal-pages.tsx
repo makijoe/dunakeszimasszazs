@@ -37,6 +37,7 @@ import {
   enrichCustomersWithBookings,
   formatGuestNextBooking,
 } from '@/lib/admin-helpers';
+import { clearAdminSession, hasValidAdminSession, saveAdminSession } from '@/lib/admin-auth';
 
 export function ManageBookingsPage() {
   useSeo({
@@ -447,6 +448,7 @@ export function AdminPage() {
   });
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isRestoringSession, setIsRestoringSession] = useState(true);
   const [password, setPassword] = useState('');
   const [activeTab, setActiveTab] = useState<'dashboard' | 'addbooking' | 'bookings' | 'pending' | 'customers' | 'packages' | 'pnl' | 'cancel' | 'notify' | 'blockslot'>('dashboard');
   const [tabLoading, setTabLoading] = useState(false);
@@ -658,10 +660,30 @@ export function AdminPage() {
 
   const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'Edina2025!';
 
+  useEffect(() => {
+    const restoreSession = async () => {
+      if (hasValidAdminSession(ADMIN_PASSWORD)) {
+        setIsAuthenticated(true);
+        setTabLoading(true);
+        setTabLoadingLabel('Áttekintés betöltése…');
+        try {
+          await loadAdminBundle();
+        } finally {
+          setTabLoading(false);
+          setTabLoadingLabel('');
+        }
+      }
+      setIsRestoringSession(false);
+    };
+    restoreSession();
+  }, []);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password === ADMIN_PASSWORD) {
+      saveAdminSession(ADMIN_PASSWORD);
       setIsAuthenticated(true);
+      setPassword('');
       toast.success('Sikeres bejelentkezés!');
       setTabLoading(true);
       setTabLoadingLabel('Áttekintés betöltése…');
@@ -1389,6 +1411,14 @@ export function AdminPage() {
     );
   };
 
+  if (isRestoringSession) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-[#F9F1EA] to-[#FFFBF7] flex items-center justify-center p-4">
+        <div className="w-8 h-8 border-2 border-[#D4854A]/30 border-t-[#D4854A] rounded-full animate-spin" />
+      </div>
+    );
+  }
+
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#F9F1EA] to-[#FFFBF7] flex items-center justify-center p-4">
@@ -1462,7 +1492,12 @@ export function AdminPage() {
               <span>Google Naptár</span>
             </a>
             <button
-              onClick={() => setIsAuthenticated(false)}
+              type="button"
+              onClick={() => {
+                clearAdminSession();
+                setIsAuthenticated(false);
+                toast.success('Kijelentkezve');
+              }}
               className="text-[#635241] hover:text-[#D4854A]"
             >
               Kijelentkezés
