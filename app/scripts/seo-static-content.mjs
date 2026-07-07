@@ -63,7 +63,7 @@ export function buildHomeStaticHtml() {
         <p>
           Cím: 2120 Dunakeszi, Kolonics György utca 2/B (kapucsengő: 1/43).
           Telefon: <a href="tel:+36304877883">+36 30 487 7883</a>.
-          E-mail: <a href="mailto:dunakeszimasszor@gmail.com">dunakeszimasszor@gmail.com</a>.
+          E-mail: <a href="${SITE_URL}/#kapcsolat">kapcsolatfelvétel a weboldalon</a>.
         </p>
         <p>
           <a href="https://www.facebook.com/61577273747405" rel="noopener noreferrer">Facebook oldal</a> ·
@@ -151,7 +151,7 @@ export function buildPrivacyStaticHtml() {
         </p>
         <p>
           Adatkezelő: Makra Edina, 2120 Dunakeszi, Kolonics György utca 2/B.
-          Kapcsolat: <a href="mailto:dunakeszimasszor@gmail.com">dunakeszimasszor@gmail.com</a>,
+          Kapcsolat: <a href="${SITE_URL}/#kapcsolat">e-mail a Kapcsolat szekcióban</a>,
           <a href="tel:+36304877883">+36 30 487 7883</a>.
         </p>
         <p><a href="${SITE_URL}/">Vissza a főoldalra</a></p>

@@ -34,6 +34,15 @@
     <link rel="preload" as="image" href="/images/szalon-1-800w.webp" type="image/webp" fetchpriority="high" media="(min-width: 769px)" />
     <link rel="icon" type="image/png" href="/images/logo-96w.png" />
     <link rel="apple-touch-icon" href="/images/logo-192w.png" />
+
+    <!-- Google Analytics (async — detectable by SEO crawlers) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-GPBVK15P0N"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-GPBVK15P0N', { anonymize_ip: true });
+    </script>
     
     <script type="application/ld+json">
     {
@@ -45,7 +54,6 @@
       "description": "Masszázs Dunakeszin az Angyali Szalonban. Frissítő, relaxáló és terápiás masszázskezelések Makra Edinától.",
       "url": "https://www.dunakeszimasszazs.hu",
       "telephone": "+36304877883",
-      "email": "dunakeszimasszor@gmail.com",
       "address": {
         "@type": "PostalAddress",
         "streetAddress": "Kolonics György utca 2/B",
@@ -137,12 +145,12 @@
       ]
     }
     </script>
-    <script type="module" crossorigin src="/assets/index-oqnNVfGP.js"></script>
+    <script type="module" crossorigin src="/assets/index-DAz5GvQt.js"></script>
     <link rel="modulepreload" crossorigin href="/assets/vendor-react-DVLw__5b.js">
     <link rel="modulepreload" crossorigin href="/assets/vendor-ui-DOEYZ0Lh.js">
     <link rel="modulepreload" crossorigin href="/assets/vendor-icons-DgfX1-O4.js">
-    <link rel="modulepreload" crossorigin href="/assets/portal-pages-BxdE6VLa.js">
-    <link rel="preload" as="style" href="/assets/index-DWsM0OHM.css" onload="this.onload=null;this.rel='stylesheet'"><noscript><link rel="stylesheet" crossorigin href="/assets/index-DWsM0OHM.css"></noscript>
+    <link rel="modulepreload" crossorigin href="/assets/portal-pages-CnBnbPrq.js">
+    <link rel="preload" as="style" href="/assets/index-4tekgBkW.css" onload="this.onload=null;this.rel='stylesheet'"><noscript><link rel="stylesheet" crossorigin href="/assets/index-4tekgBkW.css"></noscript>
   </head>
   <body>
     <div id="root">
@@ -187,23 +195,5 @@
       </article>
     </main>
   </div>
-    <!-- GA: csak kattintás után (PSI scroll nem indítja) -->
-    <script>
-      function loadGA() {
-        if (window.__gaLoaded) return;
-        window.__gaLoaded = true;
-        var s = document.createElement('script');
-        s.src = 'https://www.googletagmanager.com/gtag/js?id=G-GPBVK15P0N';
-        s.async = true;
-        document.head.appendChild(s);
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        window.gtag = gtag;
-        gtag('js', new Date());
-        gtag('config', 'G-GPBVK15P0N', { anonymize_ip: true });
-      }
-      document.addEventListener('click', loadGA, { once: true, capture: true });
-      window.addEventListener('load', function () { setTimeout(loadGA, 30000); });
-    </script>
   </body>
 </html>

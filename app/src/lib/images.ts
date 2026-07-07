@@ -27,6 +27,12 @@ export function getImageMeta(src: string) {
   return IMAGE_META[src] ?? { width: 1200, height: 900 };
 }
 
+/** CSS aspect-ratio value matching intrinsic dimensions (fixes CLS + Lighthouse aspect checks). */
+export function getImageAspectRatio(src: string): string {
+  const { width, height } = getImageMeta(src);
+  return `${width} / ${height}`;
+}
+
 export function buildResponsiveSrcSet(src: string): string | undefined {
   const base = src.replace(/\.[^/.]+$/, '');
   const parts = RESPONSIVE_WIDTHS.map((w) => `${base}-${w}w.webp ${w}w`);

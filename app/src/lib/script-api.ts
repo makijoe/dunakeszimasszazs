@@ -13,7 +13,7 @@ function parseScriptResponse(text: string) {
   } catch {
     if (text.includes('<!DOCTYPE') || text.includes('<HTML')) {
       throw new Error(
-        'A foglalási szerver jelenleg nem elérhető. Kérjük hívj: +36 30 487 7883, vagy írj: dunakeszimasszor@gmail.com'
+        'A foglalási szerver jelenleg nem elérhető. Kérjük hívj: +36 30 487 7883, vagy használd a Kapcsolat szekciót.'
       );
     }
     throw new Error(

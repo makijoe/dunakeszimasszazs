@@ -1,4 +1,5 @@
-import { EMAIL, PHONE } from '@/lib/seo';
+import { EmailLink } from '@/components/EmailLink';
+import { PHONE } from '@/lib/seo';
 
 export function PrivacyPolicyContent() {
   return (
@@ -11,9 +12,7 @@ export function PrivacyPolicyContent() {
           Makra Edina (Angyali Szalon), 2120 Dunakeszi, Kolonics György utca 2/B.
           <br />
           E-mail:{' '}
-          <a href={`mailto:${EMAIL}`} className="text-[#D4854A] hover:underline">
-            {EMAIL}
-          </a>
+          <EmailLink className="text-[#D4854A] hover:underline" />
           <br />
           Telefon: {PHONE}
         </p>
@@ -56,9 +55,7 @@ export function PrivacyPolicyContent() {
         </ul>
         <p className="mt-2">
           Kéréseit az{' '}
-          <a href={`mailto:${EMAIL}`} className="text-[#D4854A] hover:underline">
-            {EMAIL}
-          </a>{' '}
+          <EmailLink className="text-[#D4854A] hover:underline" />{' '}
           e-mail címre küldheti.
         </p>
       </div>

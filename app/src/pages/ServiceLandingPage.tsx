@@ -10,7 +10,7 @@ import {
   useSeo,
 } from '@/lib/seo';
 import { ResponsiveImage } from '@/components/ResponsiveImage';
-import { getImageMeta } from '@/lib/images';
+import { getImageAspectRatio, getImageMeta } from '@/lib/images';
 import { getServiceBySlug, getServicePath, services, type ServiceItem } from '@/lib/services';
 import { navigateTo, navigateToSection, scrollToTop } from '@/lib/navigation';
 
@@ -153,11 +153,14 @@ export function ServiceLandingPage({ slug, Navigation, Footer }: ServiceLandingP
                 </div>
               </div>
 
-              <div className="rounded-3xl overflow-hidden shadow-warm-lg">
+              <div
+                className="rounded-3xl overflow-hidden shadow-warm-lg w-full"
+                style={{ aspectRatio: getImageAspectRatio(service.image) }}
+              >
                 <ResponsiveImage
                   src={service.image}
                   alt={`${service.name} – Makra Edina masszázs Dunakeszin`}
-                  className="w-full h-[320px] lg:h-[420px] object-cover"
+                  className="w-full h-full object-cover"
                   loading="eager"
                   fetchPriority="high"
                   sizes="(max-width: 1024px) 100vw, 50vw"
@@ -194,22 +197,32 @@ export function ServiceLandingPage({ slug, Navigation, Footer }: ServiceLandingP
                 <div className="grid sm:grid-cols-2 gap-4">
                   {service.beforeAfter.map((pair, index) => (
                     <div key={index} className="grid grid-cols-2 gap-2">
-                      <ResponsiveImage
-                        src={pair.before}
-                        alt={`${service.name} előtte`}
-                        className="rounded-xl object-cover h-40 w-full"
-                        sizes="(max-width: 640px) 45vw, 200px"
-                        width={getImageMeta(pair.before).width}
-                        height={getImageMeta(pair.before).height}
-                      />
-                      <ResponsiveImage
-                        src={pair.after}
-                        alt={`${service.name} utána`}
-                        className="rounded-xl object-cover h-40 w-full"
-                        sizes="(max-width: 640px) 45vw, 200px"
-                        width={getImageMeta(pair.after).width}
-                        height={getImageMeta(pair.after).height}
-                      />
+                      <div
+                        className="rounded-xl overflow-hidden w-full"
+                        style={{ aspectRatio: getImageAspectRatio(pair.before) }}
+                      >
+                        <ResponsiveImage
+                          src={pair.before}
+                          alt={`${service.name} előtte`}
+                          className="w-full h-full object-cover"
+                          sizes="(max-width: 640px) 45vw, 200px"
+                          width={getImageMeta(pair.before).width}
+                          height={getImageMeta(pair.before).height}
+                        />
+                      </div>
+                      <div
+                        className="rounded-xl overflow-hidden w-full"
+                        style={{ aspectRatio: getImageAspectRatio(pair.after) }}
+                      >
+                        <ResponsiveImage
+                          src={pair.after}
+                          alt={`${service.name} utána`}
+                          className="w-full h-full object-cover"
+                          sizes="(max-width: 640px) 45vw, 200px"
+                          width={getImageMeta(pair.after).width}
+                          height={getImageMeta(pair.after).height}
+                        />
+                      </div>
                     </div>
                   ))}
                 </div>

@@ -12,7 +12,10 @@ export const GOOGLE_WRITE_REVIEW_URL = GBP_URL;
 export const OG_IMAGE = `${SITE_URL}/images/szalon-1.jpeg`;
 export const PHONE = '+36 30 487 7883';
 export const PHONE_TEL = '+36304877883';
-export const EMAIL = 'dunakeszimasszor@gmail.com';
+import { getEmailAddress } from '@/lib/email';
+
+/** @deprecated Prefer EmailLink / getMailtoHref — avoids embedding plaintext in bundles when possible */
+export const EMAIL = getEmailAddress();
 export const ADDRESS = '2120 Dunakeszi, Kolonics György utca 2/B';
 export const ADDRESS_STREET = 'Kolonics György utca 2/B';
 export const GOOGLE_REVIEW_COUNT = 28;
@@ -151,7 +154,6 @@ export function buildLocalBusinessSchema() {
     description: HOME_SEO.description,
     url: SITE_URL,
     telephone: PHONE_TEL,
-    email: EMAIL,
     image: OG_IMAGE,
     priceRange: '15000-30000 HUF',
     address: {

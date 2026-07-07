@@ -58,9 +58,10 @@ import {
 import { MapEmbed } from '@/components/MapEmbed';
 import { PrivacyPolicyContent } from '@/components/PrivacyPolicyContent';
 import { LogoImage } from '@/components/LogoImage';
+import { EmailLink } from '@/components/EmailLink';
 import { ResponsiveImage } from '@/components/ResponsiveImage';
 import { YouTubeEmbed } from '@/components/YouTubeEmbed';
-import { getImageMeta } from '@/lib/images';
+import { getImageAspectRatio, getImageMeta } from '@/lib/images';
 import { BANK_ACCOUNT, callScriptAction, SCRIPT_URL } from '@/lib/script-api';
 import { PrivacyPage } from '@/pages/PrivacyPage';
 import { ServiceLandingPage } from '@/pages/ServiceLandingPage';
@@ -329,11 +330,14 @@ function HeroSection() {
           <div className={`relative transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'}`}>
             <div className="relative">
               {/* Main Image Container */}
-              <div className="relative rounded-3xl overflow-hidden shadow-warm-lg">
+              <div
+                className="relative rounded-3xl overflow-hidden shadow-warm-lg w-full"
+                style={{ aspectRatio: getImageAspectRatio('/images/szalon-1.jpeg') }}
+              >
                 <ResponsiveImage
                   src="/images/szalon-1.jpeg"
                   alt="Relaxáló masszázs környezet az Angyali Szalonban, Dunakeszi"
-                  className="w-full h-[500px] lg:h-[600px] object-cover"
+                  className="w-full h-full object-cover"
                   loading="eager"
                   fetchPriority="high"
                   sizes="(max-width: 768px) 100vw, (max-width: 1024px) 90vw, 600px"
@@ -506,7 +510,10 @@ function ServiceModal({ service, isOpen, onClose }: { service: typeof services[0
         </button>
 
         {/* Image */}
-        <div className="relative h-64 sm:h-80">
+        <div
+          className="relative w-full"
+          style={{ aspectRatio: getImageAspectRatio(service.image) }}
+        >
           <ResponsiveImage
             src={service.image}
             alt={service.name}
@@ -670,15 +677,18 @@ function ServicesSection() {
               style={{ transitionDelay: `${index * 100}ms` }}
               onClick={() => navigateTo(getServicePath(service.id))}
             >
-              <div className="relative h-48 overflow-hidden">
+              <div
+                className="relative overflow-hidden w-full"
+                style={{ aspectRatio: '4 / 3' }}
+              >
                 <ResponsiveImage
                   src={service.image}
                   alt={`${service.name} – masszázs Dunakeszin`}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   loading="lazy"
                   sizes="(max-width: 768px) 90vw, 400px"
-                  width={getImageMeta(service.image).width}
-                  height={getImageMeta(service.image).height}
+                  width={4}
+                  height={3}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#4A3F35]/60 via-transparent to-transparent" />
                 <div className="absolute bottom-4 left-4 right-4">
@@ -1229,12 +1239,15 @@ function OrganoCoffeeSection() {
             {/* Right side - Images */}
             <div className="space-y-6">
               {/* Coffee Image */}
-              <div className="relative rounded-2xl overflow-hidden shadow-warm">
+              <div
+                className="relative rounded-2xl overflow-hidden shadow-warm w-full"
+                style={{ aspectRatio: getImageAspectRatio('/images/organo-kave.jpeg') }}
+              >
                 <ResponsiveImage
                   loading="lazy"
                   src="/images/organo-kave.jpeg"
                   alt="Organo kávé választék - Fekete kávé, Gourmet Latte, Mocha Cappuccino, Forró csokoládé"
-                  className="w-full h-64 object-cover"
+                  className="w-full h-full object-cover"
                   sizes="(max-width: 768px) 100vw, 40vw"
                   width={1152}
                   height={2048}
@@ -1245,12 +1258,15 @@ function OrganoCoffeeSection() {
               </div>
 
               {/* Green Tea Image */}
-              <div className="relative rounded-2xl overflow-hidden shadow-warm">
+              <div
+                className="relative rounded-2xl overflow-hidden shadow-warm w-full"
+                style={{ aspectRatio: getImageAspectRatio('/images/organo-zoldtea.jpeg') }}
+              >
                 <ResponsiveImage
                   loading="lazy"
                   src="/images/organo-zoldtea.jpeg"
                   alt="Organo Reishi Ganoderma zöld tea"
-                  className="w-full h-64 object-cover"
+                  className="w-full h-full object-cover"
                   sizes="(max-width: 768px) 100vw, 40vw"
                   width={1152}
                   height={2048}
@@ -1296,12 +1312,15 @@ function AboutSection() {
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Image */}
           <div className={`relative transition-all duration-700 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-10'}`}>
-            <div className="relative rounded-3xl overflow-hidden shadow-warm-lg">
+            <div
+              className="relative rounded-3xl overflow-hidden shadow-warm-lg w-full"
+              style={{ aspectRatio: getImageAspectRatio('/images/edina.jpeg') }}
+            >
               <ResponsiveImage
                 loading="lazy"
                 src="/images/edina.jpeg"
                 alt="Makra Edina - Masszőr, kineziológus"
-                className="w-full h-[400px] lg:h-[500px] object-cover"
+                className="w-full h-full object-cover"
                 sizes="(max-width: 1024px) 100vw, 50vw"
                 width={1200}
                 height={1599}
@@ -1417,7 +1436,10 @@ function GallerySection() {
                 }`}
               style={{ transitionDelay: `${index * 100}ms` }}
             >
-              <div className="aspect-[4/3] overflow-hidden">
+              <div
+                className="overflow-hidden w-full"
+                style={{ aspectRatio: getImageAspectRatio(image.src) }}
+              >
                 <ResponsiveImage
                   src={image.src}
                   alt={image.alt}
@@ -1477,13 +1499,16 @@ function ProductsSection() {
 
         <div className={`grid lg:grid-cols-2 gap-8 items-center transition-all duration-700 delay-200 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           {/* Product Image */}
-          <div className="relative rounded-2xl overflow-hidden shadow-warm-lg">
+          <div
+            className="relative rounded-2xl overflow-hidden shadow-warm-lg w-full"
+            style={{ aspectRatio: getImageAspectRatio('/images/professional-products.jpeg') }}
+          >
             <ResponsiveImage
               loading="lazy"
               src="/images/professional-products.jpeg"
               alt="Professzionális kozmetikai termékek - Magic brand"
-              className="w-full h-auto object-cover"
-              sizes="(max-width: 1024px) 100vw, 50vw"
+              className="w-full h-full object-cover"
+              sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 480px"
               width={1600}
               height={1200}
             />
@@ -2300,12 +2325,7 @@ function BookingSection() {
               </div>
               <div>
                 <p className="text-sm text-[#635241]">Emailben</p>
-                <a
-                  href="mailto:dunakeszimasszor@gmail.com"
-                  className="text-lg font-semibold text-[#4A3F35] hover:text-[#8B9A7C] transition-colors break-all"
-                >
-                  dunakeszimasszor@gmail.com
-                </a>
+                <EmailLink className="text-lg font-semibold text-[#4A3F35] hover:text-[#8B9A7C] transition-colors break-all" />
               </div>
             </div>
           </div>
@@ -2423,14 +2443,9 @@ function FooterSection() {
                   <span>+36 30 487 7883</span>
                 </a>
               </li>
-              <li>
-                <a
-                  href="mailto:dunakeszimasszor@gmail.com"
-                  className="flex items-center gap-3 min-h-11 py-1 text-white/95 hover:text-[#F5D4A8] transition-colors break-all"
-                >
-                  <Mail className="w-5 h-5 flex-shrink-0" />
-                  <span className="break-all">dunakeszimasszor@gmail.com</span>
-                </a>
+              <li className="flex items-center gap-3 min-h-11 py-1">
+                <Mail className="w-5 h-5 flex-shrink-0 text-white/95" />
+                <EmailLink className="text-white/95 hover:text-[#F5D4A8] transition-colors break-all" />
               </li>
               <li className="flex items-center gap-3 text-white/85">
                 <MapPin className="w-5 h-5" />
