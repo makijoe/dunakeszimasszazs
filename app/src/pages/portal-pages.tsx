@@ -18,6 +18,8 @@ import { LogoImage } from '@/components/LogoImage';
 import { navigateTo, ROUTES } from '@/lib/navigation';
 import { GOOGLE_WRITE_REVIEW_URL, SITE_NAME, SITE_URL, useSeo } from '@/lib/seo';
 import {
+  addMonthsToDateStr,
+  BOOKING_MAX_MONTHS_AHEAD,
   formatBookingDate,
   formatBookingTime,
   getTodayInBudapest,
@@ -25,6 +27,7 @@ import {
   isActiveBookingStatus,
   isBookingUpcoming,
 } from '@/lib/utils';
+import { services } from '@/lib/services';
 import { SCRIPT_URL, callScriptAction } from '@/lib/script-api';
 import { PhoneLink } from '@/components/PhoneLink';
 import { AdminTabLoader } from '@/components/AdminTabLoader';
@@ -445,7 +448,7 @@ export function AdminPage() {
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'bookings' | 'pending' | 'customers' | 'packages' | 'pnl' | 'cancel' | 'notify' | 'blockslot'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'addbooking' | 'bookings' | 'pending' | 'customers' | 'packages' | 'pnl' | 'cancel' | 'notify' | 'blockslot'>('dashboard');
   const [tabLoading, setTabLoading] = useState(false);
   const [tabLoadingLabel, setTabLoadingLabel] = useState('');
   const [formData, setFormData] = useState({
@@ -485,6 +488,24 @@ export function AdminPage() {
   const [pendingBookings, setPendingBookings] = useState<any[]>([]);
   const [allPackages, setAllPackages] = useState<any[]>([]);
   const ADMIN_TIME_SLOTS = ['08:30', '09:45', '11:00', '12:15', '13:30', '14:45', '16:00', '17:15', '18:30'];
+  const ADMIN_BOOKING_SERVICES = [
+    ...services.map((s) => ({ name: s.name, price: s.price })),
+    { name: 'BEMER Kezelés (20 perc)', price: 7500 },
+    { name: 'BEMER Kezelés (40 perc)', price: 15000 },
+  ];
+  const [addBookingForm, setAddBookingForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    service: '',
+    date: '',
+    time: '',
+    notes: '',
+    sendConfirmationEmail: true,
+  });
+  const [addBookingSlots, setAddBookingSlots] = useState<Record<string, boolean> | null>(null);
+  const [isLoadingAddBookingSlots, setIsLoadingAddBookingSlots] = useState(false);
+  const [isCreatingBooking, setIsCreatingBooking] = useState(false);
   const WEEKDAY_OPTIONS = [
     { value: 'MONDAY', label: 'Hétfő' },
     { value: 'TUESDAY', label: 'Kedd' },
@@ -1040,6 +1061,76 @@ export function AdminPage() {
     }
   };
 
+  const loadAddBookingSlots = async (date: string) => {
+    if (!date) {
+      setAddBookingSlots(null);
+      return;
+    }
+    setIsLoadingAddBookingSlots(true);
+    setAddBookingForm((prev) => ({ ...prev, time: '' }));
+    try {
+      const res = await fetch(`${SCRIPT_URL}?action=getSlotsForDate&date=${date}`);
+      const data = await res.json();
+      if (data.success && data.data?.slots) setAddBookingSlots(data.data.slots);
+      else setAddBookingSlots(null);
+    } catch {
+      setAddBookingSlots(null);
+    } finally {
+      setIsLoadingAddBookingSlots(false);
+    }
+  };
+
+  const resetAddBookingForm = () => {
+    setAddBookingForm({
+      name: '',
+      email: '',
+      phone: '',
+      service: '',
+      date: '',
+      time: '',
+      notes: '',
+      sendConfirmationEmail: true,
+    });
+    setAddBookingSlots(null);
+  };
+
+  const handleCreateAdminBooking = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!addBookingForm.time) {
+      toast.error('Kérlek válassz egy szabad időpontot!');
+      return;
+    }
+    setIsCreatingBooking(true);
+    try {
+      const result = await callScriptAction('adminCreateBooking', {
+        name: addBookingForm.name,
+        email: addBookingForm.email,
+        phone: addBookingForm.phone || '',
+        service: addBookingForm.service,
+        date: addBookingForm.date,
+        time: addBookingForm.time,
+        notes: addBookingForm.notes || '',
+        sendConfirmationEmail: addBookingForm.sendConfirmationEmail ? 'true' : 'false',
+      });
+      if (result.success) {
+        toast.success(
+          addBookingForm.sendConfirmationEmail
+            ? 'Foglalás rögzítve – visszaigazoló email elküldve.'
+            : 'Foglalás rögzítve (email nélkül).'
+        );
+        resetAddBookingForm();
+        await loadAdminBundle(true);
+        if (allBookings.length > 0) await loadAllBookings();
+      } else {
+        toast.error(result.message || 'Hiba a foglalás rögzítésekor');
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Hiba a foglalás rögzítésekor');
+    } finally {
+      setIsCreatingBooking(false);
+    }
+  };
+
   const handleCreateGuest = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSavingGuest(true);
@@ -1386,6 +1477,7 @@ export function AdminPage() {
           <nav className="flex overflow-x-auto">
             {[
               { id: 'dashboard', label: 'Áttekintés', icon: '📊' },
+              { id: 'addbooking', label: 'Új foglalás', icon: '➕' },
               { id: 'bookings', label: 'Foglálások', icon: '📅' },
               { id: 'pending', label: 'Függőben', icon: '⏳' },
               { id: 'customers', label: 'Vendégek', icon: '👥' },
@@ -1610,10 +1702,176 @@ export function AdminPage() {
           );
         })()}
 
+        {/* ADD BOOKING TAB */}
+        {activeTab === 'addbooking' && (() => {
+          const today = getTodayInBudapest();
+          const minBookingDate = today;
+          const maxBookingDate = addMonthsToDateStr(today, BOOKING_MAX_MONTHS_AHEAD);
+
+          return (
+            <div className="max-w-3xl space-y-6">
+              <div>
+                <h2 className="text-2xl font-bold text-[#4A3F35]">Új foglalás</h2>
+                <p className="text-sm text-[#635241] mt-1">
+                  Ugyanaz az időpont-választó, mint a weboldalon – fizetés nélkül, közvetlenül a naptárba kerül.
+                </p>
+              </div>
+
+              <form onSubmit={handleCreateAdminBooking} className="bg-white rounded-2xl shadow-warm-lg p-6 sm:p-8 space-y-6 border border-[#E8D4C0]/60">
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label className="text-[#4A3F35]">Vendég neve *</Label>
+                    <Input
+                      value={addBookingForm.name}
+                      onChange={(e) => setAddBookingForm({ ...addBookingForm, name: e.target.value })}
+                      placeholder="Pl.: Kovács Anna"
+                      required
+                      className="border-[#E8D4C0] focus:border-[#D4854A] focus:ring-[#D4854A]"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[#4A3F35]">Telefonszám</Label>
+                    <Input
+                      type="tel"
+                      value={addBookingForm.phone}
+                      onChange={(e) => setAddBookingForm({ ...addBookingForm, phone: e.target.value })}
+                      placeholder="+36 30 123 4567"
+                      className="border-[#E8D4C0] focus:border-[#D4854A] focus:ring-[#D4854A]"
+                    />
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
+                    <Label className="text-[#4A3F35]">Email cím *</Label>
+                    <Input
+                      type="email"
+                      value={addBookingForm.email}
+                      onChange={(e) => setAddBookingForm({ ...addBookingForm, email: e.target.value })}
+                      placeholder="anna@pelda.hu"
+                      required
+                      className="border-[#E8D4C0] focus:border-[#D4854A] focus:ring-[#D4854A]"
+                    />
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
+                    <Label className="text-[#4A3F35]">Kezelés *</Label>
+                    <select
+                      value={addBookingForm.service}
+                      onChange={(e) => setAddBookingForm({ ...addBookingForm, service: e.target.value })}
+                      required
+                      className="w-full h-10 pl-3 pr-10 border border-[#E8D4C0] rounded-md focus:border-[#D4854A] focus:ring-1 focus:ring-[#D4854A] bg-white text-[#4A3F35] cursor-pointer text-sm"
+                    >
+                      <option value="">Válassz kezelést</option>
+                      {ADMIN_BOOKING_SERVICES.map((service) => (
+                        <option key={service.name} value={service.name}>
+                          {service.name} – {service.price.toLocaleString('hu-HU')} Ft
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[#4A3F35]">Dátum *</Label>
+                    <Input
+                      type="date"
+                      min={minBookingDate}
+                      max={maxBookingDate}
+                      value={addBookingForm.date}
+                      onChange={(e) => {
+                        setAddBookingForm({ ...addBookingForm, date: e.target.value, time: '' });
+                        loadAddBookingSlots(e.target.value);
+                      }}
+                      required
+                      className="border-[#E8D4C0] focus:border-[#D4854A] focus:ring-[#D4854A]"
+                    />
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
+                    <Label className="text-[#4A3F35]">Időpont *</Label>
+                    {!addBookingForm.date ? (
+                      <p className="text-sm text-[#635241] py-2 italic">Először válassz dátumot a szabad időpontok megtekintéséhez.</p>
+                    ) : isLoadingAddBookingSlots ? (
+                      <div className="flex items-center gap-2 text-[#635241] py-2">
+                        <div className="w-4 h-4 border-2 border-[#D4854A]/30 border-t-[#D4854A] rounded-full animate-spin" />
+                        <span className="text-sm">Szabad időpontok betöltése...</span>
+                      </div>
+                    ) : addBookingSlots ? (
+                      <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                        {ADMIN_TIME_SLOTS.map((slot) => {
+                          const available = addBookingSlots[slot] !== false;
+                          const selected = addBookingForm.time === slot;
+                          return (
+                            <button
+                              key={slot}
+                              type="button"
+                              disabled={!available}
+                              onClick={() => available && setAddBookingForm({ ...addBookingForm, time: slot })}
+                              className={`py-2.5 px-1 rounded-xl text-sm font-medium border-2 transition-all ${
+                                selected
+                                  ? 'bg-[#D4854A] border-[#D4854A] text-white shadow-md'
+                                  : available
+                                    ? 'bg-white border-[#E8D4C0] text-[#4A3F35] hover:border-[#D4854A] hover:bg-[#FFF8F2]'
+                                    : 'bg-gray-50 border-gray-200 text-gray-300 line-through cursor-not-allowed'
+                              }`}
+                            >
+                              {slot}
+                              {available && !selected && <span className="block text-xs text-[#8B9A7C] font-normal">szabad</span>}
+                              {!available && <span className="block text-xs text-gray-300 font-normal">foglalt</span>}
+                              {selected && <span className="block text-xs text-white/80 font-normal">kiválasztva</span>}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-red-500 py-3">Nem sikerült betölteni az időpontokat. Próbáld újra.</p>
+                    )}
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
+                    <Label className="text-[#4A3F35]">Megjegyzés</Label>
+                    <Textarea
+                      value={addBookingForm.notes}
+                      onChange={(e) => setAddBookingForm({ ...addBookingForm, notes: e.target.value })}
+                      placeholder="Belső megjegyzés vagy vendég kérése..."
+                      rows={2}
+                      className="border-[#E8D4C0] focus:border-[#D4854A] text-sm"
+                    />
+                  </div>
+                </div>
+
+                <label className="flex items-start gap-3 bg-[#F9F1EA] rounded-xl p-4 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={addBookingForm.sendConfirmationEmail}
+                    onChange={(e) => setAddBookingForm({ ...addBookingForm, sendConfirmationEmail: e.target.checked })}
+                    className="mt-1 w-5 h-5 rounded border-[#E8D4C0] text-[#D4854A] focus:ring-[#D4854A]"
+                  />
+                  <span className="text-sm text-[#635241]">
+                    <strong className="text-[#4A3F35]">Visszaigazoló email küldése</strong> a vendégnek
+                    (fizetés a kezelésen – nincs online foglaló)
+                  </span>
+                </label>
+
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={resetAddBookingForm}
+                    className="flex-1 border-[#E8D4C0] text-[#635241]"
+                  >
+                    Űrlap törlése
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={isCreatingBooking || !addBookingForm.time || isLoadingAddBookingSlots}
+                    className="flex-1 bg-[#D4854A] hover:bg-[#B87333] text-white py-4 rounded-xl font-medium"
+                  >
+                    {isCreatingBooking ? 'Rögzítés...' : 'Foglalás rögzítése'}
+                  </Button>
+                </div>
+              </form>
+            </div>
+          );
+        })()}
+
         {/* BOOKINGS TAB */}
         {activeTab === 'bookings' && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-4 flex-wrap">
               <div>
                 <h2 className="text-2xl font-bold text-[#4A3F35]">Foglalások</h2>
                 {allBookings.length > 0 && (
@@ -1622,7 +1880,16 @@ export function AdminPage() {
                   </p>
                 )}
               </div>
-              <button type="button" disabled={tabLoading} onClick={() => runWithTabLoading('Foglalások betöltése…', loadAllBookings)} className="px-4 py-2 bg-[#D4854A] text-white rounded-lg text-sm hover:bg-[#B87333] disabled:opacity-60">Frissítés</button>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => switchTab('addbooking')}
+                  className="px-4 py-2 bg-[#8B9A7C] text-white rounded-lg text-sm hover:bg-[#7A8B6B]"
+                >
+                  ➕ Új foglalás
+                </button>
+                <button type="button" disabled={tabLoading} onClick={() => runWithTabLoading('Foglalások betöltése…', loadAllBookings)} className="px-4 py-2 bg-[#D4854A] text-white rounded-lg text-sm hover:bg-[#B87333] disabled:opacity-60">Frissítés</button>
+              </div>
             </div>
 
             <div className="bg-white rounded-2xl shadow-warm overflow-hidden border border-[#8B9A7C]/20">

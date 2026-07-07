@@ -169,6 +169,8 @@ function doPost(e) {
         return adminCreateCustomer_(data);
       case 'adminDeleteCustomer':
         return adminDeleteCustomer_(data);
+      case 'adminCreateBooking':
+        return adminCreateBooking_(data);
       case 'reconcilePnL':
         return adminReconcilePnL_();
       default:
@@ -222,6 +224,8 @@ function doGet(e) {
         return adminCreateCustomer_(e.parameter);
       case 'adminDeleteCustomer':
         return adminDeleteCustomer_(e.parameter);
+      case 'adminCreateBooking':
+        return adminCreateBooking_(e.parameter);
       case 'reconcilePnL':
         return adminReconcilePnL_();
       case 'ping':
@@ -387,9 +391,18 @@ function createBooking(data) {
     _createdBookingKeys['*|' + createdSlotKey] = true;
   }
   
-  // Send confirmation emails
-  sendBookingConfirmationToEdina(data, recurringCount, recurringType, recurringDates, discountPercent, packageId);
-  sendBookingConfirmationToCustomer(data, recurringCount, recurringType, recurringDates, discountPercent, packageId, customer);
+  // Send confirmation emails (admin can skip Edina / customer notifications)
+  var skipEdinaEmail = data.skipEdinaEmail === true || data.skipEdinaEmail === 'true' ||
+    data.adminBooking === true || data.adminBooking === 'true';
+  var skipCustomerEmail = data.skipCustomerEmail === true || data.skipCustomerEmail === 'true' ||
+    data.sendCustomerEmail === false || data.sendCustomerEmail === 'false' ||
+    data.sendConfirmationEmail === false || data.sendConfirmationEmail === 'false';
+  if (!skipEdinaEmail) {
+    sendBookingConfirmationToEdina(data, recurringCount, recurringType, recurringDates, discountPercent, packageId);
+  }
+  if (!skipCustomerEmail) {
+    sendBookingConfirmationToCustomer(data, recurringCount, recurringType, recurringDates, discountPercent, packageId, customer);
+  }
   
   return createResponse(true, 'Foglalás sikeresen rögzítve!', {
     customerId: customerId,
@@ -1546,6 +1559,24 @@ function countOpenPendingBookings_(runReconcile) {
     if (isOpenPendingStatus_(pendingData[p][12])) count++;
   }
   return count;
+}
+
+function adminCreateBooking_(data) {
+  try {
+    if (!data.name || !data.email || !data.service || !data.date || !data.time) {
+      return createResponse(false, 'Név, email, kezelés, dátum és időpont kötelező');
+    }
+    data.adminBooking = true;
+    data.skipEdinaEmail = true;
+    if (data.sendConfirmationEmail === false || data.sendConfirmationEmail === 'false' ||
+        data.sendConfirmationEmail === '0' || data.sendConfirmationEmail === 0) {
+      data.skipCustomerEmail = true;
+    }
+    return createBooking(data);
+  } catch (error) {
+    logError('adminCreateBooking_', error);
+    return createResponse(false, 'Hiba a foglalás létrehozásakor: ' + error.message);
+  }
 }
 
 function adminCreateCustomer_(data) {
@@ -2990,8 +3021,11 @@ function sendBookingConfirmationToCustomer(data, recurringCount, recurringType, 
     ? 'Ismétlődő időpontfoglalás visszaigazolás - Dunakeszi Masszázs'
     : 'Időpontfoglalás visszaigazolás - Dunakeszi Masszázs';
   
+  var isAdminBooking = data.adminBooking === true || data.adminBooking === 'true';
   var customerBody = 'Kedves ' + data.name + '!\n\n';
-  customerBody += 'Köszönöm az időpontfoglalásodat!\n\n';
+  customerBody += isAdminBooking
+    ? 'Az időpontod rögzítve lett az Angyali Szalonban.\n\n'
+    : 'Köszönöm az időpontfoglalásodat!\n\n';
   
   // Calculate price breakdown
   var servicePricePerSession = (data.service && data.service.toLowerCase().indexOf('arany') !== -1) ? 30000 : 15000;
@@ -3033,15 +3067,20 @@ function sendBookingConfirmationToCustomer(data, recurringCount, recurringType, 
     customerBody += '📅 DÁTUM: ' + data.date + '\n';
     customerBody += '⏰ IDŐPONT: ' + data.time + '\n';
     customerBody += '═══════════════════════════════════════\n\n';
-    customerBody += '💳 ÁRÖSSZEGZÉS:\n';
-    customerBody += 'Kezelés ára: ' + servicePricePerSession.toLocaleString() + ' Ft\n';
-    if (!packageId) {
-      customerBody += '✅ Befizetett foglaló (20%): ' + depositPaid.toLocaleString() + ' Ft\n';
-      customerBody += '💵 Hátralék (kezeléskor): ' + remainingAmount.toLocaleString() + ' Ft\n';
+    if (isAdminBooking) {
+      customerBody += '💳 Kezelés ára: ' + servicePricePerSession.toLocaleString() + ' Ft (fizetés a kezelésen)\n';
+      customerBody += '═══════════════════════════════════════\n\n';
     } else {
-      customerBody += '🎫 Bérletből felhasználva\n';
+      customerBody += '💳 ÁRÖSSZEGZÉS:\n';
+      customerBody += 'Kezelés ára: ' + servicePricePerSession.toLocaleString() + ' Ft\n';
+      if (!packageId) {
+        customerBody += '✅ Befizetett foglaló (20%): ' + depositPaid.toLocaleString() + ' Ft\n';
+        customerBody += '💵 Hátralék (kezeléskor): ' + remainingAmount.toLocaleString() + ' Ft\n';
+      } else {
+        customerBody += '🎫 Bérletből felhasználva\n';
+      }
+      customerBody += '═══════════════════════════════════════\n\n';
     }
-    customerBody += '═══════════════════════════════════════\n\n';
   }
   
   // Add remaining sessions info if customer has packages
