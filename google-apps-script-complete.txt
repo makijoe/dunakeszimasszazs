@@ -235,6 +235,16 @@ function doGet(e) {
         return createStripeCheckout(e.parameter);
       case 'createBankTransferBooking':
         return createBankTransferBooking(e.parameter);
+      case 'blockSlot':
+        return blockSlot_(e.parameter);
+      case 'blockMultipleSlots':
+        return blockMultipleSlots_(e.parameter);
+      case 'blockRecurringSchedule':
+        return blockRecurringSchedule_(e.parameter);
+      case 'deleteBlockedSlots':
+        return deleteBlockedSlots_(e.parameter);
+      case 'countBlockedSlots':
+        return countBlockedSlots_(e.parameter);
       default:
         return createResponse(true, 'API is running', { 
           endpoints: ['dashboard', 'customer', 'pnl', 'createStripeCheckout', 'createBankTransferBooking'] 
@@ -3476,6 +3486,14 @@ function blockRecurringSchedule_(data) {
   }
   if (!blocks.length) return createResponse(false, 'Nincs megadva zárolás');
   var weeks = parseInt(data.weeks, 10) || 52;
+  var deletedBefore = 0;
+  if (data.replaceExisting === true || data.replaceExisting === 'true' || data.replaceExisting === '1') {
+    var replaceLabel = data.replaceLabel ? String(data.replaceLabel) : 'Foglalt – heti';
+    deletedBefore = deleteBlockedSlotsCore_({
+      futureOnly: 'true',
+      label: replaceLabel
+    });
+  }
   var created = [];
   var errors = [];
   for (var i = 0; i < blocks.length; i++) {
@@ -3493,8 +3511,9 @@ function blockRecurringSchedule_(data) {
     totalEvents += created[c].eventsCreated || 0;
   }
   var msg = created.length + ' heti sor × ' + weeks + ' hét = ' + totalEvents + ' naptáresemény létrehozva';
+  if (deletedBefore > 0) msg = deletedBefore + ' régi zárolás törölve, majd ' + msg;
   if (errors.length) msg += ' (' + errors.length + ' hiba)';
-  return createResponse(true, msg, { created: created, errors: errors, weeks: weeks, totalEvents: totalEvents });
+  return createResponse(true, msg, { created: created, errors: errors, weeks: weeks, totalEvents: totalEvents, deletedBefore: deletedBefore });
 }
 
 function isBlockedCalendarEvent_(title) {
@@ -3539,27 +3558,32 @@ function scanBlockedSlots_(data) {
   };
 }
 
+function deleteBlockedSlotsCore_(data) {
+  var calendar = CalendarApp.getDefaultCalendar();
+  var now = new Date();
+  var from = data.from ? new Date(String(data.from) + 'T00:00:00') : now;
+  var to = data.to
+    ? new Date(String(data.to) + 'T23:59:59')
+    : new Date(now.getTime() + 400 * 24 * 60 * 60 * 1000);
+  var labelFilter = data.label ? String(data.label).toLowerCase() : '';
+  var futureOnly = data.futureOnly !== 'false';
+  var events = calendar.getEvents(from, to);
+  var deleted = 0;
+  for (var i = 0; i < events.length; i++) {
+    var ev = events[i];
+    var title = ev.getTitle() || '';
+    if (!isBlockedCalendarEvent_(title)) continue;
+    if (labelFilter && title.toLowerCase().indexOf(labelFilter) === -1) continue;
+    if (futureOnly && ev.getStartTime().getTime() < now.getTime()) continue;
+    ev.deleteEvent();
+    deleted++;
+  }
+  return deleted;
+}
+
 function deleteBlockedSlots_(data) {
   try {
-    var calendar = CalendarApp.getDefaultCalendar();
-    var now = new Date();
-    var from = data.from ? new Date(String(data.from) + 'T00:00:00') : now;
-    var to = data.to
-      ? new Date(String(data.to) + 'T23:59:59')
-      : new Date(now.getTime() + 400 * 24 * 60 * 60 * 1000);
-    var labelFilter = data.label ? String(data.label).toLowerCase() : '';
-    var futureOnly = data.futureOnly !== 'false';
-    var events = calendar.getEvents(from, to);
-    var deleted = 0;
-    for (var i = 0; i < events.length; i++) {
-      var ev = events[i];
-      var title = ev.getTitle() || '';
-      if (!isBlockedCalendarEvent_(title)) continue;
-      if (labelFilter && title.toLowerCase().indexOf(labelFilter) === -1) continue;
-      if (futureOnly && ev.getStartTime().getTime() < now.getTime()) continue;
-      ev.deleteEvent();
-      deleted++;
-    }
+    var deleted = deleteBlockedSlotsCore_(data || {});
     return createResponse(true, deleted + ' zárolás törölve a naptárból', { deleted: deleted });
   } catch (e) {
     return createResponse(false, 'Hiba a zárolások törlésekor: ' + e.message);

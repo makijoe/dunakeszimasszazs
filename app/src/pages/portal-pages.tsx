@@ -518,6 +518,7 @@ export function AdminPage() {
     { value: 'SUNDAY', label: 'Vasárnap' },
   ];
   const EDINA_WEEKLY_PRESET = [
+    { dayOfWeek: 'TUESDAY', startTime: '08:30', endTime: '20:00', label: 'Foglalt – heti' },
     { dayOfWeek: 'FRIDAY', startTime: '08:30', endTime: '10:30', label: 'Foglalt – heti' },
     { dayOfWeek: 'MONDAY', startTime: '08:30', endTime: '11:00', label: 'Foglalt – heti' },
     { dayOfWeek: 'THURSDAY', startTime: '11:00', endTime: '12:00', label: 'Foglalt – heti' },
@@ -528,6 +529,7 @@ export function AdminPage() {
   const [multiSlotForm, setMultiSlotForm] = useState({ date: '', times: [] as string[], label: '', duration: '75' });
   const [recurringBlocks, setRecurringBlocks] = useState(EDINA_WEEKLY_PRESET);
   const [recurringWeeks, setRecurringWeeks] = useState('52');
+  const [replaceWeeklyBlocks, setReplaceWeeklyBlocks] = useState(true);
   const [isBlockingSlot, setIsBlockingSlot] = useState(false);
   const [blockedSlotStats, setBlockedSlotStats] = useState<{ future: number; total: number } | null>(null);
   const [deleteBlockLabel, setDeleteBlockLabel] = useState('Foglalt');
@@ -587,33 +589,42 @@ export function AdminPage() {
       toast.error('Adj meg legalább egy heti zárolást!');
       return;
     }
+    if (!replaceWeeklyBlocks) {
+      const ok = confirm(
+        'Figyelem: új naptáresemények jönnek létre — a meglévő heti zárolások megmaradnak (duplikáció!).\n\nBiztosan folytatod duplikáció nélküli törlés nélkül?'
+      );
+      if (!ok) return;
+    }
     setIsBlockingSlot(true);
     try {
-      const params = new URLSearchParams();
-      params.append('action', 'blockRecurringSchedule');
-      params.append('blocks', JSON.stringify(recurringBlocks));
-      params.append('weeks', recurringWeeks);
-      const res = await fetch(SCRIPT_URL, { method: 'POST', body: params });
-      const result = await res.json();
+      const result = await callScriptAction('blockRecurringSchedule', {
+        blocks: JSON.stringify(recurringBlocks),
+        weeks: recurringWeeks,
+        replaceExisting: replaceWeeklyBlocks ? 'true' : 'false',
+        replaceLabel: 'Foglalt – heti',
+      });
       if (result.success) {
         toast.success(result.message || 'Heti zárolások létrehozva', { duration: 6000 });
+        await loadBlockedSlotStats('Foglalt');
       } else {
         toast.error(result.message || 'Hiba a zárolás során');
       }
-    } catch { toast.error('Hiba a zárolás során'); }
-    finally { setIsBlockingSlot(false); }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Hiba a zárolás során');
+    } finally {
+      setIsBlockingSlot(false);
+    }
   };
 
   const loadBlockedSlotStats = async (label = deleteBlockLabel) => {
     try {
-      const params = new URLSearchParams();
-      params.append('action', 'countBlockedSlots');
-      params.append('futureOnly', 'true');
-      if (label.trim()) params.append('label', label.trim());
-      const res = await fetch(SCRIPT_URL, { method: 'POST', body: params });
-      const result = await res.json();
+      const result = await callScriptAction('countBlockedSlots', {
+        futureOnly: 'true',
+        label: label.trim() || undefined,
+      });
       if (result.success && result.data) {
-        setBlockedSlotStats({ future: result.data.future || 0, total: result.data.total || 0 });
+        const data = result.data as { future?: number; total?: number };
+        setBlockedSlotStats({ future: data.future || 0, total: data.total || 0 });
       }
     } catch {
       setBlockedSlotStats(null);
@@ -630,20 +641,18 @@ export function AdminPage() {
 
     setIsDeletingBlocks(true);
     try {
-      const params = new URLSearchParams();
-      params.append('action', 'deleteBlockedSlots');
-      params.append('futureOnly', 'true');
-      if (label) params.append('label', label);
-      const res = await fetch(SCRIPT_URL, { method: 'POST', body: params });
-      const result = await res.json();
+      const result = await callScriptAction('deleteBlockedSlots', {
+        futureOnly: 'true',
+        label: label || undefined,
+      });
       if (result.success) {
         toast.success(result.message || 'Zárolások törölve');
         await loadBlockedSlotStats(label);
       } else {
         toast.error(result.message || 'Hiba a törlés során');
       }
-    } catch {
-      toast.error('Hiba a törlés során');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Hiba a törlés során');
     } finally {
       setIsDeletingBlocks(false);
     }
@@ -3040,6 +3049,17 @@ export function AdminPage() {
                   </button>
                 </div>
 
+                <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-900">
+                  <p className="font-semibold">⚠️ Fontos: ez csak egy sablonlista</p>
+                  <p className="mt-1">
+                    A naptárban már lévő zárolások <b>nem jelennek meg itt</b>. Ha újra rákattintasz létrehozásra,
+                    <b> duplikálódnak</b> — a sor melletti „Törlés” csak a listából veszi ki, nem a naptárból.
+                  </p>
+                  <p className="mt-2">
+                    Módosításkor hagyd bekapcsolva: <b>„Régi heti zárolások törlése előtte”</b> (alapból be van kapcsolva).
+                  </p>
+                </div>
+
                 <div className="space-y-3">
                   {recurringBlocks.map((block, index) => (
                     <div key={index} className="grid grid-cols-1 sm:grid-cols-5 gap-3 p-4 bg-[#FFFBF7] rounded-xl border border-[#E8D4C0]">
@@ -3136,13 +3156,30 @@ export function AdminPage() {
                 </div>
 
                 <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 text-sm text-amber-800">
-                  <p>Pl. 4 sor × 52 hét = <b>208 külön naptáresemény</b> (minden héten ugyanarra az időre).</p>
-                  <p className="mt-1">Sablon: Hétfő 08:30–11:00, Péntek 08:30–10:30, Csütörtök 11:00–12:00 és 17:00–20:00.</p>
+                  <p>Pl. {recurringBlocks.length} sor × {recurringWeeks} hét = <b>{recurringBlocks.length * Number(recurringWeeks || 52)} külön naptáresemény</b>.</p>
+                  <p className="mt-1">Sablon: Kedd egész nap szabad, Hétfő 08:30–11:00, Péntek 08:30–10:30, Csütörtök 11:00–12:00 és 17:00–20:00.</p>
                 </div>
+
+                <label className="flex items-start gap-3 bg-[#F9F1EA] rounded-xl p-4 cursor-pointer border border-[#E8D4C0]">
+                  <input
+                    type="checkbox"
+                    checked={replaceWeeklyBlocks}
+                    onChange={(e) => setReplaceWeeklyBlocks(e.target.checked)}
+                    className="mt-1 w-5 h-5 rounded border-[#E8D4C0] text-[#D4854A] focus:ring-[#D4854A]"
+                  />
+                  <span className="text-sm text-[#635241]">
+                    <strong className="text-[#4A3F35]">Régi heti zárolások törlése előtte</strong> („Foglalt – heti” a naptárban) —
+                    így nem duplikálódnak, hanem lecserélődnek.
+                  </span>
+                </label>
 
                 <form onSubmit={handleBlockRecurringSchedule}>
                   <Button type="submit" disabled={isBlockingSlot} className="w-full bg-[#4A3F35] hover:bg-[#3a3029] text-white py-4 rounded-xl font-medium">
-                    {isBlockingSlot ? 'Zárolás...' : `🔒 ${recurringBlocks.length} heti zárolás létrehozása`}
+                    {isBlockingSlot
+                      ? 'Zárolás...'
+                      : replaceWeeklyBlocks
+                        ? `🔄 ${recurringBlocks.length} heti zárolás frissítése (cseréje)`
+                        : `🔒 ${recurringBlocks.length} heti zárolás hozzáadása (duplikálhat!)`}
                   </Button>
                 </form>
               </div>
