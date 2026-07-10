@@ -45,8 +45,8 @@ for (const file of TARGETS) {
   const base = file.replace(/\.[^.]+$/, '');
 
   for (const width of WIDTHS) {
-    if ((meta.width ?? 0) < width * 0.75) continue;
-
+    // Always emit every width slot so <picture> srcset never 404s.
+    // withoutEnlargement: small sources stay at native size but the file still exists.
     const resized = sharp(input).resize({ width, withoutEnlargement: true });
 
     const webpQuality = WEBP_QUALITY_OVERRIDES[file] ?? 72;
