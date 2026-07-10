@@ -7,13 +7,16 @@ import {
 } from '@/lib/blog-posts';
 import { navigateTo, scrollToTop } from '@/lib/navigation';
 import { ResponsiveImage } from '@/components/ResponsiveImage';
-import { getImageAspectRatio, getImageMeta } from '@/lib/images';
+import { getImageMeta } from '@/lib/images';
 import {
   buildBreadcrumbSchema,
   SITE_NAME,
   SITE_URL,
   useSeo,
 } from '@/lib/seo';
+
+/** Fixed crop for all blog cards so the grid stays even */
+const CARD_IMAGE_ASPECT = '16 / 10';
 
 type BlogIndexPageProps = {
   Navigation: ComponentType;
@@ -102,11 +105,11 @@ export function BlogIndexPage({ Navigation, Footer }: BlogIndexPageProps) {
 
         <section className="py-16">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr">
               {posts.map((post) => (
                 <article
                   key={post.slug}
-                  className="bg-white rounded-3xl border border-[#E8D4C0]/60 overflow-hidden shadow-warm hover:border-[#D4854A]/40 transition-colors flex flex-col"
+                  className="group bg-white rounded-3xl border border-[#E8D4C0]/60 overflow-hidden shadow-warm hover:border-[#D4854A]/40 hover:shadow-md transition-all flex flex-col h-full"
                 >
                   <a
                     href={getBlogPath(post.slug)}
@@ -114,28 +117,26 @@ export function BlogIndexPage({ Navigation, Footer }: BlogIndexPageProps) {
                       e.preventDefault();
                       navigateTo(getBlogPath(post.slug));
                     }}
-                    className="block"
+                    className="block shrink-0 overflow-hidden bg-[#F5E6D8]"
+                    style={{ aspectRatio: CARD_IMAGE_ASPECT }}
+                    aria-label={post.title}
                   >
-                    <div
-                      className="w-full overflow-hidden"
-                      style={{ aspectRatio: getImageAspectRatio(post.image) }}
-                    >
-                      <ResponsiveImage
-                        src={post.image}
-                        alt={post.title}
-                        className="w-full h-full object-cover"
-                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                        width={getImageMeta(post.image).width}
-                        height={getImageMeta(post.image).height}
-                      />
-                    </div>
+                    <ResponsiveImage
+                      src={post.image}
+                      alt={post.title}
+                      className="w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-[1.03]"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      width={getImageMeta(post.image).width}
+                      height={getImageMeta(post.image).height}
+                    />
                   </a>
-                  <div className="p-5 flex flex-col flex-1">
-                    <p className="text-xs text-[#635241] flex items-center gap-1.5 mb-2">
-                      <Calendar className="w-3.5 h-3.5 text-[#D4854A]" />
+
+                  <div className="p-5 flex flex-col flex-1 min-h-0">
+                    <p className="text-xs text-[#635241] flex items-center gap-1.5 mb-2 shrink-0">
+                      <Calendar className="w-3.5 h-3.5 text-[#D4854A] shrink-0" />
                       {formatHuDate(post.date)}
                     </p>
-                    <h2 className="text-lg font-bold text-[#4A3F35] mb-2 leading-snug">
+                    <h2 className="text-lg font-bold text-[#4A3F35] mb-2 leading-snug line-clamp-2 min-h-[3.25rem]">
                       <a
                         href={getBlogPath(post.slug)}
                         onClick={(e) => {
@@ -147,14 +148,16 @@ export function BlogIndexPage({ Navigation, Footer }: BlogIndexPageProps) {
                         {post.title}
                       </a>
                     </h2>
-                    <p className="text-sm text-[#635241] leading-relaxed flex-1">{post.excerpt}</p>
+                    <p className="text-sm text-[#635241] leading-relaxed line-clamp-3 flex-1">
+                      {post.excerpt}
+                    </p>
                     <a
                       href={getBlogPath(post.slug)}
                       onClick={(e) => {
                         e.preventDefault();
                         navigateTo(getBlogPath(post.slug));
                       }}
-                      className="inline-flex items-center gap-1 mt-4 text-sm font-semibold text-[#D4854A] hover:text-[#B87333]"
+                      className="inline-flex items-center gap-1 mt-4 pt-1 text-sm font-semibold text-[#D4854A] hover:text-[#B87333] shrink-0"
                     >
                       Tovább olvasom
                       <ArrowRight className="w-4 h-4" />

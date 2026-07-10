@@ -2579,7 +2579,7 @@ function BlogTeaserSection() {
             feltöltődés könnyebben elinduljon az Angyali Szalonban.
           </p>
         </div>
-        <div className="grid md:grid-cols-3 gap-6 mb-10">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10 auto-rows-fr">
           {posts.map((post) => (
             <a
               key={post.slug}
@@ -2588,17 +2588,36 @@ function BlogTeaserSection() {
                 e.preventDefault();
                 navigateTo(getBlogPath(post.slug));
               }}
-              className="bg-white rounded-3xl border border-[#E8D4C0]/60 p-6 shadow-warm hover:border-[#D4854A]/40 transition-colors block"
+              className="group bg-white rounded-3xl border border-[#E8D4C0]/60 overflow-hidden shadow-warm hover:border-[#D4854A]/40 transition-all flex flex-col h-full"
             >
-              <p className="text-xs text-[#635241] mb-2">
-                {new Date(post.date + 'T12:00:00').toLocaleDateString('hu-HU')}
-              </p>
-              <h3 className="text-lg font-bold text-[#4A3F35] mb-2 leading-snug">{post.title}</h3>
-              <p className="text-sm text-[#635241] leading-relaxed line-clamp-3">{post.excerpt}</p>
-              <span className="inline-flex items-center gap-1 mt-4 text-sm font-semibold text-[#D4854A]">
-                Tovább olvasom
-                <ArrowRight className="w-4 h-4" />
-              </span>
+              <div
+                className="w-full shrink-0 overflow-hidden bg-[#F5E6D8]"
+                style={{ aspectRatio: '16 / 10' }}
+              >
+                <ResponsiveImage
+                  src={post.image}
+                  alt={post.title}
+                  className="w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-[1.03]"
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                  width={getImageMeta(post.image).width}
+                  height={getImageMeta(post.image).height}
+                />
+              </div>
+              <div className="p-5 flex flex-col flex-1">
+                <p className="text-xs text-[#635241] mb-2">
+                  {new Date(post.date + 'T12:00:00').toLocaleDateString('hu-HU')}
+                </p>
+                <h3 className="text-lg font-bold text-[#4A3F35] mb-2 leading-snug line-clamp-2 min-h-[3.25rem]">
+                  {post.title}
+                </h3>
+                <p className="text-sm text-[#635241] leading-relaxed line-clamp-3 flex-1">
+                  {post.excerpt}
+                </p>
+                <span className="inline-flex items-center gap-1 mt-4 text-sm font-semibold text-[#D4854A]">
+                  Tovább olvasom
+                  <ArrowRight className="w-4 h-4" />
+                </span>
+              </div>
             </a>
           ))}
         </div>
