@@ -12,6 +12,7 @@ import {
 import { ResponsiveImage } from '@/components/ResponsiveImage';
 import { getImageAspectRatio, getImageMeta } from '@/lib/images';
 import { getServiceBySlug, getServicePath, services, type ServiceItem } from '@/lib/services';
+import { getBlogPath, getBlogPostByServiceId } from '@/lib/blog-posts';
 import { navigateTo, navigateToSection, scrollToTop } from '@/lib/navigation';
 
 type ServiceLandingPageProps = {
@@ -239,6 +240,30 @@ export function ServiceLandingPage({ slug, Navigation, Footer }: ServiceLandingP
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </div>
+
+            {(() => {
+              const relatedPost = getBlogPostByServiceId(service.id);
+              if (!relatedPost) return null;
+              return (
+                <div className="bg-white rounded-3xl border border-[#E8D4C0]/50 p-6 sm:p-8 shadow-warm">
+                  <p className="text-2xl font-bold text-[#4A3F35] mb-3" role="doc-subtitle">
+                    Olvass tovább a blogon
+                  </p>
+                  <p className="text-[#635241] mb-4 leading-relaxed">{relatedPost.excerpt}</p>
+                  <a
+                    href={getBlogPath(relatedPost.slug)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigateTo(getBlogPath(relatedPost.slug));
+                    }}
+                    className="inline-flex items-center gap-2 font-semibold text-[#D4854A] hover:text-[#B87333]"
+                  >
+                    {relatedPost.title}
+                    <ArrowRight className="w-4 h-4" />
+                  </a>
+                </div>
+              );
+            })()}
 
             <div>
               <p className="text-xl font-bold text-[#4A3F35] mb-4" role="doc-subtitle">További kezelések</p>

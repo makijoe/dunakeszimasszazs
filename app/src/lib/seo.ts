@@ -34,6 +34,7 @@ export type SeoConfig = {
   canonical?: string;
   noindex?: boolean;
   ogImage?: string;
+  ogType?: string;
   jsonLd?: Record<string, unknown> | Array<Record<string, unknown>>;
 };
 
@@ -89,7 +90,7 @@ export function applySeo(config: SeoConfig) {
   const canonical = config.canonical || SITE_URL;
   upsertLink('canonical', canonical);
 
-  upsertMeta('property', 'og:type', 'website');
+  upsertMeta('property', 'og:type', config.ogType || 'website');
   upsertMeta('property', 'og:site_name', SITE_NAME);
   upsertMeta('property', 'og:locale', 'hu_HU');
   upsertMeta('property', 'og:title', config.title);
@@ -108,7 +109,14 @@ export function applySeo(config: SeoConfig) {
 export function useSeo(config: SeoConfig) {
   useEffect(() => {
     applySeo(config);
-  }, [config.title, config.description, config.canonical, config.noindex, config.ogImage]);
+  }, [
+    config.title,
+    config.description,
+    config.canonical,
+    config.noindex,
+    config.ogImage,
+    config.ogType,
+  ]);
 }
 
 export const FAQ_ITEMS = [
@@ -249,5 +257,40 @@ export function buildBreadcrumbSchema(items: Array<{ name: string; url: string }
       name: item.name,
       item: item.url,
     })),
+  };
+}
+
+export function buildArticleSchema(article: {
+  title: string;
+  description: string;
+  slug: string;
+  image: string;
+  datePublished: string;
+  dateModified?: string;
+}) {
+  const url = `${SITE_URL}/blog/${article.slug}`;
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: article.title,
+    description: article.description,
+    url,
+    mainEntityOfPage: url,
+    image: article.image.startsWith('http') ? article.image : `${SITE_URL}${article.image}`,
+    datePublished: article.datePublished,
+    dateModified: article.dateModified || article.datePublished,
+    author: {
+      '@type': 'Person',
+      name: 'Makra Edina',
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: SITE_NAME,
+      logo: {
+        '@type': 'ImageObject',
+        url: OG_IMAGE,
+      },
+    },
+    inLanguage: 'hu-HU',
   };
 }

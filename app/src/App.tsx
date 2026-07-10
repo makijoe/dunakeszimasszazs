@@ -65,6 +65,9 @@ import { getImageAspectRatio, getImageMeta } from '@/lib/images';
 import { BANK_ACCOUNT, callScriptAction, SCRIPT_URL } from '@/lib/script-api';
 import { PrivacyPage } from '@/pages/PrivacyPage';
 import { ServiceLandingPage } from '@/pages/ServiceLandingPage';
+import { BlogIndexPage } from '@/pages/BlogIndexPage';
+import { BlogPostPage } from '@/pages/BlogPostPage';
+import { BLOG_INDEX_PATH, getBlogPath, getBlogPostsSorted } from '@/lib/blog-posts';
 
 const ManageBookingsPage = lazy(() =>
   import('@/pages/portal-pages').then((m) => ({ default: m.ManageBookingsPage }))
@@ -103,9 +106,10 @@ function Navigation() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const navLinks = [
+  const navLinks: Array<{ href: string; label: string; route?: boolean }> = [
     { href: '#fooldal', label: 'Főoldal' },
     { href: '#kezelesek', label: 'Kezelések' },
+    { href: ROUTES.blog, label: 'Blog', route: true },
     { href: '#arlista', label: 'Árlista' },
     { href: '#gyik', label: 'GYIK' },
     { href: '#tv-szereplesek', label: 'TV Szereplések' },
@@ -118,6 +122,15 @@ function Navigation() {
   const scrollToSection = (href: string) => {
     navigateToSection(href);
     setIsMobileMenuOpen(false);
+  };
+
+  const handleNavClick = (link: { href: string; route?: boolean }) => {
+    if (link.route) {
+      navigateTo(link.href);
+      setIsMobileMenuOpen(false);
+      return;
+    }
+    scrollToSection(link.href);
   };
 
   return (
@@ -156,8 +169,11 @@ function Navigation() {
             {navLinks.map((link) => (
               <a
                 key={link.href}
-                href={onSubPage ? homeSectionHref(link.href) : link.href}
-                onClick={(e) => { e.preventDefault(); scrollToSection(link.href); }}
+                href={link.route ? link.href : onSubPage ? homeSectionHref(link.href) : link.href}
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleNavClick(link);
+                }}
                 className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 ${link.href === '#idopont'
                   ? 'bg-[#9A4A18] text-white hover:bg-[#B87333] shadow-sm'
                   : 'text-[#4A3F35] hover:bg-[#F5E6D8] hover:text-[#D4854A]'
@@ -198,8 +214,11 @@ function Navigation() {
               {navLinks.map((link) => (
                 <a
                   key={link.href}
-                  href={onSubPage ? homeSectionHref(link.href) : link.href}
-                  onClick={(e) => { e.preventDefault(); scrollToSection(link.href); }}
+                  href={link.route ? link.href : onSubPage ? homeSectionHref(link.href) : link.href}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleNavClick(link);
+                  }}
                   className={`px-4 py-3 rounded-xl text-sm font-semibold transition-all ${link.href === '#idopont'
                     ? 'bg-[#9A4A18] text-white'
                     : 'text-[#4A3F35] hover:bg-[#F5E6D8]'
@@ -2405,6 +2424,7 @@ function FooterSection() {
               {([
                 { href: '#fooldal', label: 'Főoldal' },
                 { href: '#kezelesek', label: 'Kezelések' },
+                { href: ROUTES.blog, label: 'Blog', route: true },
                 { href: '#arlista', label: 'Árlista' },
                 { href: '#gyik', label: 'GYIK' },
                 { href: '#idopont', label: 'Időpontfoglalás' },
@@ -2542,6 +2562,60 @@ function FooterSection() {
   );
 }
 
+function BlogTeaserSection() {
+  const posts = getBlogPostsSorted().slice(0, 3);
+
+  return (
+    <section id="blog" className="py-20 bg-gradient-to-b from-[#FFFBF7] to-[#F9F1EA]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center max-w-3xl mx-auto mb-12">
+          <h2 className="text-3xl sm:text-4xl font-bold text-[#4A3F35] mb-4">
+            Blog – masszázs Dunakeszin, testi-lelki feltöltődés
+          </h2>
+          <p className="text-[#635241] leading-relaxed text-lg">
+            A masszázs Dunakeszin nem csak egy alkalom a naptárban: tudatos pihenés, stresszoldás és
+            személyre szabott kezelés. Blogunkban útmutatókat találsz a frissítő masszázstól a
+            nyirokmasszázsig, az első látogatásig és az online foglalásig – hogy a testi-lelki
+            feltöltődés könnyebben elinduljon az Angyali Szalonban.
+          </p>
+        </div>
+        <div className="grid md:grid-cols-3 gap-6 mb-10">
+          {posts.map((post) => (
+            <a
+              key={post.slug}
+              href={getBlogPath(post.slug)}
+              onClick={(e) => {
+                e.preventDefault();
+                navigateTo(getBlogPath(post.slug));
+              }}
+              className="bg-white rounded-3xl border border-[#E8D4C0]/60 p-6 shadow-warm hover:border-[#D4854A]/40 transition-colors block"
+            >
+              <p className="text-xs text-[#635241] mb-2">
+                {new Date(post.date + 'T12:00:00').toLocaleDateString('hu-HU')}
+              </p>
+              <h3 className="text-lg font-bold text-[#4A3F35] mb-2 leading-snug">{post.title}</h3>
+              <p className="text-sm text-[#635241] leading-relaxed line-clamp-3">{post.excerpt}</p>
+              <span className="inline-flex items-center gap-1 mt-4 text-sm font-semibold text-[#D4854A]">
+                Tovább olvasom
+                <ArrowRight className="w-4 h-4" />
+              </span>
+            </a>
+          ))}
+        </div>
+        <div className="text-center">
+          <Button
+            onClick={() => navigateTo(BLOG_INDEX_PATH)}
+            className="bg-[#D4854A] hover:bg-[#B87333] text-white rounded-full px-8"
+          >
+            Összes blogcikk
+            <ArrowRight className="w-4 h-4 ml-2" />
+          </Button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function HomeSite() {
   useSeo(HOME_SEO);
 
@@ -2559,6 +2633,7 @@ function HomeSite() {
         <GallerySection />
         <ProductsSection />
         <OrganoCoffeeSection />
+        <BlogTeaserSection />
         <BookingSection />
         <FAQSection />
       </main>
@@ -2585,7 +2660,12 @@ function App() {
 
   // Scroll to top when opening a sub-page (before paint).
   useLayoutEffect(() => {
-    if (route.startsWith('service:') || route === 'privacy') {
+    if (
+      route.startsWith('service:') ||
+      route.startsWith('blog:') ||
+      route === 'privacy' ||
+      route === 'blog'
+    ) {
       scrollToTop();
       requestAnimationFrame(scrollToTop);
     }
@@ -2617,6 +2697,20 @@ function App() {
 
   if (route === 'privacy') {
     return <PrivacyPage Navigation={Navigation} Footer={FooterSection} />;
+  }
+
+  if (route === 'blog') {
+    return <BlogIndexPage Navigation={Navigation} Footer={FooterSection} />;
+  }
+
+  if (route.startsWith('blog:')) {
+    return (
+      <BlogPostPage
+        slug={route.slice('blog:'.length)}
+        Navigation={Navigation}
+        Footer={FooterSection}
+      />
+    );
   }
 
   if (route.startsWith('service:')) {

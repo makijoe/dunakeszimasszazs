@@ -7,6 +7,7 @@
     { "source": "/booking-success", "destination": "/index.html" },
     { "source": "/booking-cancel", "destination": "/index.html" }
   ],
+
   "headers": [
     {
       "source": "/(.*)",

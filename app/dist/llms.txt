@@ -18,9 +18,18 @@ Az Angyali Szalonban személyre szabott, relaxáló és terápiás masszázskeze
 - [Metamorf masszázs](https://www.dunakeszimasszazs.hu/kezelesek/metamorf): 60 perc, 15 000 Ft
 - [BEMER kezelés](https://www.dunakeszimasszazs.hu/kezelesek/bemer): 20 perc 7 500 Ft / 40 perc 15 000 Ft
 
+## Blog
+
+- [Blog index](https://www.dunakeszimasszazs.hu/blog): cikkek masszázsról, kezelésekről, foglalásról
+- [Masszázs Dunakeszin útmutató](https://www.dunakeszimasszazs.hu/blog/masszazs-dunakeszin-utmutato)
+- [Hogyan foglalj időpontot](https://www.dunakeszimasszazs.hu/blog/hogyan-foglalj-idopontot)
+- [Frissítő masszázs](https://www.dunakeszimasszazs.hu/blog/frissito-masszazs-dunakeszin)
+- [Nyirokmasszázs](https://www.dunakeszimasszazs.hu/blog/nyirokmasszazs-konnyed-labak)
+
 ## Elérhetőség
 
 - [Főoldal és időpontfoglalás](https://www.dunakeszimasszazs.hu/): online foglalás
+- [Blog](https://www.dunakeszimasszazs.hu/blog)
 - [Adatvédelmi tájékoztató](https://www.dunakeszimasszazs.hu/adatvedelem)
 - Cím: 2120 Dunakeszi, Kolonics György utca 2/B (kapucsengő: 1/43)
 - Telefon: +36 30 487 7883

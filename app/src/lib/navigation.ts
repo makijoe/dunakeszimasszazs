@@ -6,6 +6,8 @@ export type AppRoute =
   | 'booking-cancel'
   | 'booking-bank-pending'
   | 'privacy'
+  | 'blog'
+  | `blog:${string}`
   | `service:${string}`;
 
 export const ROUTES = {
@@ -13,6 +15,7 @@ export const ROUTES = {
   manage: '/foglalasaim',
   home: '/',
   privacy: '/adatvedelem',
+  blog: '/blog',
 } as const;
 
 const navListeners = new Set<() => void>();
@@ -43,6 +46,11 @@ export function getServiceSlugFromPath(path: string): string | null {
   return match ? match[1] : null;
 }
 
+export function getBlogSlugFromPath(path: string): string | null {
+  const match = path.match(/^\/blog\/([^/]+)/);
+  return match ? match[1] : null;
+}
+
 export function normalizePath(path: string): string {
   return path.replace(/\/$/, '') || '/';
 }
@@ -53,6 +61,10 @@ export function getAppRoute(): AppRoute {
 
   const serviceSlug = getServiceSlugFromPath(path);
   if (serviceSlug) return `service:${serviceSlug}`;
+
+  const blogSlug = getBlogSlugFromPath(path);
+  if (blogSlug) return `blog:${blogSlug}`;
+  if (path === ROUTES.blog) return 'blog';
 
   if (path === ROUTES.admin || hash === '#admin') return 'admin';
   if (path === ROUTES.manage || hash === '#foglalaskezeles') return 'manage';

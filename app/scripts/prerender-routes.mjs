@@ -5,8 +5,11 @@ import {
   buildHomeStaticHtml,
   buildPrivacyStaticHtml,
   buildServiceStaticHtml,
+  buildBlogIndexStaticHtml,
+  buildBlogPostStaticHtml,
   injectRootContent,
   services as serviceBodies,
+  blogPosts,
 } from './seo-static-content.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -53,6 +56,23 @@ const routes = [
     robots: 'index, follow',
     staticHtml: buildPrivacyStaticHtml(),
   },
+  {
+    dir: 'blog',
+    title: 'Blog | Masszázs Dunakeszin – Angyali Szalon',
+    description:
+      'Masszázs Dunakeszin blog: kezelésútmutatók, frissítő és nyirokmasszázs, foglalási tippek, testi-lelki feltöltődés az Angyali Szalonban.',
+    canonical: `${SITE_URL}/blog`,
+    robots: 'index, follow',
+    staticHtml: buildBlogIndexStaticHtml(),
+  },
+  ...blogPosts.map((post) => ({
+    dir: `blog/${post.slug}`,
+    title: post.seoTitle || `${post.title} | Angyali Szalon`,
+    description: post.seoDescription || post.excerpt,
+    canonical: `${SITE_URL}/blog/${post.slug}`,
+    robots: 'index, follow',
+    staticHtml: buildBlogPostStaticHtml(post),
+  })),
   ...services.map(([slug, title, description]) => {
     const meta = serviceBodyBySlug[slug];
     return {
