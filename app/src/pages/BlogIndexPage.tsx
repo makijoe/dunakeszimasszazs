@@ -7,7 +7,6 @@ import {
 } from '@/lib/blog-posts';
 import { navigateTo, scrollToTop } from '@/lib/navigation';
 import { ResponsiveImage } from '@/components/ResponsiveImage';
-import { getImageMeta } from '@/lib/images';
 import {
   buildBreadcrumbSchema,
   SITE_NAME,
@@ -117,17 +116,16 @@ export function BlogIndexPage({ Navigation, Footer }: BlogIndexPageProps) {
                       e.preventDefault();
                       navigateTo(getBlogPath(post.slug));
                     }}
-                    className="block shrink-0 overflow-hidden bg-[#F5E6D8]"
+                    className="relative block shrink-0 overflow-hidden bg-[#F5E6D8]"
                     style={{ aspectRatio: CARD_IMAGE_ASPECT }}
                     aria-label={post.title}
                   >
                     <ResponsiveImage
                       src={post.image}
                       alt={post.title}
-                      className="w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-[1.03]"
+                      fill
+                      className="transition-transform duration-300 group-hover:scale-[1.03]"
                       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                      width={getImageMeta(post.image).width}
-                      height={getImageMeta(post.image).height}
                     />
                   </a>
 

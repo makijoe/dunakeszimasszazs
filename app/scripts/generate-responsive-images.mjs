@@ -22,6 +22,7 @@ const TARGETS = [
   'organo-zoldtea.jpeg',
   'indiai-fejmasszazs.jpeg',
   'kineziologia.jpeg',
+  'kineziologia-card.jpeg',
   'ultrahangos-zsirbontas.jpeg',
   'bemer-1.jpeg',
   'bemer-2.jpeg',

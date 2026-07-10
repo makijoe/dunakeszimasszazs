@@ -2,7 +2,6 @@ import { useLayoutEffect, type ComponentType } from 'react';
 import { ArrowLeft, ArrowRight, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ResponsiveImage } from '@/components/ResponsiveImage';
-import { getImageAspectRatio, getImageMeta } from '@/lib/images';
 import {
   BLOG_INDEX_PATH,
   getBlogPath,
@@ -174,18 +173,16 @@ export function BlogPostPage({ slug, Navigation, Footer }: BlogPostPageProps) {
 
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 -mt-2 mb-10">
             <div
-              className="rounded-3xl overflow-hidden shadow-warm-lg w-full"
-              style={{ aspectRatio: getImageAspectRatio(post.image) }}
+              className="relative rounded-3xl overflow-hidden shadow-warm-lg w-full bg-[#F5E6D8]"
+              style={{ aspectRatio: '16 / 10' }}
             >
               <ResponsiveImage
                 src={post.image}
                 alt={post.title}
-                className="w-full h-full object-cover"
+                fill
                 loading="eager"
                 fetchPriority="high"
                 sizes="(max-width: 896px) 100vw, 896px"
-                width={getImageMeta(post.image).width}
-                height={getImageMeta(post.image).height}
               />
             </div>
           </div>

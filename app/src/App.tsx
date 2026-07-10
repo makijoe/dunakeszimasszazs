@@ -2591,16 +2591,15 @@ function BlogTeaserSection() {
               className="group bg-white rounded-3xl border border-[#E8D4C0]/60 overflow-hidden shadow-warm hover:border-[#D4854A]/40 transition-all flex flex-col h-full"
             >
               <div
-                className="w-full shrink-0 overflow-hidden bg-[#F5E6D8]"
+                className="relative w-full shrink-0 overflow-hidden bg-[#F5E6D8]"
                 style={{ aspectRatio: '16 / 10' }}
               >
                 <ResponsiveImage
                   src={post.image}
                   alt={post.title}
-                  className="w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-[1.03]"
+                  fill
+                  className="transition-transform duration-300 group-hover:scale-[1.03]"
                   sizes="(max-width: 768px) 100vw, 33vw"
-                  width={getImageMeta(post.image).width}
-                  height={getImageMeta(post.image).height}
                 />
               </div>
               <div className="p-5 flex flex-col flex-1">

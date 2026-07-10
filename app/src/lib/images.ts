@@ -11,6 +11,7 @@ export const IMAGE_META: Record<string, { width: number; height: number }> = {
   '/images/logo.png': { width: 128, height: 128 },
   '/images/indiai-fejmasszazs.jpeg': { width: 1024, height: 1536 },
   '/images/kineziologia.jpeg': { width: 867, height: 1300 },
+  '/images/kineziologia-card.jpeg': { width: 1600, height: 1000 },
   '/images/ultrahangos-zsirbontas.jpeg': { width: 1630, height: 1588 },
   '/images/bemer-1.jpeg': { width: 1080, height: 1350 },
   '/images/bemer-2.jpeg': { width: 1080, height: 1350 },
@@ -41,8 +42,15 @@ export function buildResponsiveSrcSet(src: string): string | undefined {
 
 export function buildResponsivePicture(src: string) {
   const base = src.replace(/\.[^/.]+$/, '');
+  const meta = getImageMeta(src);
+  // Only advertise widths the generator could produce (skip oversized slots for narrow sources).
+  // Always keep at least 480 + 800 so cards have a usable candidate.
+  const widths = RESPONSIVE_WIDTHS.filter(
+    (w) => w <= Math.max(meta.width, 800) || w === 480 || w === 800
+  );
+  const unique = [...new Set(widths)].sort((a, b) => a - b);
   return {
-    webpSrcSet: RESPONSIVE_WIDTHS.map((w) => `${base}-${w}w.webp ${w}w`).join(', '),
-    fallbackSrcSet: RESPONSIVE_WIDTHS.map((w) => `${base}-${w}w.jpeg ${w}w`).join(', '),
+    webpSrcSet: unique.map((w) => `${base}-${w}w.webp ${w}w`).join(', '),
+    fallbackSrcSet: unique.map((w) => `${base}-${w}w.jpeg ${w}w`).join(', '),
   };
 }
