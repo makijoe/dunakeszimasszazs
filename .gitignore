@@ -1,2 +1,5 @@
 .vercel
 .env*.local
+
+# SEO Site Checkup PDF page extracts (local only)
+.seo-report-pages/
