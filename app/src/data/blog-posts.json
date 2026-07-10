@@ -2,140 +2,315 @@
   {
     "slug": "masszazs-dunakeszin-utmutato",
     "title": "Masszázs Dunakeszin – teljes útmutató az Angyali Szalonhoz",
-    "excerpt": "Minden, amit érdemes tudni a masszázs Dunakeszin élményről: kezelések, árak, helyszín és hogyan indul a testi-lelki feltöltődés.",
+    "excerpt": "Minden, amit érdemes tudni a masszázs Dunakeszin élményről: kezelések, árak, helyszín, foglalás és hogyan indul a tartós testi-lelki feltöltődés.",
     "date": "2026-07-01",
     "image": "/images/szalon-1.jpeg",
-    "seoTitle": "Masszázs Dunakeszin – útmutató | Angyali Szalon",
-    "seoDescription": "Masszázs Dunakeszin az Angyali Szalonban: kezeléstípusok, árak, foglalás és mire számíthatsz. Makra Edina, testi-lelki feltöltődés.",
+    "seoTitle": "Masszázs Dunakeszin – teljes útmutató | Angyali Szalon",
+    "seoDescription": "Részletes útmutató: masszázs Dunakeszin az Angyali Szalonban – kezeléstípusok, árak, foglalás, mire számíts. Makra Edina.",
     "blocks": [
       {
         "type": "p",
-        "text": "Ha masszázs Dunakeszin a célod, az Angyali Szalonban Makra Edina masszőr személyre szabott, nyugodt környezetben vár. A testi-lelki feltöltődés nem luxus: sokan a mindennapi stressz, irodai ülés vagy sport után keresnek rendszeres kezelést. Ez az útmutató segít eligazodni a kínálatban, az árakban és az online foglalásban."
+        "text": "Ha masszázs Dunakeszin a célod, az Angyali Szalonban Makra Edina masszőr személyre szabott, nyugodt környezetben vár. A testi-lelki feltöltődés nem luxus és nem „egy alkalmas csoda”: sokan a mindennapi stressz, az irodai ülés, az ingázás vagy a sport után keresnek rendszeres kezelést. Ez a hosszabb útmutató segít eligazodni a kínálatban, az árakban, a helyszínben és abban, hogyan építheted be a masszázst a hétköznapjaidba – anélkül, hogy elvesznél a technikai részletekben."
       },
       {
         "type": "h2",
-        "text": "Miért érdemes masszázst választani Dunakeszin?"
+        "text": "Miért érdemes éppen Dunakeszin masszíroztatni?"
       },
       {
         "type": "p",
-        "text": "Dunakeszi és a környék (Fót, Göd, Vác irány) sok ingázót ad Budapest felé. A hosszú ülés, a képernyő előtti tartás és a rohanás gyakran a nyakban, vállban és hátban csapódik le. Egy jól megválasztott masszázs Dunakeszin csökkentheti a feszültséget, javíthatja a közérzetet, és teret ad a pihenésnek anélkül, hogy messzire kellene utaznod."
+        "text": "Dunakeszi és a környék (Fót, Göd, Vác, Budapest északi része) sok ingázót ad a főváros felé. A hosszú ülés, a képernyő előtti tartás és a rohanás gyakran a nyakban, vállban, derékban és a csípő környékén csapódik le. Egy jól megválasztott masszázs Dunakeszin csökkentheti a feszültségérzetet, javíthatja a közérzetet, és teret ad a pihenésnek anélkül, hogy a belvárosba kellene utaznod."
       },
       {
         "type": "p",
-        "text": "Az Angyali Szalon címe: 2120 Dunakeszi, Kolonics György utca 2/B (kapucsengő: 1/43), az Auchan közelében. A vendégek több mint 28 Google-értékelés alapján átlagosan 4,9 csillaggal értékelik a szolgáltatást – ez is jelzi, hogy a masszázs Dunakeszin itt nem csak „gyors kezelés”, hanem odafigyelő, személyes élmény."
+        "text": "A helyi szalon előnye a kiszámíthatóság: ismert útvonal, parkolási lehetőségek a közelben, és egy olyan környezet, ahol nem „átfutó” szolgáltatást kapsz, hanem odafigyelést. Az Angyali Szalon címe: 2120 Dunakeszi, Kolonics György utca 2/B (kapucsengő: 1/43), az Auchan közelében. A vendégek több mint 28 Google-értékelés alapján átlagosan 4,9 csillaggal értékelik a szolgáltatást – ez is jelzi, hogy a masszázs Dunakeszin itt személyes élmény."
       },
       {
         "type": "h2",
         "text": "Milyen kezelések közül választhatsz?"
       },
       {
+        "type": "p",
+        "text": "A kínálat frissítő és mélyebb lazító masszázsoktól a nyirokmasszázsig, aromamasszázsig, indiai fejmasszázsig, kineziológiáig és prémium arckezelésig terjed. Nem kell előre „szakértőnek” lenned: a panaszod vagy a célod (stresszoldás, könnyedebb lábak, arcápolás, regeneráció) alapján is tudsz választani, és a foglalás megjegyzésében jelezheted a preferenciáidat."
+      },
+      {
         "type": "ul",
         "items": [
-          "Frissítő és nepáli masszázs – lazítás, mindennapi feszültség oldása",
-          "Nyirokmasszázs – könnyedebb lábak, keringés támogatása",
-          "Aroma- és indiai fejmasszázs – stressz, fejfájás, illóolajos relaxáció",
-          "Kineziológia és metamorf masszázs – testi-lelki egyensúly",
-          "Arany kollagén arckezelés, ultrahangos zsírbontás, BEMER – célzott kiegészítők"
+          "Frissítő és nepáli masszázs – mindennapi feszültség, lazítás, első alkalomnak is ideális belépő",
+          "Nyirokmasszázs – könnyedebb lábak, kíméletes ritmus, keringés-támogató jelleg",
+          "Aroma- és indiai fejmasszázs – stressz, fejfájásérzet, illóolajos vagy feji fókuszú pihenés",
+          "Kineziológia és metamorf masszázs – testi-lelki egyensúly, gyengéd megközelítés",
+          "Arany kollagén arckezelés, ultrahangos zsírbontás, BEMER – célzott kiegészítők a masszázs mellé vagy önállóan"
         ]
       },
       {
         "type": "p",
-        "text": "A legtöbb 60 perces kezelés 15 000 Ft, az arany kollagén arckezelés 30 000 Ft. A BEMER 20 percben 7 500 Ft, 40 percben 15 000 Ft. Online foglaláskor 3 000 Ft foglalási díj szükséges; a fennmaradó összeget a szalonban, illetve a választott fizetési mód szerint rendezed."
+        "text": "A blog többi cikke részletesen bemutatja az egyes kezeléseket: mikor melyiket érdemes választani, mire számíthatsz, és milyen elvárások reálisak. Érdemes elolvasni a „masszázs vagy nyirokmasszázs” összehasonlítót is, ha még döntés előtt állsz."
       },
       {
         "type": "h2",
-        "text": "Hogyan indul a testi-lelki feltöltődés?"
+        "text": "Árak, időtartam és foglalási díj – átláthatóan"
       },
       {
         "type": "p",
-        "text": "Válaszd ki a kezelést a weboldalon, nézd meg a szabad időpontokat, és foglalj bankkártyával vagy banki átutalással. Érkezz néhány perccel korábban, jelezd ha van ismert egészségügyi korlátozásod, és engedd el a rohanást – a masszázs Dunakeszin akkor a leghatékonyabb, ha a tested és az elméd is kap időt a lassulásra."
+        "text": "A legtöbb 60 perces kezelés 15 000 Ft, az arany kollagén arckezelés 30 000 Ft. A BEMER 20 percben 7 500 Ft, 40 percben 15 000 Ft. Online foglaláskor 3 000 Ft foglalási díj szükséges; ez a kiválasztott kezelés árába beleszámít. A fennmaradó összeget a szalonban, illetve a választott fizetési mód szerint rendezed."
       },
       {
         "type": "p",
-        "text": "Ha még bizonytalan vagy, olvasd el a blog többi cikkét az egyes kezelésekről, vagy vedd fel a kapcsolatot telefonon: +36 30 487 7883. Szeretettel várlak az Angyali Szalonban – masszázs Dunakeszin, a testi-lelki feltöltődés jegyében."
+        "text": "Az online foglalás bankkártyával (Stripe) vagy banki átutalással is lehetséges. Átutalásnál referenciakódot kapsz, és a szalon a beérkezés után erősíti meg a foglalást. Részletes lépéseket a „Hogyan foglalj időpontot online?” cikkben találsz."
+      },
+      {
+        "type": "h2",
+        "text": "Mire számíts az első alkalommal?"
+      },
+      {
+        "type": "p",
+        "text": "Érkezz 5–10 perccel korábban, hogy ráhangolódhass. Könnyű ruházat praktikus; a kezeléshez tiszta lepedőt / takarót biztosítunk. Rövid beszélgetés után a választott technikának megfelelő, kényelmes pozícióban dolgozunk. Bármikor jelezheted, ha az erősség túl erős vagy túl gyenge – a kommunikáció része a minőségnek."
+      },
+      {
+        "type": "p",
+        "text": "A masszázs nem helyettesít orvosi diagnózist vagy kezelést. Ha van ismert betegséged, friss sérülésed, terhességed vagy erős, tartós panaszod, jelezd előre, és szükség esetén konzultálj orvossal. A szalon a közérzet javítását, a pihenést és a testi-lelki feltöltődést szolgálja."
+      },
+      {
+        "type": "h2",
+        "text": "Hogyan építsd be a masszázst a mindennapokba?"
+      },
+      {
+        "type": "p",
+        "text": "Sokan az első alkalom után már a következő időpontot is lefoglalják, mert érzik: a rendszeresség hozza a tartósabb könnyedséget. Van, aki havonta egyszer jön „karbantartásra”, van, aki stresszes időszakban sűrűbben. Nincs egyetlen helyes ritmus – a tested visszajelzése a legjobb mérce."
+      },
+      {
+        "type": "ul",
+        "items": [
+          "Stresszes időszak: 1–2 hetente frissítő vagy nepáli masszázs",
+          "Nehéz lábak, pangásérzet: kúraszerű nyirokmasszázs, majd ritkább fenntartás",
+          "Fej-nyak feszültség: indiai fejmasszázs vagy felsőtestre fókuszáló frissítő",
+          "Arcápolás: arany kollagén, esetenként nyirokkal kombinálva (egyéni ajánlás szerint)"
+        ]
+      },
+      {
+        "type": "h2",
+        "text": "Gyakorlati tudnivalók a helyszínről"
+      },
+      {
+        "type": "p",
+        "text": "Nyitvatartás: hétfő–vasárnap 8:30–18:30 (az aktuális szabad időpontok a foglalóban látszanak). Telefon: +36 30 487 7883. Facebookon és Google-on is megtalálod a szalont; a Google-értékelés írása segíti a többi vendéget a döntésben. Lemondást kérjük legalább 24 órával előre jelezni, hogy az időpont másnak is felszabadulhasson."
+      },
+      {
+        "type": "h2",
+        "text": "Összefoglalva: a testi-lelki feltöltődés itt kezdődik"
+      },
+      {
+        "type": "p",
+        "text": "A masszázs Dunakeszin az Angyali Szalonban a kiszámítható foglalás, a nyugodt környezet és a személyre szabott kezelések találkozása. Válassz kezelést a blog és a kezelésoldalak alapján, foglalj online, és engedd, hogy a tested lassuljon. Ha kérdésed van, hívj bátran – szeretettel várlak a Kolonics György utcában."
+      },
+      {
+        "type": "h2",
+        "text": "Mit mondanak a visszatérő vendégek?"
+      },
+      {
+        "type": "p",
+        "text": "A visszatérő vendégek leggyakrabban a nyugodt hangulatot, a pontosságot és azt emelik ki, hogy nem „futószalagon” kezeljük őket. Sokan a Google-értékelésekben is megírják: a masszázs Dunakeszin az Angyali Szalonban személyes élmény. A 4,9-es átlag és a több mint 28 értékelés nem marketingmondat – a mindennapi munka visszajelzése. Ha te is jártál nálunk, egy őszinte vélemény sokat segít a következő vendégnek a döntésben."
+      },
+      {
+        "type": "h2",
+        "text": "Hogyan válassz időpontot a napirendedhez?"
+      },
+      {
+        "type": "p",
+        "text": "Reggeli sáv: tiszta fejjel indul a nap, kevesebb a csúcsforgalom. Déli / kora délutáni sáv: a munka közepén ad szünetet. Délutáni / koraesti sáv: a nap lezárása, de hagyd, hogy utána ne azonnal kezdődjön a legstresszesebb program. A foglalóban látszanak a szabad helyek – ha a kedvenc sávod betelt, érdemes heti rendszerességgel előre foglalni. A heti zárolások (szabadnapok) miatt egyes napok üresek lehetnek; ez nem hiba, hanem a szalon működése."
+      },
+      {
+        "type": "h2",
+        "text": "A testi-lelki feltöltődés mint szokás"
+      },
+      {
+        "type": "p",
+        "text": "Egy alkalom is adhat megkönnyebbülést, de a tartós változás a szokáson múlik: ugyanúgy, ahogy a fogmosás vagy a mozgás. Tervezd be a naptáradba a masszázst, ne csak „ha éppen van idő”. A tested előbb-utóbb jelzi, ha túl sokáig hagytad. A blog és a kezelésoldalak segítenek tudatosan választani – a foglaló pedig egyszerűvé teszi a megvalósítást. Dunakeszin, az Auchan közelében, a Kolonics György utcában várlak: jöjj el, lassulj le, és engedd, hogy a kezek és a csend dolgozzanak érted."
+      },
+      {
+        "type": "p",
+        "text": "Ha a „Masszázs Dunakeszin – teljes útmutató az Angyali Szalonhoz” témája különösen érdekel, mentsd el ezt a cikket, és a foglalás előtt futtasd át még egyszer a gyakorlati listákat. A megjegyzés mezőbe írd be a legfontosabb kéréseid – így a kezelés az első perctől rólad szól. Online foglalás: a weboldal Időpontfoglalás menüpontja. Kérdés: +36 30 487 7883. Helyszín: 2120 Dunakeszi, Kolonics György utca 2/B (kapucsengő: 1/43)."
       }
     ]
   },
   {
     "slug": "hogyan-foglalj-idopontot",
     "title": "Hogyan foglalj masszázs időpontot online?",
-    "excerpt": "Lépésről lépésre: kezelés választása, dátum, fizetés bankkártyával vagy átutalással az Angyali Szalonban.",
+    "excerpt": "Részletes, lépésről lépésre útmutató: kezelés választása, naptár, fizetés bankkártyával vagy átutalással, lemondás és gyakori kérdések.",
     "date": "2026-07-02",
     "image": "/images/szalon-2.jpeg",
-    "seoTitle": "Masszázs időpontfoglalás online | Dunakeszi",
-    "seoDescription": "Hogyan foglalj masszázs időpontot online Dunakeszin? Bankkártya (Stripe) vagy átutalás, foglalási díj, lemondás – Angyali Szalon.",
+    "seoTitle": "Masszázs időpontfoglalás online – részletes útmutató | Dunakeszi",
+    "seoDescription": "Hogyan foglalj masszázs időpontot online Dunakeszin? Stripe, átutalás, foglalási díj, lemondás – Angyali Szalon lépésről lépésre.",
     "blocks": [
       {
         "type": "p",
-        "text": "Az online időpontfoglalás célja, hogy a masszázs Dunakeszin élménye egyszerűen, előre tervezhetően induljon. Nem kell üzengetni oda-vissza: a weboldalon kiválasztod a kezelést, a napot és az órát, majd megerősíted a foglalást fizetéssel."
+        "text": "Az online időpontfoglalás célja, hogy a masszázs Dunakeszin élménye egyszerűen, előre tervezhetően induljon. Nem kell napokig üzengetni: a weboldalon kiválasztod a kezelést, a napot és az órát, megadod az adataidat, majd megerősíted a foglalást fizetéssel. Ez a cikk végigvezet a teljes folyamaton, a gyakori kérdéseken és a tipikus buktatókon is."
       },
       {
         "type": "h2",
-        "text": "1. Lépés: kezelés és dátum"
+        "text": "1. Lépés: nyisd meg az Időpontfoglalás szekciót"
       },
       {
         "type": "p",
-        "text": "Nyisd meg a főoldal Időpontfoglalás szekcióját, vagy kattints a menü „Időpontfoglalás” gombjára. Válaszd ki a kívánt masszázst vagy kezelést (például frissítő masszázs, nyirokmasszázs, arany kollagén). Ezután a naptárban megjelennek a szabad sávok – csak a még elérhető időpontok kattinthatók."
+        "text": "A főoldalon görgess az „Időpontfoglalás” részhez, vagy kattints a menü sötétebb „Időpontfoglalás” gombjára. Mobiltelefonon ugyanez a menüből érhető el. Ha éppen egy kezelés- vagy blogoldalon vagy, a gomb visszavisz a foglalóhoz. A foglaló a szabad naptári sávokat mutatja – nem kell telefonon egyeztetni, hogy „van-e még hely”."
       },
       {
         "type": "h2",
-        "text": "2. Lépés: adataid megadása"
+        "text": "2. Lépés: válassz kezelést"
       },
       {
         "type": "p",
-        "text": "Add meg a neved, e-mail címed és telefonszámod. Ezekre a visszaigazoláshoz és a kapcsolattartáshoz van szükség. Ha van megjegyzésed (pl. érzékeny terület, terhesség, első alkalom), írd be a megjegyzés mezőbe – így a kezelés személyre szabhatóbb."
+        "text": "A legördülő listából válaszd ki a kívánt masszázst vagy kezelést: például frissítő masszázs, nyirokmasszázs, indiai fejmasszázs, arany kollagén. Ha bizonytalan vagy, olvasd el előbb a blogcikkeket vagy a /kezelesek oldalakat. A megjegyzés mezőbe írd be, ha első alkalom, érzékeny terület vagy erősség-preferencia van – ez sokat segít a személyre szabásban."
       },
       {
         "type": "h2",
-        "text": "3. Lépés: fizetés – bankkártya vagy átutalás"
+        "text": "3. Lépés: dátum és időpont"
+      },
+      {
+        "type": "p",
+        "text": "A naptárban csak a még szabad időpontok választhatók. Ha egy nap szürke vagy üres, az azt jelenti, hogy az a nap már betelt, vagy a heti zárolások (például admin által rögzített szabadnap) miatt nem foglalható. Próbálj alternatív napot vagy későbbi sávot. Érdemes a reggeli és a koraesti sávokat is megnézni, ha a délutánok gyakran foglaltak."
+      },
+      {
+        "type": "h2",
+        "text": "4. Lépés: személyes adatok"
+      },
+      {
+        "type": "p",
+        "text": "Add meg a neved, e-mail címed és telefonszámod. Ezekre a visszaigazoláshoz és a kapcsolattartáshoz van szükség. Ellenőrizd az e-mail címet gépelési hiba nélkül – a megerősítő üzenet oda érkezik. Telefonszámot érdemes úgy megadni, hogy SMS vagy hívás esetén elérhető legyél, ha a szalonnak kérdése van a foglalásról."
+      },
+      {
+        "type": "h2",
+        "text": "5. Lépés: fizetés – bankkártya vagy átutalás"
       },
       {
         "type": "ul",
         "items": [
           "Bankkártya (Stripe): biztonságos fizetési oldalra kerülsz; sikeres fizetés után a foglalás megerősítést kap.",
-          "Banki átutalás: a rendszer referenciakódot ad; utald el a foglalási díjat, majd a szalon megerősíti a Függőben lévő foglalást.",
-          "A foglalási díj általában 3 000 Ft – ez a kiválasztott kezelés árába beleszámít."
+          "Banki átutalás: a rendszer referenciakódot ad; utald el a foglalási díjat a megadott számlaszámra a közleményben a kóddal.",
+          "A foglalási díj általában 3 000 Ft – ez a kiválasztott kezelés árába beleszámít.",
+          "Átutalásos foglalásnál a szalon a beérkezés után erősíti meg a naptárban az időpontot (Függőben → megerősítés)."
         ]
       },
       {
+        "type": "p",
+        "text": "Ha a bankkártyás fizetés megszakad (bezárod az ablakot, elutasítja a bank), az időpont nem marad „lefoglalva” véglegesen. Ilyenkor indítsd újra a folyamatot. Átutalásnál figyeld a határokat: ha a díj nem érkezik meg időben, a szalon nem tudja megerősíteni a foglalást."
+      },
+      {
         "type": "h2",
-        "text": "Lemondás és módosítás"
+        "text": "Lemondás, módosítás, 24 órás szabály"
       },
       {
         "type": "p",
-        "text": "Kérjük, legalább 24 órával a kezelés előtt jelezd, ha nem tudsz jönni – e-mailben vagy telefonon (+36 30 487 7883). Így az időpont más vendégnek is felszabadulhat. A „Foglalásaim” oldalon is követheted a saját időpontjaidat, ha a rendszer ezt felajánlja."
+        "text": "Kérjük, legalább 24 órával a kezelés előtt jelezd, ha nem tudsz jönni – e-mailben vagy telefonon (+36 30 487 7883). Így az időpont más vendégnek is felszabadulhat. Rövid határidős lemondás esetén a foglalási díjra vonatkozó szabályokat a szalon tájékoztatója szerint alkalmazzuk; a legfontosabb, hogy minél hamarabb szólj."
       },
       {
         "type": "p",
-        "text": "Készen állsz? Indítsd az időpontfoglalást a weboldalon, és találkozzunk az Angyali Szalonban, Dunakeszin – a testi-lelki feltöltődés egy kattintással közelebb van."
+        "text": "A „Foglalásaim” oldalon is követheted a saját időpontjaidat, ha a rendszer ezt felajánlja. Időpont-módosításhoz vedd fel a kapcsolatot – sok esetben át lehet tenni másik napra, ha van szabad sáv."
+      },
+      {
+        "type": "h2",
+        "text": "Gyakori kérdések a foglalásról"
+      },
+      {
+        "type": "p",
+        "text": "„Nem látok szabad időpontot.” – Nézz másik napot, vagy hívj telefonon; esetenként van várólista-jellegű rugalmasság. „Mennyi a teljes ár?” – A foglalóban a kezelés ára látszik; a 3000 Ft foglalási díj ennek része. „Ajándékba foglalhatok?” – Igen, a megjegyzésben jelezd, kinek szól a kezelés, és egyeztessétek a dátumot a megajándékozottal."
+      },
+      {
+        "type": "h2",
+        "text": "Készen állsz?"
+      },
+      {
+        "type": "p",
+        "text": "Indítsd az időpontfoglalást a weboldalon, válassz kezelést, és találkozzunk az Angyali Szalonban, Dunakeszin. A testi-lelki feltöltődés egy kattintással közelebb van – a többi már a matrac és a csend dolga."
+      },
+      {
+        "type": "h2",
+        "text": "Gyakorlati tippek a mindennapokra"
+      },
+      {
+        "type": "p",
+        "text": "A kezelés hatása tartósabb, ha a mindennapokban is figyelsz a tested jelzéseire. Állj fel óránként, ha ülőmunkát végzel; igyál elegendő folyadékot; aludj, amikor csak teheted. A masszázs Dunakeszin az Angyali Szalonban a tudatos pihenés része lehet – nem helyettesíti a mozgást és az orvosi ellátást, de kiegészíti a közérzet javítását. Ha új panasz jelenik meg, ne várd el, hogy egyetlen alkalom mindent megoldjon: a rendszeresség és a reális célok a legjobb szövetségeseid."
+      },
+      {
+        "type": "p",
+        "text": "Érdemes a foglalás előtt elolvasni a kapcsolódó blogcikkeket és a kezelésoldalt, hogy pontosan tudd, mire számíthatsz. Ha kérdésed marad, hívj bátran a +36 30 487 7883-as számon, vagy írj a kapcsolatfelvételi lehetőségeken. Szeretettel várlak a 2120 Dunakeszi, Kolonics György utca 2/B címén – a testi-lelki feltöltődés kapuja az Angyali Szalonban nyílik meg."
+      },
+      {
+        "type": "h2",
+        "text": "Összefoglaló és következő lépés"
+      },
+      {
+        "type": "p",
+        "text": "A fenti tudnivalók célja, hogy magabiztosan dönthess: melyik kezelés illik hozzád, hogyan foglalj, és mire számíts a szalonban. A masszázs Dunakeszin nem csupán egy bejegyzés a naptárban, hanem idő, amit magadra fordítasz. Foglalj online időpontot, érkezz néhány perccel korábban, és engedd, hogy a tested és az elméd is pihenjen. A blog további cikkei segítenek elmélyülni az egyes technikákban – lapozz tovább, majd találkozzunk a matracnál."
+      },
+      {
+        "type": "h2",
+        "text": "Mit mondanak a visszatérő vendégek?"
+      },
+      {
+        "type": "p",
+        "text": "A visszatérő vendégek leggyakrabban a nyugodt hangulatot, a pontosságot és azt emelik ki, hogy nem „futószalagon” kezeljük őket. Sokan a Google-értékelésekben is megírják: a masszázs Dunakeszin az Angyali Szalonban személyes élmény. A 4,9-es átlag és a több mint 28 értékelés nem marketingmondat – a mindennapi munka visszajelzése. Ha te is jártál nálunk, egy őszinte vélemény sokat segít a következő vendégnek a döntésben."
+      },
+      {
+        "type": "h2",
+        "text": "Hogyan válassz időpontot a napirendedhez?"
+      },
+      {
+        "type": "p",
+        "text": "Reggeli sáv: tiszta fejjel indul a nap, kevesebb a csúcsforgalom. Déli / kora délutáni sáv: a munka közepén ad szünetet. Délutáni / koraesti sáv: a nap lezárása, de hagyd, hogy utána ne azonnal kezdődjön a legstresszesebb program. A foglalóban látszanak a szabad helyek – ha a kedvenc sávod betelt, érdemes heti rendszerességgel előre foglalni. A heti zárolások (szabadnapok) miatt egyes napok üresek lehetnek; ez nem hiba, hanem a szalon működése."
+      },
+      {
+        "type": "h2",
+        "text": "A testi-lelki feltöltődés mint szokás"
+      },
+      {
+        "type": "p",
+        "text": "Egy alkalom is adhat megkönnyebbülést, de a tartós változás a szokáson múlik: ugyanúgy, ahogy a fogmosás vagy a mozgás. Tervezd be a naptáradba a masszázst, ne csak „ha éppen van idő”. A tested előbb-utóbb jelzi, ha túl sokáig hagytad. A blog és a kezelésoldalak segítenek tudatosan választani – a foglaló pedig egyszerűvé teszi a megvalósítást. Dunakeszin, az Auchan közelében, a Kolonics György utcában várlak: jöjj el, lassulj le, és engedd, hogy a kezek és a csend dolgozzanak érted."
+      },
+      {
+        "type": "p",
+        "text": "Ha a „Hogyan foglalj masszázs időpontot online?” témája különösen érdekel, mentsd el ezt a cikket, és a foglalás előtt futtasd át még egyszer a gyakorlati listákat. A megjegyzés mezőbe írd be a legfontosabb kéréseid – így a kezelés az első perctől rólad szól. Online foglalás: a weboldal Időpontfoglalás menüpontja. Kérdés: +36 30 487 7883. Helyszín: 2120 Dunakeszi, Kolonics György utca 2/B (kapucsengő: 1/43)."
       }
     ]
   },
   {
     "slug": "elso-masszazs-mire-szamits",
     "title": "Az első masszázs – mire számíts a szalonban?",
-    "excerpt": "Első alkalom az Angyali Szalonban: öltözet, hangulat, mennyi ideig tart, és hogyan hozd ki a legtöbbet a kezelésből.",
+    "excerpt": "Első alkalom az Angyali Szalonban: öltözet, hangulat, kommunikáció, utógondozás – részletes útmutató kezdőknek.",
     "date": "2026-07-03",
     "image": "/images/szalon-3.jpeg",
-    "seoTitle": "Első masszázs – mire számíts? | Dunakeszi",
-    "seoDescription": "Első masszázs Dunakeszin: mire számíthatsz az Angyali Szalonban, hogyan készülj, és mi történik a kezelés alatt. Makra Edina.",
+    "seoTitle": "Első masszázs – mire számíts? | Dunakeszi Angyali Szalon",
+    "seoDescription": "Első masszázs Dunakeszin: mire számíthatsz, hogyan készülj, mi történik a kezelés alatt és után. Makra Edina, Angyali Szalon.",
     "blocks": [
       {
         "type": "p",
-        "text": "Az első masszázs izgalmas – és teljesen természetes, ha van benned némi izgalom. Az Angyali Szalonban a cél a biztonságos, tiszteletteljes, nyugodt környezet. A masszázs Dunakeszin nálunk nem „sietős szolgáltatás”, hanem odafigyelő találkozás a testeddel."
+        "text": "Az első masszázs izgalmas – és teljesen természetes, ha van benned némi feszültség vagy szégyenérzet. Az Angyali Szalonban a cél a biztonságos, tiszteletteljes, nyugodt környezet. A masszázs Dunakeszin nálunk nem „sietős szolgáltatás”, hanem odafigyelő találkozás a testeddel. Ez a cikk végigveszi a teljes utat: az előkészületektől a kezelésen át az utána következő órákig."
       },
       {
         "type": "h2",
-        "text": "Érkezés előtt"
+        "text": "Mielőtt elindulsz otthonról"
       },
       {
         "type": "ul",
         "items": [
-          "Érkezz 5–10 perccel korábban, hogy ráhangolódhass.",
-          "Könnyű ruházat praktikus; a kezeléshez tiszta lepedőt / takarót biztosítunk.",
+          "Érkezz 5–10 perccel korábban, hogy ráhangolódhass és ne rohanva lépj be.",
+          "Könnyű, kényelmes ruházat praktikus; a kezeléshez tiszta lepedőt / takarót biztosítunk.",
           "Ne egyél nagyon bőségesen közvetlenül előtte; egy könnyű étkezés rendben van.",
-          "Írd le magadnak, hol érzed a feszültséget – ezt a kezelés elején megbeszélhetjük."
+          "Írd le magadnak, hol érzed a feszültséget – ezt a kezelés elején megbeszélhetjük.",
+          "Ha van ismert egészségügyi korlátozásod, vedd magaddal a lényeget (pl. gerincprobléma, terhesség)."
         ]
+      },
+      {
+        "type": "p",
+        "text": "Higiénia: friss zuhany otthon kellemes, de nem kötelező „tökéletes” állapot. Kerüld az erős parfümöt, ha aromamasszázsra jössz – az illóolajok és a saját illatod így nem versengenek. Kapcsold ki vagy némítsd a telefonod, hogy a 60 perc tényleg a tiéd legyen."
+      },
+      {
+        "type": "h2",
+        "text": "Érkezés a szalonba"
+      },
+      {
+        "type": "p",
+        "text": "Cím: 2120 Dunakeszi, Kolonics György utca 2/B, kapucsengő 1/43. Az Auchan közelében vagyunk. Ha elsőre eltévedsz, a telefonos segítség (+36 30 487 7883) mindig elérhető. Belépéskor rövid, barátságos fogadtatás következik: megbeszéljük a választott kezelést, a panaszokat és az erősség preferenciáját."
       },
       {
         "type": "h2",
@@ -143,35 +318,104 @@
       },
       {
         "type": "p",
-        "text": "Rövid beszélgetés után a választott technikának megfelelő, kényelmes pozícióban dolgozunk. Bármikor jelezheted, ha az erősség túl erős vagy túl gyenge – a kommunikáció része a minőségnek. A cél a testi-lelki feltöltődés: lassabb légzés, oldódó izmok, csendesebb elme."
+        "text": "A testhelyzet a kezeléstől függ (hát, has, oldalt fekvés). A magánszféra fontos: csak az a testrész van szabadon, amin éppen dolgozunk, a többi takarva marad. A fogások ritmusa és nyomása a frissítő, nepáli, nyirok vagy egyéb technikához igazodik. Te nem „tűrni” jöttél, hanem pihenni – ha valami kellemetlen, szólj nyugodtan."
+      },
+      {
+        "type": "p",
+        "text": "Sokan elalszanak vagy mélyen elcsendesednek. Ez jó jel. Mások beszélgetnek – az is rendben van, ha mindketten így érzitek kényelmesnek. A cél a testi-lelki feltöltődés: lassabb légzés, oldódó izmok, csendesebb elme."
       },
       {
         "type": "h2",
-        "text": "Utána"
+        "text": "Utána: az első órák és nap"
       },
       {
         "type": "p",
-        "text": "Igyál vizet, ha teheted, és hagyd, hogy a tested „feldolgozza” a kezelést. Kerüld a nagyon intenzív edzést közvetlenül utána, ha frissítő vagy mélyebb lazító masszázson voltál. Ha bármilyen szokatlan panaszod van, jelezd – a visszajelzés fontos."
+        "text": "Igyál vizet, ha teheted, és hagyd, hogy a tested „feldolgozza” a kezelést. Kerüld a nagyon intenzív edzést közvetlenül utána, ha frissítő vagy mélyebb lazító masszázson voltál. Enyhe izomérzékenység előfordulhat, különösen ha régóta nem masszíroztattál – ez általában hamar enyhül. Ha szokatlan, erős panaszod van, jelezd."
+      },
+      {
+        "type": "h2",
+        "text": "Gyakori félelmek – és a válaszok"
+      },
+      {
+        "type": "ul",
+        "items": [
+          "„Fájni fog?” – A legtöbb kezelés kellemesen lazító; az erősséget finomhangoljuk.",
+          "„Mit vegyek fel?” – Egyszerű, kényelmes ruha; a szalonban megoldjuk az öltözést.",
+          "„Első alkalommal melyik kezelés?” – Gyakran a frissítő masszázs a legjobb belépő.",
+          "„Beszélnem kell?” – Nem kötelező; a csend is teljesen elfogadott."
+        ]
+      },
+      {
+        "type": "h2",
+        "text": "A következő lépés"
       },
       {
         "type": "p",
-        "text": "Az első masszázs után sok vendég már a következő időpontot is lefoglalja, mert érzi: a rendszeresség hozza a tartós könnyedséget. Foglalj online, és induljon az első alkalom az Angyali Szalonban, Dunakeszin."
+        "text": "Az első masszázs után sok vendég már a következő időpontot is lefoglalja. Ha tetszett, jegyezd meg, mi működött jól (erősség, zene, fókuszterület), és a következő foglalás megjegyzésében írd le. Foglalj online, és induljon az első alkalom az Angyali Szalonban, Dunakeszin – a masszázs a testi-lelki feltöltődés gyakorlata, nem vizsga."
+      },
+      {
+        "type": "h2",
+        "text": "Gyakorlati tippek a mindennapokra"
+      },
+      {
+        "type": "p",
+        "text": "A kezelés hatása tartósabb, ha a mindennapokban is figyelsz a tested jelzéseire. Állj fel óránként, ha ülőmunkát végzel; igyál elegendő folyadékot; aludj, amikor csak teheted. A masszázs Dunakeszin az Angyali Szalonban a tudatos pihenés része lehet – nem helyettesíti a mozgást és az orvosi ellátást, de kiegészíti a közérzet javítását. Ha új panasz jelenik meg, ne várd el, hogy egyetlen alkalom mindent megoldjon: a rendszeresség és a reális célok a legjobb szövetségeseid."
+      },
+      {
+        "type": "p",
+        "text": "Érdemes a foglalás előtt elolvasni a kapcsolódó blogcikkeket és a kezelésoldalt, hogy pontosan tudd, mire számíthatsz. Ha kérdésed marad, hívj bátran a +36 30 487 7883-as számon, vagy írj a kapcsolatfelvételi lehetőségeken. Szeretettel várlak a 2120 Dunakeszi, Kolonics György utca 2/B címén – a testi-lelki feltöltődés kapuja az Angyali Szalonban nyílik meg."
+      },
+      {
+        "type": "h2",
+        "text": "Összefoglaló és következő lépés"
+      },
+      {
+        "type": "p",
+        "text": "A fenti tudnivalók célja, hogy magabiztosan dönthess: melyik kezelés illik hozzád, hogyan foglalj, és mire számíts a szalonban. A masszázs Dunakeszin nem csupán egy bejegyzés a naptárban, hanem idő, amit magadra fordítasz. Foglalj online időpontot, érkezz néhány perccel korábban, és engedd, hogy a tested és az elméd is pihenjen. A blog további cikkei segítenek elmélyülni az egyes technikákban – lapozz tovább, majd találkozzunk a matracnál."
+      },
+      {
+        "type": "h2",
+        "text": "Mit mondanak a visszatérő vendégek?"
+      },
+      {
+        "type": "p",
+        "text": "A visszatérő vendégek leggyakrabban a nyugodt hangulatot, a pontosságot és azt emelik ki, hogy nem „futószalagon” kezeljük őket. Sokan a Google-értékelésekben is megírják: a masszázs Dunakeszin az Angyali Szalonban személyes élmény. A 4,9-es átlag és a több mint 28 értékelés nem marketingmondat – a mindennapi munka visszajelzése. Ha te is jártál nálunk, egy őszinte vélemény sokat segít a következő vendégnek a döntésben."
+      },
+      {
+        "type": "h2",
+        "text": "Hogyan válassz időpontot a napirendedhez?"
+      },
+      {
+        "type": "p",
+        "text": "Reggeli sáv: tiszta fejjel indul a nap, kevesebb a csúcsforgalom. Déli / kora délutáni sáv: a munka közepén ad szünetet. Délutáni / koraesti sáv: a nap lezárása, de hagyd, hogy utána ne azonnal kezdődjön a legstresszesebb program. A foglalóban látszanak a szabad helyek – ha a kedvenc sávod betelt, érdemes heti rendszerességgel előre foglalni. A heti zárolások (szabadnapok) miatt egyes napok üresek lehetnek; ez nem hiba, hanem a szalon működése."
+      },
+      {
+        "type": "h2",
+        "text": "A testi-lelki feltöltődés mint szokás"
+      },
+      {
+        "type": "p",
+        "text": "Egy alkalom is adhat megkönnyebbülést, de a tartós változás a szokáson múlik: ugyanúgy, ahogy a fogmosás vagy a mozgás. Tervezd be a naptáradba a masszázst, ne csak „ha éppen van idő”. A tested előbb-utóbb jelzi, ha túl sokáig hagytad. A blog és a kezelésoldalak segítenek tudatosan választani – a foglaló pedig egyszerűvé teszi a megvalósítást. Dunakeszin, az Auchan közelében, a Kolonics György utcában várlak: jöjj el, lassulj le, és engedd, hogy a kezek és a csend dolgozzanak érted."
+      },
+      {
+        "type": "p",
+        "text": "Ha a „Az első masszázs – mire számíts a szalonban?” témája különösen érdekel, mentsd el ezt a cikket, és a foglalás előtt futtasd át még egyszer a gyakorlati listákat. A megjegyzés mezőbe írd be a legfontosabb kéréseid – így a kezelés az első perctől rólad szól. Online foglalás: a weboldal Időpontfoglalás menüpontja. Kérdés: +36 30 487 7883. Helyszín: 2120 Dunakeszi, Kolonics György utca 2/B (kapucsengő: 1/43)."
       }
     ]
   },
   {
     "slug": "masszazs-vagy-nyirokmasszazs",
     "title": "Masszázs vagy nyirokmasszázs – melyiket válaszd?",
-    "excerpt": "Összehasonlítás: klasszikus lazító masszázs vs. nyirokmasszázs – célok, érzés, kinek melyik ajánlott Dunakeszin.",
+    "excerpt": "Részletes összehasonlítás: klasszikus lazító masszázs vs. nyirokmasszázs – célok, érzés, kinek melyik ajánlott, és hogyan váltogathatod őket.",
     "date": "2026-07-04",
     "image": "/images/szalon-4.jpeg",
     "serviceId": "nyirok",
-    "seoTitle": "Masszázs vagy nyirokmasszázs? | Dunakeszi",
-    "seoDescription": "Masszázs vagy nyirokmasszázs Dunakeszin? Melyik oldja a feszültséget, melyik a pangást? Segítünk választani az Angyali Szalonban.",
+    "seoTitle": "Masszázs vagy nyirokmasszázs? Összehasonlítás | Dunakeszi",
+    "seoDescription": "Masszázs vagy nyirokmasszázs Dunakeszin? Melyik oldja a feszültséget, melyik a pangást? Részletes döntési segédlet az Angyali Szalonban.",
     "blocks": [
       {
         "type": "p",
-        "text": "Gyakori kérdés: masszázs vagy nyirokmasszázs legyen az első lépés? Mindkettő a közérzetet szolgálja, de más a fókusz. A masszázs Dunakeszin kínálatában mindkettő elérhető az Angyali Szalonban – a választás a panaszodtól és a célodtól függ."
+        "text": "Gyakori kérdés a foglaló előtt: masszázs vagy nyirokmasszázs legyen az első lépés? Mindkettő a közérzetet szolgálja, de más a fókusz, a ritmus és az élmény. A masszázs Dunakeszin kínálatában mindkettő elérhető az Angyali Szalonban – a választás a panaszodtól, a célodtól és attól függ, mennyire kíméletes vagy erőteljesebb lazítást keresel. Ez a cikk segít dönteni, és megmutatja, mikor érdemes váltogatni a kettőt."
       },
       {
         "type": "h2",
@@ -179,15 +423,23 @@
       },
       {
         "type": "p",
-        "text": "Ha a fő gond a merev váll, a „beállt” hát, a stresszes, feszült izomzat, a frissítő vagy nepáli masszázs a természetes választás. Ritmikus, lazító fogásokkal dolgozik az izmokon, javíthatja a közérzetet, és sokaknál azonnali „könnyebb vagyok” érzést ad. Ideális első masszázsnak is."
-      },
-      {
-        "type": "h2",
-        "text": "Nyirokmasszázs"
+        "text": "Ha a fő gond a merev váll, a „beállt” hát, a stresszes, feszült izomzat, a frissítő vagy nepáli masszázs a természetes választás. Ritmikus, lazító fogásokkal dolgozik az izmokon, javíthatja a közérzetet, és sokaknál azonnali „könnyebb vagyok” érzést ad. Ideális első masszázsnak is, mert az élmény ismerős: melegség, átmozgatás, oldódás."
       },
       {
         "type": "p",
-        "text": "A nyirokmasszázs gyengédebb, lassabb ritmusú. A nyirokkeringés támogatása, a pangó folyadékérzet, a nehéz lábak, a „duzzadtabb” napok utáni könnyedség a leggyakoribb indokok. Nem „erős gyúrás”: inkább finom, irányított mozdulatok. Sok vendég kúraszerűen, több alkalommal jön."
+        "text": "A nepáli irány mélyebb stresszoldást is célozhat, ha a frissítő már kevésnek tűnik. Mindkettő 60 perces sávban, 15 000 Ft körüli áron érhető el a szalon aktuális árlistája szerint. A részleteket a frissítő és a nepáli blogcikkekben találod."
+      },
+      {
+        "type": "h2",
+        "text": "Nyirokmasszázs – más a nyelve"
+      },
+      {
+        "type": "p",
+        "text": "A nyirokmasszázs gyengédebb, lassúbb ritmusú. A nyirokkeringés támogatásának jegyében a pangó folyadékérzet, a nehéz lábak, a „duzzadtabb” napok utáni könnyedség a leggyakoribb indokok. Nem „erős gyúrás”: inkább finom, irányított mozdulatok. Sok vendég kúraszerűen, több egymást követő alkalommal jön, majd ritkábban fenntartó kezeléssel folytatja."
+      },
+      {
+        "type": "p",
+        "text": "Fontos: a nyirokmasszázs nem orvosi diagnózis vagy terápia helyettesítője. Komoly ödéma, szív- vagy veseprobléma esetén orvosi konzultáció indokolt. Egészséges vendégeknek viszont kellemes, tudatos pihenési forma lehet a testi-lelki feltöltődés jegyében."
       },
       {
         "type": "h2",
@@ -199,27 +451,96 @@
           "Feszült izmok, stressz, „össze vagyok esve” → frissítő / nepáli masszázs",
           "Nehéz lábak, ödémaérzet, keringés fókusz → nyirokmasszázs",
           "Fejfájás, nyak-váll → indiai fejmasszázs vagy frissítő a felsőtestre",
-          "Bizonytalan vagy → írj megjegyzést a foglalásnál, vagy hívj: segítünk választani"
+          "Bizonytalan vagy → írj megjegyzést a foglalásnál, vagy hívj: segítünk választani",
+          "Váltogatás: egyik hét masszázs, másik hét nyirok – sokaknak bevált"
         ]
       },
       {
+        "type": "h2",
+        "text": "Miben különbözik az érzés a matracon?"
+      },
+      {
         "type": "p",
-        "text": "A testi-lelki feltöltődés nem egyetlen „helyes” kezelésen múlik: a legjobb az, amelyik a te testedhez illeszkedik. Nézd meg a nyirokmasszázs és a frissítő masszázs oldalát, majd foglalj időpontot online Dunakeszin."
+        "text": "A klasszikus masszázsnál gyakran erősebb a „átgyúrtak, kiengedtem” élmény. A nyiroknál inkább a lassú, ringató, tehermentesítő érzés dominál – van, aki emiatt jobban elalszik. Egyik sem „jobb” a másiknál: más a cél. Ha szereted a mélyebb nyomást, a nyirok lehet, hogy kevésnek tűnik; ha a gyúrástól feszülsz, a nyirok felszabadító lehet."
+      },
+      {
+        "type": "h2",
+        "text": "Kúra vs. egyszeri alkalom"
+      },
+      {
+        "type": "p",
+        "text": "Masszázsnál az egyszeri alkalom is adhat azonnali megkönnyebbülést; a rendszeresség pedig tartósabb hatást. Nyiroknál a kúraszerű megközelítés gyakoribb, mert a szervezetnek idő kell a folyadékháztartás és a közérzet finomhangolásához. Beszéljük meg a foglaláskor, hány alkalmat érdemes tervezni a célodhoz."
+      },
+      {
+        "type": "h2",
+        "text": "Összegzés"
+      },
+      {
+        "type": "p",
+        "text": "A testi-lelki feltöltődés nem egyetlen „helyes” kezelésen múlik: a legjobb az, amelyik a te testedhez illeszkedik. Nézd meg a nyirokmasszázs és a frissítő masszázs oldalát, olvasd el a kapcsolódó blogcikkeket, majd foglalj időpontot online Dunakeszin. Ha továbbra is bizonytalan vagy, egy telefonhívás tisztázza a kérdést percek alatt."
+      },
+      {
+        "type": "h2",
+        "text": "Gyakorlati tippek a mindennapokra"
+      },
+      {
+        "type": "p",
+        "text": "A kezelés hatása tartósabb, ha a mindennapokban is figyelsz a tested jelzéseire. Állj fel óránként, ha ülőmunkát végzel; igyál elegendő folyadékot; aludj, amikor csak teheted. A masszázs Dunakeszin az Angyali Szalonban a tudatos pihenés része lehet – nem helyettesíti a mozgást és az orvosi ellátást, de kiegészíti a közérzet javítását. Ha új panasz jelenik meg, ne várd el, hogy egyetlen alkalom mindent megoldjon: a rendszeresség és a reális célok a legjobb szövetségeseid."
+      },
+      {
+        "type": "p",
+        "text": "Érdemes a foglalás előtt elolvasni a kapcsolódó blogcikkeket és a kezelésoldalt, hogy pontosan tudd, mire számíthatsz. Ha kérdésed marad, hívj bátran a +36 30 487 7883-as számon, vagy írj a kapcsolatfelvételi lehetőségeken. Szeretettel várlak a 2120 Dunakeszi, Kolonics György utca 2/B címén – a testi-lelki feltöltődés kapuja az Angyali Szalonban nyílik meg."
+      },
+      {
+        "type": "h2",
+        "text": "Összefoglaló és következő lépés"
+      },
+      {
+        "type": "p",
+        "text": "A fenti tudnivalók célja, hogy magabiztosan dönthess: melyik kezelés illik hozzád, hogyan foglalj, és mire számíts a szalonban. A masszázs Dunakeszin nem csupán egy bejegyzés a naptárban, hanem idő, amit magadra fordítasz. Foglalj online időpontot, érkezz néhány perccel korábban, és engedd, hogy a tested és az elméd is pihenjen. A blog további cikkei segítenek elmélyülni az egyes technikákban – lapozz tovább, majd találkozzunk a matracnál."
+      },
+      {
+        "type": "h2",
+        "text": "Mit mondanak a visszatérő vendégek?"
+      },
+      {
+        "type": "p",
+        "text": "A visszatérő vendégek leggyakrabban a nyugodt hangulatot, a pontosságot és azt emelik ki, hogy nem „futószalagon” kezeljük őket. Sokan a Google-értékelésekben is megírják: a masszázs Dunakeszin az Angyali Szalonban személyes élmény. A 4,9-es átlag és a több mint 28 értékelés nem marketingmondat – a mindennapi munka visszajelzése. Ha te is jártál nálunk, egy őszinte vélemény sokat segít a következő vendégnek a döntésben."
+      },
+      {
+        "type": "h2",
+        "text": "Hogyan válassz időpontot a napirendedhez?"
+      },
+      {
+        "type": "p",
+        "text": "Reggeli sáv: tiszta fejjel indul a nap, kevesebb a csúcsforgalom. Déli / kora délutáni sáv: a munka közepén ad szünetet. Délutáni / koraesti sáv: a nap lezárása, de hagyd, hogy utána ne azonnal kezdődjön a legstresszesebb program. A foglalóban látszanak a szabad helyek – ha a kedvenc sávod betelt, érdemes heti rendszerességgel előre foglalni. A heti zárolások (szabadnapok) miatt egyes napok üresek lehetnek; ez nem hiba, hanem a szalon működése."
+      },
+      {
+        "type": "h2",
+        "text": "A testi-lelki feltöltődés mint szokás"
+      },
+      {
+        "type": "p",
+        "text": "Egy alkalom is adhat megkönnyebbülést, de a tartós változás a szokáson múlik: ugyanúgy, ahogy a fogmosás vagy a mozgás. Tervezd be a naptáradba a masszázst, ne csak „ha éppen van idő”. A tested előbb-utóbb jelzi, ha túl sokáig hagytad. A blog és a kezelésoldalak segítenek tudatosan választani – a foglaló pedig egyszerűvé teszi a megvalósítást. Dunakeszin, az Auchan közelében, a Kolonics György utcában várlak: jöjj el, lassulj le, és engedd, hogy a kezek és a csend dolgozzanak érted."
+      },
+      {
+        "type": "p",
+        "text": "Ha a „Masszázs vagy nyirokmasszázs – melyiket válaszd?” témája különösen érdekel, mentsd el ezt a cikket, és a foglalás előtt futtasd át még egyszer a gyakorlati listákat. A megjegyzés mezőbe írd be a legfontosabb kéréseid – így a kezelés az első perctől rólad szól. Online foglalás: a weboldal Időpontfoglalás menüpontja. Kérdés: +36 30 487 7883. Helyszín: 2120 Dunakeszi, Kolonics György utca 2/B (kapucsengő: 1/43)."
       }
     ]
   },
   {
     "slug": "rtl-tv2-makra-edina",
     "title": "Makra Edina a médiában – RTL és TV2 szereplések",
-    "excerpt": "Ismerd meg a szalon arcát: tévés megjelenések, szakmai hitelesség és miért bíznak a vendégek az Angyali Szalonban.",
+    "excerpt": "Ismerd meg a szalon arcát: tévés megjelenések, szakmai hitelesség, vendégbizalom – és miért számít ez a masszázs választásakor.",
     "date": "2026-07-05",
     "image": "/images/edina.jpeg",
-    "seoTitle": "Makra Edina RTL és TV2 | Dunakeszi Masszázs",
-    "seoDescription": "Makra Edina masszőr RTL és TV2 szereplései. Angyali Szalon Dunakeszin – szakmai háttér és vendégbizalom.",
+    "seoTitle": "Makra Edina RTL és TV2 | Dunakeszi Masszázs – Angyali Szalon",
+    "seoDescription": "Makra Edina masszőr RTL és TV2 szereplései. Angyali Szalon Dunakeszin – szakmai háttér, vendégbizalom, személyes élmény.",
     "blocks": [
       {
         "type": "p",
-        "text": "A masszázs Dunakeszin világa sok kis szalonból áll – az Angyali Szalonban Makra Edina munkáját a személyes odafigyelés és a nyilvános szakmai megjelenések is fémjelzik. Az RTL és TV2 szereplések sok vendégnek adnak extra bizalmat: látható, hogy a kezelések mögött gyakorlott, kommunikáló szakember áll."
+        "text": "A masszázs Dunakeszin világa sok kis szalonból áll – az Angyali Szalonban Makra Edina munkáját a személyes odafigyelés és a nyilvános szakmai megjelenések is fémjelzik. Az RTL és TV2 szereplések sok vendégnek adnak extra bizalmat: látható, hogy a kezelések mögött gyakorlott, kommunikáló szakember áll. Ez a cikk arról szól, mit jelent ez a mindennapi szalonélményben – és miért nem helyettesíti a személyes tapasztalatot."
       },
       {
         "type": "h2",
@@ -227,7 +548,7 @@
       },
       {
         "type": "p",
-        "text": "Egy tévés riport nem helyettesíti a személyes tapasztalatot, de bemutatja a szemléletet: a testi-lelki feltöltődés, a masszázs szerepe a stresszkezelésben, a modern kiegészítő kezelések (például BEMER, arckezelések) érthető magyarázata. Aki először jár masszőrnél, gyakran keres ilyen „emberi arcot” a foglalás előtt."
+        "text": "Egy tévés riport nem „reklámfilmes” ígéret, hanem bemutatkozás: a szemlélet, a masszázs szerepe a stresszkezelésben, a modern kiegészítő kezelések (például BEMER, arckezelések) érthető magyarázata. Aki először jár masszőrnél, gyakran keres ilyen „emberi arcot” a foglalás előtt. A kamera előtt elhangzó mondatok ugyanazt a hangnemet tükrözik, mint a szalonban: nyugodt, gyakorlatias, túlzások nélküli."
       },
       {
         "type": "h2",
@@ -235,27 +556,119 @@
       },
       {
         "type": "p",
-        "text": "A Google-értékelések (4,9 / 5, több mint 28 vélemény) és a visszatérő vendégek a mindennapi minőséget mutatják. A média felkelteti az érdeklődést; a nyugodt szalon, a tiszta környezet és a személyre szabott masszázs tartja meg a kapcsolatot."
+        "text": "A Google-értékelések (4,9 / 5, több mint 28 vélemény) és a visszatérő vendégek a mindennapi minőséget mutatják. A média felkelteti az érdeklődést; a nyugodt szalon, a tiszta környezet és a személyre szabott masszázs tartja meg a kapcsolatot. Egy jó riport után is az dönt, hogy a matracon hogyan érzed magad."
+      },
+      {
+        "type": "h2",
+        "text": "Mit érdemes megnézni a weboldalon?"
       },
       {
         "type": "p",
-        "text": "A főoldalon a TV szereplések szekcióban megnézheted a kapcsolódó videókat. Ha kíváncsi vagy a kezelésekre, lapozz a blog masszázs-cikkeihez, vagy foglalj időpontot az Angyali Szalonba – masszázs Dunakeszin, személyesen."
+        "text": "A főoldalon a TV szereplések szekcióban megnézheted a kapcsolódó videókat. Emellett a blog masszázs-cikkei és a kezelésoldalak segítenek eldönteni, melyik alkalommal melyik technikát próbáld ki. A testi-lelki feltöltődés ott kezdődik, ahol a kíváncsiság találkozik a foglalással."
+      },
+      {
+        "type": "h2",
+        "text": "Személyes márka vs. „csak egy masszőr”"
+      },
+      {
+        "type": "p",
+        "text": "Egy helyi vállalkozásnál a bizalom sokszor a névhez kötődik. Makra Edina neve a szalon arca: nem anonim lánc, hanem egy szakember, aki a vendégeivel dolgozik. A tévés megjelenés ezt a személyességet erősíti – de a mindennapokban a pontosság, a higiénia, a kommunikáció és a kezek minősége a mérce."
+      },
+      {
+        "type": "h2",
+        "text": "Hogyan kapcsolódik ez a foglaláshoz?"
+      },
+      {
+        "type": "p",
+        "text": "Ha a riportok után döntöttél a látogatás mellett, az online foglaló ugyanúgy működik: válassz kezelést, napot, fizess foglalási díjat. A megjegyzésben írd meg nyugodtan, hogy „első alkalom, a TV után jöttem” – így tudjuk, hogy kezdő vendég vagy, és ennek megfelelően hangoljuk a kezelést."
+      },
+      {
+        "type": "h2",
+        "text": "Összegzés"
+      },
+      {
+        "type": "p",
+        "text": "A média ablakot nyit a szalon világára; a masszázs Dunakeszin élménye pedig a matracon válik valósággá. Nézd meg a videókat, olvasd el a blogot, és foglalj időpontot az Angyali Szalonba – személyesen, nyugodt környezetben."
+      },
+      {
+        "type": "h2",
+        "text": "Gyakorlati tippek a mindennapokra"
+      },
+      {
+        "type": "p",
+        "text": "A kezelés hatása tartósabb, ha a mindennapokban is figyelsz a tested jelzéseire. Állj fel óránként, ha ülőmunkát végzel; igyál elegendő folyadékot; aludj, amikor csak teheted. A masszázs Dunakeszin az Angyali Szalonban a tudatos pihenés része lehet – nem helyettesíti a mozgást és az orvosi ellátást, de kiegészíti a közérzet javítását. Ha új panasz jelenik meg, ne várd el, hogy egyetlen alkalom mindent megoldjon: a rendszeresség és a reális célok a legjobb szövetségeseid."
+      },
+      {
+        "type": "p",
+        "text": "Érdemes a foglalás előtt elolvasni a kapcsolódó blogcikkeket és a kezelésoldalt, hogy pontosan tudd, mire számíthatsz. Ha kérdésed marad, hívj bátran a +36 30 487 7883-as számon, vagy írj a kapcsolatfelvételi lehetőségeken. Szeretettel várlak a 2120 Dunakeszi, Kolonics György utca 2/B címén – a testi-lelki feltöltődés kapuja az Angyali Szalonban nyílik meg."
+      },
+      {
+        "type": "h2",
+        "text": "Összefoglaló és következő lépés"
+      },
+      {
+        "type": "p",
+        "text": "A fenti tudnivalók célja, hogy magabiztosan dönthess: melyik kezelés illik hozzád, hogyan foglalj, és mire számíts a szalonban. A masszázs Dunakeszin nem csupán egy bejegyzés a naptárban, hanem idő, amit magadra fordítasz. Foglalj online időpontot, érkezz néhány perccel korábban, és engedd, hogy a tested és az elméd is pihenjen. A blog további cikkei segítenek elmélyülni az egyes technikákban – lapozz tovább, majd találkozzunk a matracnál."
+      },
+      {
+        "type": "h2",
+        "text": "Mit mondanak a visszatérő vendégek?"
+      },
+      {
+        "type": "p",
+        "text": "A visszatérő vendégek leggyakrabban a nyugodt hangulatot, a pontosságot és azt emelik ki, hogy nem „futószalagon” kezeljük őket. Sokan a Google-értékelésekben is megírják: a masszázs Dunakeszin az Angyali Szalonban személyes élmény. A 4,9-es átlag és a több mint 28 értékelés nem marketingmondat – a mindennapi munka visszajelzése. Ha te is jártál nálunk, egy őszinte vélemény sokat segít a következő vendégnek a döntésben."
+      },
+      {
+        "type": "h2",
+        "text": "Hogyan válassz időpontot a napirendedhez?"
+      },
+      {
+        "type": "p",
+        "text": "Reggeli sáv: tiszta fejjel indul a nap, kevesebb a csúcsforgalom. Déli / kora délutáni sáv: a munka közepén ad szünetet. Délutáni / koraesti sáv: a nap lezárása, de hagyd, hogy utána ne azonnal kezdődjön a legstresszesebb program. A foglalóban látszanak a szabad helyek – ha a kedvenc sávod betelt, érdemes heti rendszerességgel előre foglalni. A heti zárolások (szabadnapok) miatt egyes napok üresek lehetnek; ez nem hiba, hanem a szalon működése."
+      },
+      {
+        "type": "h2",
+        "text": "A testi-lelki feltöltődés mint szokás"
+      },
+      {
+        "type": "p",
+        "text": "Egy alkalom is adhat megkönnyebbülést, de a tartós változás a szokáson múlik: ugyanúgy, ahogy a fogmosás vagy a mozgás. Tervezd be a naptáradba a masszázst, ne csak „ha éppen van idő”. A tested előbb-utóbb jelzi, ha túl sokáig hagytad. A blog és a kezelésoldalak segítenek tudatosan választani – a foglaló pedig egyszerűvé teszi a megvalósítást. Dunakeszin, az Auchan közelében, a Kolonics György utcában várlak: jöjj el, lassulj le, és engedd, hogy a kezek és a csend dolgozzanak érted."
+      },
+      {
+        "type": "p",
+        "text": "Ha a „Makra Edina a médiában – RTL és TV2 szereplések” témája különösen érdekel, mentsd el ezt a cikket, és a foglalás előtt futtasd át még egyszer a gyakorlati listákat. A megjegyzés mezőbe írd be a legfontosabb kéréseid – így a kezelés az első perctől rólad szól. Online foglalás: a weboldal Időpontfoglalás menüpontja. Kérdés: +36 30 487 7883. Helyszín: 2120 Dunakeszi, Kolonics György utca 2/B (kapucsengő: 1/43)."
+      },
+      {
+        "type": "h2",
+        "text": "Kapcsolódó olvasnivaló a blogon"
+      },
+      {
+        "type": "p",
+        "text": "Érdemes elolvasni a teljes masszázs-útmutatót, a foglalási lépésről lépésre cikket, az első alkalomról szóló bejegyzést, valamint a masszázs vs. nyirokmasszázs összehasonlítót. Az egyes kezelések (frissítő, nepáli, aroma, indiai fej, kineziológia, arany kollagén, BEMER stb.) saját cikkekben is megtalálhatók. Így a döntésed nem érzésből, hanem tájékozottan születik – a masszázs Dunakeszin pedig tudatos, kellemes rutinná válhat."
+      },
+      {
+        "type": "p",
+        "text": "A testi-lelki feltöltődés nem verseny és nem teljesítmény. Nem kell „tökéletesen” pihenned, nem kell csendben szenvedned, ha valami nem kellemes, és nem kell magadtól elvárnod, hogy egyetlen alkalom megváltoztassa az egész életed. Elég, ha eljössz, jelen vagy, és hagyod, hogy a tested megkapja azt a figyelmet, amit a mindennapokban gyakran elmulaszt. Az Angyali Szalonban ebben támogatunk – szakmai figyelemmel és emberi hangon."
+      },
+      {
+        "type": "p",
+        "text": "Köszönjük, hogy elolvastad ezt a bejegyzést. Ha hasznosnak találtad, oszd meg valakivel, aki szintén masszázst keres Dunakeszin vagy a környéken. Találkozunk a szalonban – jó pihenést kívánunk előre is."
       }
     ]
   },
   {
     "slug": "frissito-masszazs-dunakeszin",
     "title": "Frissítő masszázs Dunakeszin – mikor érdemes választani?",
-    "excerpt": "A frissítő masszázs a mindennapi feszültség oldására való: kinek ajánlott, miben más, és hogyan foglalj az Angyali Szalonban.",
+    "excerpt": "A frissítő masszázs a mindennapi feszültség oldására: kinek ajánlott, miben más, hogyan zajlik, és hogyan foglalj az Angyali Szalonban.",
     "date": "2026-07-06",
     "image": "/images/szalon-3.jpeg",
     "serviceId": "frissito",
-    "seoTitle": "Frissítő masszázs Dunakeszin | Blog",
-    "seoDescription": "Frissítő masszázs Dunakeszin: mikor válaszd, mit ad a testnek, ár és időpontfoglalás az Angyali Szalonban. Makra Edina.",
+    "seoTitle": "Frissítő masszázs Dunakeszin – részletes útmutató | Blog",
+    "seoDescription": "Frissítő masszázs Dunakeszin: mikor válaszd, mit ad a testnek, ár, időtartam és foglalás. Makra Edina, Angyali Szalon.",
     "blocks": [
       {
         "type": "p",
-        "text": "A frissítő masszázs Dunakeszin az egyik leggyakrabban választott kezelés az Angyali Szalonban – nem véletlenül. Könnyed, lazító jellegű, mégis átmozgatja a testet, oldja a mindennapi feszültségeket, és sokaknál azonnal javítja a közérzetet. Ha először jössz masszázsra, ez kiváló belépő a testi-lelki feltöltődéshez."
+        "text": "A frissítő masszázs Dunakeszin az egyik leggyakrabban választott kezelés az Angyali Szalonban – nem véletlenül. Könnyed, lazító jellegű, mégis átmozgatja a testet, oldja a mindennapi feszültségeket, és sokaknál azonnal javítja a közérzetet. Ha először jössz masszázsra, ez kiváló belépő a testi-lelki feltöltődéshez. Ebben a cikkben részletesen bemutatjuk, kinek szól, miben különbözik a mélyebb technikáktól, és hogyan hozhatod ki belőle a legtöbbet."
       },
       {
         "type": "h2",
@@ -267,8 +680,13 @@
           "Irodai, ülőmunkát végzőknek – merev nyak, váll, derék",
           "Stresszes időszakban lévőknek – „ki szeretnék kapcsolni”",
           "Sportolás utáni regeneráció kiegészítéseként (nem sérüléskezelés helyett)",
-          "Első masszázsos vendégeknek – kellemes, nem túl erős élmény"
+          "Első masszázsos vendégeknek – kellemes, nem túl erős élmény",
+          "Annak, aki rendszeres „karbantartó” alkalmat keres havonta"
         ]
+      },
+      {
+        "type": "p",
+        "text": "Ha a panaszod inkább nehéz lábak és pangásérzet, olvasd el a nyirokmasszázs cikkünket is. Ha a stressz nagyon mély, a nepáli masszázs is szóba jöhet. A frissítő masszázs a „arany középút”: elég átmozgató ahhoz, hogy érezd a hatást, de általában nem ijesztően erős."
       },
       {
         "type": "h2",
@@ -276,7 +694,15 @@
       },
       {
         "type": "p",
-        "text": "A frissítő masszázs ritmusa és nyomása általában kellemesen lazító, nem a legmélyebb izomrétegekre koncentrál (mint egy erőteljesebb terápiás megközelítés). A hát, a vállak és a végtagok területén finom, ritmikus fogásokkal dolgozunk, hogy a tested fokozatosan megkönnyebbüljön. Ha inkább mélyebb oldódást keresel, a nepáli masszázs is szóba jöhet."
+        "text": "A frissítő masszázs ritmusa és nyomása általában kellemesen lazító, nem a legmélyebb izomrétegekre koncentrál. A hát, a vállak és a végtagok területén finom, ritmikus fogásokkal dolgozunk, hogy a tested fokozatosan megkönnyebbüljön. A cél nem a fájdalomküszöb keresése, hanem a keringés és a közérzet javítása, a feszültség oldása."
+      },
+      {
+        "type": "h2",
+        "text": "Hogyan zajlik egy 60 perces alkalom?"
+      },
+      {
+        "type": "p",
+        "text": "Rövid egyeztetés után a matracon kényelmes pozícióba kerülsz. A kezelés során a test több területét átmozgatjuk – a hangsúly a te panaszodon is múlhat (pl. több figyelem a vállakra). Bármikor jelezheted, ha erősebbet vagy gyengébbet szeretnél. A csend, a lassú légzés és a melegség együtt építik a pihenést."
       },
       {
         "type": "h2",
@@ -284,27 +710,100 @@
       },
       {
         "type": "p",
-        "text": "A frissítő masszázs kb. 60 perc, 15 000 Ft. Online foglaláskor 3 000 Ft foglalási díj szükséges. A kezelés oldalán részletesen is elolvashatod a leírást, majd az Időpontfoglalás menüpontban rögzítheted a dátumot. Masszázs Dunakeszin – frissítő formában – gyakran a heti vagy havi rutin része lesz, ha egyszer kipróbáltad."
+        "text": "A frissítő masszázs kb. 60 perc, 15 000 Ft. Online foglaláskor 3 000 Ft foglalási díj szükséges. A kezelés oldalán (/kezelesek/frissito) is elolvashatod a leírást, majd az Időpontfoglalás menüpontban rögzítheted a dátumot. Masszázs Dunakeszin – frissítő formában – gyakran a heti vagy havi rutin része lesz, ha egyszer kipróbáltad."
+      },
+      {
+        "type": "h2",
+        "text": "Tippek a tartósabb hatásért"
+      },
+      {
+        "type": "ul",
+        "items": [
+          "Igyál vizet a kezelés után",
+          "Kerüld a nagyon nehéz edzést közvetlenül utána",
+          "Figyeld a tartásod a munkahelyen – a masszázs nem helyettesíti az ergonómiát",
+          "Foglalj előre: a frekventált sávok hamar betelnek"
+        ]
+      },
+      {
+        "type": "h2",
+        "text": "Gyakori kérdések"
       },
       {
         "type": "p",
-        "text": "Foglalj időpontot az Angyali Szalonba, és engedd, hogy a frissítő masszázs visszaadja a könnyedséget a testednek és a napjaidnak."
+        "text": "„Férfiak is jönnek?” – Természetesen. „Lehet csak hátmasszázs?” – A frissítő általában teljesebb test, de a fókuszt a megjegyzésben jelezheted. „Milyen gyakran?” – Sokan 2–4 hetente jönnek; a tested dönt. „Kombinálható BEMER-rel?” – Igen, a BEMER önállóan vagy masszázs mellé is választható."
+      },
+      {
+        "type": "h2",
+        "text": "Foglalj frissítő masszázst"
+      },
+      {
+        "type": "p",
+        "text": "Foglalj időpontot az Angyali Szalonba, és engedd, hogy a frissítő masszázs visszaadja a könnyedséget a testednek és a napjaidnak. A testi-lelki feltöltődés Dunakeszin, nyugodt környezetben vár – egy kattintás a foglalóban."
+      },
+      {
+        "type": "h2",
+        "text": "Gyakorlati tippek a mindennapokra"
+      },
+      {
+        "type": "p",
+        "text": "A kezelés hatása tartósabb, ha a mindennapokban is figyelsz a tested jelzéseire. Állj fel óránként, ha ülőmunkát végzel; igyál elegendő folyadékot; aludj, amikor csak teheted. A masszázs Dunakeszin az Angyali Szalonban a tudatos pihenés része lehet – nem helyettesíti a mozgást és az orvosi ellátást, de kiegészíti a közérzet javítását. Ha új panasz jelenik meg, ne várd el, hogy egyetlen alkalom mindent megoldjon: a rendszeresség és a reális célok a legjobb szövetségeseid."
+      },
+      {
+        "type": "p",
+        "text": "Érdemes a foglalás előtt elolvasni a kapcsolódó blogcikkeket és a kezelésoldalt, hogy pontosan tudd, mire számíthatsz. Ha kérdésed marad, hívj bátran a +36 30 487 7883-as számon, vagy írj a kapcsolatfelvételi lehetőségeken. Szeretettel várlak a 2120 Dunakeszi, Kolonics György utca 2/B címén – a testi-lelki feltöltődés kapuja az Angyali Szalonban nyílik meg."
+      },
+      {
+        "type": "h2",
+        "text": "Összefoglaló és következő lépés"
+      },
+      {
+        "type": "p",
+        "text": "A fenti tudnivalók célja, hogy magabiztosan dönthess: melyik kezelés illik hozzád, hogyan foglalj, és mire számíts a szalonban. A masszázs Dunakeszin nem csupán egy bejegyzés a naptárban, hanem idő, amit magadra fordítasz. Foglalj online időpontot, érkezz néhány perccel korábban, és engedd, hogy a tested és az elméd is pihenjen. A blog további cikkei segítenek elmélyülni az egyes technikákban – lapozz tovább, majd találkozzunk a matracnál."
+      },
+      {
+        "type": "h2",
+        "text": "Mit mondanak a visszatérő vendégek?"
+      },
+      {
+        "type": "p",
+        "text": "A visszatérő vendégek leggyakrabban a nyugodt hangulatot, a pontosságot és azt emelik ki, hogy nem „futószalagon” kezeljük őket. Sokan a Google-értékelésekben is megírják: a masszázs Dunakeszin az Angyali Szalonban személyes élmény. A 4,9-es átlag és a több mint 28 értékelés nem marketingmondat – a mindennapi munka visszajelzése. Ha te is jártál nálunk, egy őszinte vélemény sokat segít a következő vendégnek a döntésben."
+      },
+      {
+        "type": "h2",
+        "text": "Hogyan válassz időpontot a napirendedhez?"
+      },
+      {
+        "type": "p",
+        "text": "Reggeli sáv: tiszta fejjel indul a nap, kevesebb a csúcsforgalom. Déli / kora délutáni sáv: a munka közepén ad szünetet. Délutáni / koraesti sáv: a nap lezárása, de hagyd, hogy utána ne azonnal kezdődjön a legstresszesebb program. A foglalóban látszanak a szabad helyek – ha a kedvenc sávod betelt, érdemes heti rendszerességgel előre foglalni. A heti zárolások (szabadnapok) miatt egyes napok üresek lehetnek; ez nem hiba, hanem a szalon működése."
+      },
+      {
+        "type": "h2",
+        "text": "A testi-lelki feltöltődés mint szokás"
+      },
+      {
+        "type": "p",
+        "text": "Egy alkalom is adhat megkönnyebbülést, de a tartós változás a szokáson múlik: ugyanúgy, ahogy a fogmosás vagy a mozgás. Tervezd be a naptáradba a masszázst, ne csak „ha éppen van idő”. A tested előbb-utóbb jelzi, ha túl sokáig hagytad. A blog és a kezelésoldalak segítenek tudatosan választani – a foglaló pedig egyszerűvé teszi a megvalósítást. Dunakeszin, az Auchan közelében, a Kolonics György utcában várlak: jöjj el, lassulj le, és engedd, hogy a kezek és a csend dolgozzanak érted."
+      },
+      {
+        "type": "p",
+        "text": "Ha a „Frissítő masszázs Dunakeszin – mikor érdemes választani?” témája különösen érdekel, mentsd el ezt a cikket, és a foglalás előtt futtasd át még egyszer a gyakorlati listákat. A megjegyzés mezőbe írd be a legfontosabb kéréseid – így a kezelés az első perctől rólad szól. Online foglalás: a weboldal Időpontfoglalás menüpontja. Kérdés: +36 30 487 7883. Helyszín: 2120 Dunakeszi, Kolonics György utca 2/B (kapucsengő: 1/43)."
       }
     ]
   },
   {
     "slug": "nepali-masszazs-stressz",
     "title": "Nepáli masszázs: mély stresszoldás az Angyali Szalonban",
-    "excerpt": "A nepáli masszázs a mélyebb feszültségek és a kimerültség oldására: mit várhatsz a kezeléstől Dunakeszin.",
+    "excerpt": "A nepáli masszázs a mélyebb feszültségek és a kimerültség oldására: mit várhatsz, kinek ajánlott, hogyan készülj, és miben más mint a frissítő.",
     "date": "2026-07-07",
     "image": "/images/szalon-2.jpeg",
     "serviceId": "nepali",
-    "seoTitle": "Nepáli masszázs Dunakeszin | Stresszoldás",
-    "seoDescription": "Nepáli masszázs Dunakeszin – mély stresszoldó kezelés az Angyali Szalonban. 60 perc, 15 000 Ft. Makra Edina.",
+    "seoTitle": "Nepáli masszázs Dunakeszin – stresszoldás részletesen",
+    "seoDescription": "Nepáli masszázs Dunakeszin – mély stresszoldó kezelés az Angyali Szalonban. 60 perc, 15 000 Ft. Részletes útmutató.",
     "blocks": [
       {
         "type": "p",
-        "text": "A nepáli masszázs azoknak szól, akik nem csak „kicsit feszültek”, hanem mélyebb stresszt, szorongásos időszakot vagy kimerültséget élnek meg. Dunakeszin, az Angyali Szalonban ez a kezelés a testi-lelki feltöltődés egyik erősebb pillére: gyengéd, mégis hatékony, és teret ad a belső csendnek."
+        "text": "A nepáli masszázs azoknak szól, akik nem csak „kicsit feszültek”, hanem mélyebb stresszt, szorongásos időszakot vagy kimerültséget élnek meg. Dunakeszin, az Angyali Szalonban ez a kezelés a testi-lelki feltöltődés egyik erősebb pillére: gyengéd, mégis hatékony, és teret ad a belső csendnek. Ha a frissítő masszázs már kevésnek tűnik, érdemes megismerned a nepáli megközelítést."
       },
       {
         "type": "h2",
@@ -312,7 +811,28 @@
       },
       {
         "type": "p",
-        "text": "A cél a mélyebb izomfeszültségek oldása mellett a megnyugvás támogatása. Sokan úgy írják le utána: „végre lelassultam”. A masszázs Dunakeszin kínálatában a nepáli különösen akkor ajánlott, ha a frissítő masszázs már kevésnek tűnik, vagy ha tudatosan a stresszoldást helyezed előtérbe."
+        "text": "A cél a mélyebb izomfeszültségek oldása mellett a megnyugvás támogatása. Sokan úgy írják le utána: „végre lelassultam”. A masszázs Dunakeszin kínálatában a nepáli különösen akkor ajánlott, ha a mindennapi rohanás, az alváshiány vagy a lelki terhelés a testben is „megül” – vállban, állkapocsban, hátban, mellkasban."
+      },
+      {
+        "type": "h2",
+        "text": "Kinek ajánljuk – és kinek nem az első választás?"
+      },
+      {
+        "type": "p",
+        "text": "Ajánlott: stresszes vezetőknek, gondoskodó szülőknek, vizsgaidőszakban lévőknek, mindenkinek, aki a csendet keresi. Ha nagyon erős, célzott izomterápiát vársz sérülés után, ez nem helyettesíti a gyógytornászt vagy orvost. Ha inkább a nehéz lábak a gond, a nyirokmasszázs lehet jobb belépő."
+      },
+      {
+        "type": "h2",
+        "text": "Hogyan készülj a nepáli masszázsra?"
+      },
+      {
+        "type": "ul",
+        "items": [
+          "Érkezz időben, hagyd a telefonod némán",
+          "Jejelezd a megjegyzésben, ha nagyon érzékeny a nyakad vagy a derékad",
+          "Ne tervezz azonnal stresszes meetinget utána – adj 30 perc „lassulást”",
+          "Nyitott elvárások: a mély pihenés néha érzelmeket is felhoz – ez természetes"
+        ]
       },
       {
         "type": "h2",
@@ -329,23 +849,103 @@
       },
       {
         "type": "p",
-        "text": "A kezelés előtt jelezheted, ha van olyan terület, amit kímélni kell. A nepáli masszázs nem helyettesít orvosi ellátást, de sok vendégnek fontos része a stresszkezelési rutinnak. Próbáld ki, és érezd a különbséget a rohanás és a tudatos pihenés között."
+        "text": "A kezelés előtt jelezheted, ha van olyan terület, amit kímélni kell. A nepáli masszázs nem helyettesít orvosi ellátást, de sok vendégnek fontos része a stresszkezelési rutinnak – együtt a mozgással, alvással és határokkal a munkában."
+      },
+      {
+        "type": "h2",
+        "text": "Nepáli vs. frissítő – röviden"
+      },
+      {
+        "type": "p",
+        "text": "A frissítő inkább a mindennapi feszültség „átmozgatása”; a nepáli a mélyebb lelassulás és stresszoldás felé billen. Ha nem tudsz dönteni, írd a megjegyzésbe: „stresszes időszak, segíts választani” – a szalonban is tudunk javasolni."
+      },
+      {
+        "type": "h2",
+        "text": "Foglalj nepáli masszázst"
+      },
+      {
+        "type": "p",
+        "text": "Próbáld ki, és érezd a különbséget a rohanás és a tudatos pihenés között. Foglalj online az Angyali Szalonba – masszázs Dunakeszin, a testi-lelki feltöltődés jegyében."
+      },
+      {
+        "type": "h2",
+        "text": "Gyakorlati tippek a mindennapokra"
+      },
+      {
+        "type": "p",
+        "text": "A kezelés hatása tartósabb, ha a mindennapokban is figyelsz a tested jelzéseire. Állj fel óránként, ha ülőmunkát végzel; igyál elegendő folyadékot; aludj, amikor csak teheted. A masszázs Dunakeszin az Angyali Szalonban a tudatos pihenés része lehet – nem helyettesíti a mozgást és az orvosi ellátást, de kiegészíti a közérzet javítását. Ha új panasz jelenik meg, ne várd el, hogy egyetlen alkalom mindent megoldjon: a rendszeresség és a reális célok a legjobb szövetségeseid."
+      },
+      {
+        "type": "p",
+        "text": "Érdemes a foglalás előtt elolvasni a kapcsolódó blogcikkeket és a kezelésoldalt, hogy pontosan tudd, mire számíthatsz. Ha kérdésed marad, hívj bátran a +36 30 487 7883-as számon, vagy írj a kapcsolatfelvételi lehetőségeken. Szeretettel várlak a 2120 Dunakeszi, Kolonics György utca 2/B címén – a testi-lelki feltöltődés kapuja az Angyali Szalonban nyílik meg."
+      },
+      {
+        "type": "h2",
+        "text": "Összefoglaló és következő lépés"
+      },
+      {
+        "type": "p",
+        "text": "A fenti tudnivalók célja, hogy magabiztosan dönthess: melyik kezelés illik hozzád, hogyan foglalj, és mire számíts a szalonban. A masszázs Dunakeszin nem csupán egy bejegyzés a naptárban, hanem idő, amit magadra fordítasz. Foglalj online időpontot, érkezz néhány perccel korábban, és engedd, hogy a tested és az elméd is pihenjen. A blog további cikkei segítenek elmélyülni az egyes technikákban – lapozz tovább, majd találkozzunk a matracnál."
+      },
+      {
+        "type": "h2",
+        "text": "Mit mondanak a visszatérő vendégek?"
+      },
+      {
+        "type": "p",
+        "text": "A visszatérő vendégek leggyakrabban a nyugodt hangulatot, a pontosságot és azt emelik ki, hogy nem „futószalagon” kezeljük őket. Sokan a Google-értékelésekben is megírják: a masszázs Dunakeszin az Angyali Szalonban személyes élmény. A 4,9-es átlag és a több mint 28 értékelés nem marketingmondat – a mindennapi munka visszajelzése. Ha te is jártál nálunk, egy őszinte vélemény sokat segít a következő vendégnek a döntésben."
+      },
+      {
+        "type": "h2",
+        "text": "Hogyan válassz időpontot a napirendedhez?"
+      },
+      {
+        "type": "p",
+        "text": "Reggeli sáv: tiszta fejjel indul a nap, kevesebb a csúcsforgalom. Déli / kora délutáni sáv: a munka közepén ad szünetet. Délutáni / koraesti sáv: a nap lezárása, de hagyd, hogy utána ne azonnal kezdődjön a legstresszesebb program. A foglalóban látszanak a szabad helyek – ha a kedvenc sávod betelt, érdemes heti rendszerességgel előre foglalni. A heti zárolások (szabadnapok) miatt egyes napok üresek lehetnek; ez nem hiba, hanem a szalon működése."
+      },
+      {
+        "type": "h2",
+        "text": "A testi-lelki feltöltődés mint szokás"
+      },
+      {
+        "type": "p",
+        "text": "Egy alkalom is adhat megkönnyebbülést, de a tartós változás a szokáson múlik: ugyanúgy, ahogy a fogmosás vagy a mozgás. Tervezd be a naptáradba a masszázst, ne csak „ha éppen van idő”. A tested előbb-utóbb jelzi, ha túl sokáig hagytad. A blog és a kezelésoldalak segítenek tudatosan választani – a foglaló pedig egyszerűvé teszi a megvalósítást. Dunakeszin, az Auchan közelében, a Kolonics György utcában várlak: jöjj el, lassulj le, és engedd, hogy a kezek és a csend dolgozzanak érted."
+      },
+      {
+        "type": "p",
+        "text": "Ha a „Nepáli masszázs: mély stresszoldás az Angyali Szalonban” témája különösen érdekel, mentsd el ezt a cikket, és a foglalás előtt futtasd át még egyszer a gyakorlati listákat. A megjegyzés mezőbe írd be a legfontosabb kéréseid – így a kezelés az első perctől rólad szól. Online foglalás: a weboldal Időpontfoglalás menüpontja. Kérdés: +36 30 487 7883. Helyszín: 2120 Dunakeszi, Kolonics György utca 2/B (kapucsengő: 1/43)."
+      },
+      {
+        "type": "h2",
+        "text": "Kapcsolódó olvasnivaló a blogon"
+      },
+      {
+        "type": "p",
+        "text": "Érdemes elolvasni a teljes masszázs-útmutatót, a foglalási lépésről lépésre cikket, az első alkalomról szóló bejegyzést, valamint a masszázs vs. nyirokmasszázs összehasonlítót. Az egyes kezelések (frissítő, nepáli, aroma, indiai fej, kineziológia, arany kollagén, BEMER stb.) saját cikkekben is megtalálhatók. Így a döntésed nem érzésből, hanem tájékozottan születik – a masszázs Dunakeszin pedig tudatos, kellemes rutinná válhat."
+      },
+      {
+        "type": "p",
+        "text": "A testi-lelki feltöltődés nem verseny és nem teljesítmény. Nem kell „tökéletesen” pihenned, nem kell csendben szenvedned, ha valami nem kellemes, és nem kell magadtól elvárnod, hogy egyetlen alkalom megváltoztassa az egész életed. Elég, ha eljössz, jelen vagy, és hagyod, hogy a tested megkapja azt a figyelmet, amit a mindennapokban gyakran elmulaszt. Az Angyali Szalonban ebben támogatunk – szakmai figyelemmel és emberi hangon."
+      },
+      {
+        "type": "p",
+        "text": "Köszönjük, hogy elolvastad ezt a bejegyzést. Ha hasznosnak találtad, oszd meg valakivel, aki szintén masszázst keres Dunakeszin vagy a környéken. Találkozunk a szalonban – jó pihenést kívánunk előre is."
       }
     ]
   },
   {
     "slug": "nyirokmasszazs-konnyed-labak",
-    "title": "Nyirokmasszázs Dunakeszin – könnyedebb lábak, jobb keringés",
-    "excerpt": "Gépi és kíméletes nyirokmasszázs: mikor válaszd, mire számíthatsz, és hogyan építhető kúrába.",
+    "title": "Nyirokmasszázs Dunakeszin – könnyedebb lábak, jobb közérzet",
+    "excerpt": "Részletes útmutató a nyirokmasszázshoz: mikor válaszd, mire számíthatsz, kúra vagy egyszeri alkalom, és hogyan foglalj az Angyali Szalonban.",
     "date": "2026-07-08",
     "image": "/images/szalon-4.jpeg",
     "serviceId": "nyirok",
-    "seoTitle": "Nyirokmasszázs Dunakeszin | Könnyed lábak",
-    "seoDescription": "Nyirokmasszázs Dunakeszin az Angyali Szalonban. Könnyedebb lábak, keringés támogatás, 60 perc 15 000 Ft.",
+    "seoTitle": "Nyirokmasszázs Dunakeszin – részletes útmutató",
+    "seoDescription": "Nyirokmasszázs Dunakeszin az Angyali Szalonban. Könnyedebb lábak, kíméletes kezelés, 60 perc 15 000 Ft. Részletes blogcikk.",
     "blocks": [
       {
         "type": "p",
-        "text": "A nyirokmasszázs Dunakeszin egyre keresettebb: sokan a nehéz, fáradt lábak, a meleg nyári pangásérzet vagy a „vizesedés” miatt érdeklődnek. Az Angyali Szalonban a nyirokmasszázs gyengéd, lassú ritmusú kezelés, amely a nyirokkeringés támogatásával segítheti a könnyedségérzetet – a masszázs kínálat egyik legkíméletesebb formája."
+        "text": "A nyirokmasszázs Dunakeszin egyre keresettebb: sokan a nehéz, fáradt lábak, a meleg nyári pangásérzet vagy a „vizesedés” miatt érdeklődnek. Az Angyali Szalonban a nyirokmasszázs gyengéd, lassú ritmusú kezelés, amely a nyirokkeringés támogatásával segítheti a könnyedségérzetet – a masszázs kínálat egyik legkíméletesebb formája. Ez a cikk végigveszi a tudnivalókat a foglalástól a kúráig."
       },
       {
         "type": "h2",
@@ -364,32 +964,121 @@
         "items": [
           "Akik sokat állnak vagy ülnek, és estére „elsúlyosodik” a lábuk",
           "Akik kíméletes, nem erőteljes kezelést keresnek",
-          "Akik a méregtelenítő jellegű, könnyítő élményt részesítik előnyben"
+          "Akik a méregtelenítő jellegű, könnyítő élményt részesítik előnyben",
+          "Akik a masszázs mellett „más jellegű” pihenést szeretnének beiktatni"
         ]
       },
       {
-        "type": "p",
-        "text": "Fontos: a nyirokmasszázs nem orvosi diagnózis vagy terápia helyettesítője. Ha komoly egészségügyi panaszod van, konzultálj orvossal. Egészséges vendégeknek viszont kellemes, tudatos pihenési forma lehet a testi-lelki feltöltődés jegyében."
+        "type": "h2",
+        "text": "Mire számíthatsz a kezelés alatt?"
       },
       {
         "type": "p",
-        "text": "60 perc, 15 000 Ft – foglalj online az Angyali Szalonba, és tapasztald meg a nyirokmasszázs Dunakeszin nyújtotta könnyedséget."
+        "text": "Lassú, ritmikus, gyengéd mozdulatok. Sokan meglepődnek, mennyire ellazító a „nem erős” technika. A ruházat és a magánszféra ugyanúgy fontos, mint más masszázsnál. Utána gyakori a könnyedségérzet a lábakban; igyál vizet, és kerüld a nagyon sós, nehéz étkezést aznap este, ha teheted."
+      },
+      {
+        "type": "h2",
+        "text": "Kúra vagy egyszeri alkalom?"
+      },
+      {
+        "type": "p",
+        "text": "Egy alkalom is adhat kellemes élményt, de a nyirokmasszázsnál a kúraszerű megközelítés gyakoribb. Beszéljük meg a céljaidat a foglaláskor vagy a megjegyzésben. A testi-lelki feltöltődés itt a türelem és a rendszeresség jegyében is működik – nem „egyszeri csoda”."
+      },
+      {
+        "type": "h2",
+        "text": "Fontos figyelmeztetés"
+      },
+      {
+        "type": "p",
+        "text": "A nyirokmasszázs nem orvosi diagnózis vagy terápia helyettesítője. Ha komoly egészségügyi panaszod van, konzultálj orvossal. Egészséges vendégeknek viszont kellemes, tudatos pihenési forma lehet."
+      },
+      {
+        "type": "h2",
+        "text": "Ár és foglalás"
+      },
+      {
+        "type": "p",
+        "text": "60 perc, 15 000 Ft – foglalj online az Angyali Szalonba, és tapasztald meg a nyirokmasszázs Dunakeszin nyújtotta könnyedséget. Kapcsolódó cikk: masszázs vagy nyirokmasszázs – melyiket válaszd?"
+      },
+      {
+        "type": "h2",
+        "text": "Gyakorlati tippek a mindennapokra"
+      },
+      {
+        "type": "p",
+        "text": "A kezelés hatása tartósabb, ha a mindennapokban is figyelsz a tested jelzéseire. Állj fel óránként, ha ülőmunkát végzel; igyál elegendő folyadékot; aludj, amikor csak teheted. A masszázs Dunakeszin az Angyali Szalonban a tudatos pihenés része lehet – nem helyettesíti a mozgást és az orvosi ellátást, de kiegészíti a közérzet javítását. Ha új panasz jelenik meg, ne várd el, hogy egyetlen alkalom mindent megoldjon: a rendszeresség és a reális célok a legjobb szövetségeseid."
+      },
+      {
+        "type": "p",
+        "text": "Érdemes a foglalás előtt elolvasni a kapcsolódó blogcikkeket és a kezelésoldalt, hogy pontosan tudd, mire számíthatsz. Ha kérdésed marad, hívj bátran a +36 30 487 7883-as számon, vagy írj a kapcsolatfelvételi lehetőségeken. Szeretettel várlak a 2120 Dunakeszi, Kolonics György utca 2/B címén – a testi-lelki feltöltődés kapuja az Angyali Szalonban nyílik meg."
+      },
+      {
+        "type": "h2",
+        "text": "Összefoglaló és következő lépés"
+      },
+      {
+        "type": "p",
+        "text": "A fenti tudnivalók célja, hogy magabiztosan dönthess: melyik kezelés illik hozzád, hogyan foglalj, és mire számíts a szalonban. A masszázs Dunakeszin nem csupán egy bejegyzés a naptárban, hanem idő, amit magadra fordítasz. Foglalj online időpontot, érkezz néhány perccel korábban, és engedd, hogy a tested és az elméd is pihenjen. A blog további cikkei segítenek elmélyülni az egyes technikákban – lapozz tovább, majd találkozzunk a matracnál."
+      },
+      {
+        "type": "h2",
+        "text": "Mit mondanak a visszatérő vendégek?"
+      },
+      {
+        "type": "p",
+        "text": "A visszatérő vendégek leggyakrabban a nyugodt hangulatot, a pontosságot és azt emelik ki, hogy nem „futószalagon” kezeljük őket. Sokan a Google-értékelésekben is megírják: a masszázs Dunakeszin az Angyali Szalonban személyes élmény. A 4,9-es átlag és a több mint 28 értékelés nem marketingmondat – a mindennapi munka visszajelzése. Ha te is jártál nálunk, egy őszinte vélemény sokat segít a következő vendégnek a döntésben."
+      },
+      {
+        "type": "h2",
+        "text": "Hogyan válassz időpontot a napirendedhez?"
+      },
+      {
+        "type": "p",
+        "text": "Reggeli sáv: tiszta fejjel indul a nap, kevesebb a csúcsforgalom. Déli / kora délutáni sáv: a munka közepén ad szünetet. Délutáni / koraesti sáv: a nap lezárása, de hagyd, hogy utána ne azonnal kezdődjön a legstresszesebb program. A foglalóban látszanak a szabad helyek – ha a kedvenc sávod betelt, érdemes heti rendszerességgel előre foglalni. A heti zárolások (szabadnapok) miatt egyes napok üresek lehetnek; ez nem hiba, hanem a szalon működése."
+      },
+      {
+        "type": "h2",
+        "text": "A testi-lelki feltöltődés mint szokás"
+      },
+      {
+        "type": "p",
+        "text": "Egy alkalom is adhat megkönnyebbülést, de a tartós változás a szokáson múlik: ugyanúgy, ahogy a fogmosás vagy a mozgás. Tervezd be a naptáradba a masszázst, ne csak „ha éppen van idő”. A tested előbb-utóbb jelzi, ha túl sokáig hagytad. A blog és a kezelésoldalak segítenek tudatosan választani – a foglaló pedig egyszerűvé teszi a megvalósítást. Dunakeszin, az Auchan közelében, a Kolonics György utcában várlak: jöjj el, lassulj le, és engedd, hogy a kezek és a csend dolgozzanak érted."
+      },
+      {
+        "type": "p",
+        "text": "Ha a „Nyirokmasszázs Dunakeszin – könnyedebb lábak, jobb közérzet” témája különösen érdekel, mentsd el ezt a cikket, és a foglalás előtt futtasd át még egyszer a gyakorlati listákat. A megjegyzés mezőbe írd be a legfontosabb kéréseid – így a kezelés az első perctől rólad szól. Online foglalás: a weboldal Időpontfoglalás menüpontja. Kérdés: +36 30 487 7883. Helyszín: 2120 Dunakeszi, Kolonics György utca 2/B (kapucsengő: 1/43)."
+      },
+      {
+        "type": "h2",
+        "text": "Kapcsolódó olvasnivaló a blogon"
+      },
+      {
+        "type": "p",
+        "text": "Érdemes elolvasni a teljes masszázs-útmutatót, a foglalási lépésről lépésre cikket, az első alkalomról szóló bejegyzést, valamint a masszázs vs. nyirokmasszázs összehasonlítót. Az egyes kezelések (frissítő, nepáli, aroma, indiai fej, kineziológia, arany kollagén, BEMER stb.) saját cikkekben is megtalálhatók. Így a döntésed nem érzésből, hanem tájékozottan születik – a masszázs Dunakeszin pedig tudatos, kellemes rutinná válhat."
+      },
+      {
+        "type": "p",
+        "text": "A testi-lelki feltöltődés nem verseny és nem teljesítmény. Nem kell „tökéletesen” pihenned, nem kell csendben szenvedned, ha valami nem kellemes, és nem kell magadtól elvárnod, hogy egyetlen alkalom megváltoztassa az egész életed. Elég, ha eljössz, jelen vagy, és hagyod, hogy a tested megkapja azt a figyelmet, amit a mindennapokban gyakran elmulaszt. Az Angyali Szalonban ebben támogatunk – szakmai figyelemmel és emberi hangon."
+      },
+      {
+        "type": "p",
+        "text": "Köszönjük, hogy elolvastad ezt a bejegyzést. Ha hasznosnak találtad, oszd meg valakivel, aki szintén masszázst keres Dunakeszin vagy a környéken. Találkozunk a szalonban – jó pihenést kívánunk előre is."
       }
     ]
   },
   {
     "slug": "aromamasszazs-illoolajok",
     "title": "Aromamasszázs: illóolajos relaxáció Dunakeszin",
-    "excerpt": "Illatok és masszázs együtt: hogyan hat az aromamasszázs a stresszre, és mire figyelj az első alkalommal.",
+    "excerpt": "Illatok és masszázs együtt: hogyan hat az aromamasszázs a stresszre, mire figyelj, kinek ajánlott, és hogyan foglalj az Angyali Szalonban.",
     "date": "2026-07-09",
     "image": "/images/szalon-1.jpeg",
     "serviceId": "aroma",
-    "seoTitle": "Aromamasszázs Dunakeszin | Illóolajos masszázs",
-    "seoDescription": "Aromamasszázs Dunakeszin – illóolajos, relaxáló kezelés az Angyali Szalonban. 60 perc, 15 000 Ft. Online foglalás.",
+    "seoTitle": "Aromamasszázs Dunakeszin – illóolajos masszázs útmutató",
+    "seoDescription": "Aromamasszázs Dunakeszin – illóolajos, relaxáló kezelés az Angyali Szalonban. 60 perc, 15 000 Ft. Részletes blog.",
     "blocks": [
       {
         "type": "p",
-        "text": "Az aromamasszázs a masszázs Dunakeszin kínálatának egyik leghangulatosabb formája: a lazító fogásokat válogatott illóolajok kísérik. Az Angyali Szalonban a cél a mély relaxáció – test és elme együttes megnyugtatása a testi-lelki feltöltődés jegyében."
+        "text": "Az aromamasszázs a masszázs Dunakeszin kínálatának egyik leghangulatosabb formája: a lazító fogásokat válogatott illóolajok kísérik. Az Angyali Szalonban a cél a mély relaxáció – test és elme együttes megnyugtatása a testi-lelki feltöltődés jegyében. Ha szereted a természetes illatokat és a stresszoldó hangulatot, ez a cikk neked szól."
       },
       {
         "type": "h2",
@@ -397,39 +1086,124 @@
       },
       {
         "type": "p",
-        "text": "Az illatok gyorsan elérik az érzelmi központokat: egy kellemes aroma már az öltözés alatt ráhangol. A masszázs közben a bőrön keresztül és a légzésen át is jelen van a nyugalom. Sokan azt mondják: az aromamasszázs után mintha „kimosódott” volna belőlük a nap feszültsége."
+        "text": "Az illatok gyorsan elérik az érzelmi központokat: egy kellemes aroma már az öltözés alatt ráhangol. A masszázs közben a bőrön keresztül és a légzésen át is jelen van a nyugalom. Sokan azt mondják: az aromamasszázs után mintha „kimosódott” volna belőlük a nap feszültsége. Ez nem varázslat – a figyelem, a ritmus és az illat együttesen támogatja a lelassulást."
       },
       {
         "type": "h2",
-        "text": "Mire figyelj?"
+        "text": "Mire figyelj foglalás előtt?"
       },
       {
         "type": "ul",
         "items": [
           "Jejelezd, ha illatérzékeny vagy, asztmás vagy terhes vagy – egyéni mérlegelés kell",
           "Ne várj „erős gyúrást”: ez elsősorban relaxáló kezelés",
-          "Ideális ajándékötlet is – a pihenés élménye emlékezetes"
+          "Ideális ajándékötlet is – a pihenés élménye emlékezetes",
+          "Kerüld a nagyon erős saját parfümöt a kezelés napján"
         ]
       },
       {
+        "type": "h2",
+        "text": "Hogyan zajlik az alkalom?"
+      },
+      {
         "type": "p",
-        "text": "60 perc, 15 000 Ft. Foglalj aromamasszázst online, és engedd, hogy az illóolajak és a csendes szalon együtt dolgozzanak érted Dunakeszin."
+        "text": "A masszázs menete hasonló a frissítő jellegű kezelésekhez, de az illóolajos közeg külön hangulatot ad. A magánszféra, a takarás és a kommunikáció ugyanúgy fontos. Ha egy illat zavar, szólj azonnal – a kényelem az első."
+      },
+      {
+        "type": "h2",
+        "text": "Kinek ajánlott leginkább?"
+      },
+      {
+        "type": "p",
+        "text": "Annak, aki a stresszoldást és a „spa-szerű” pihenést keresi; aki szereti a természetes illatokat; aki ajándékba adna valami személyeset. Ha izomcsomók mély oldását várod, a frissítő vagy nepáli lehet jobb választás – vagy váltsd őket."
+      },
+      {
+        "type": "h2",
+        "text": "Ár és foglalás"
+      },
+      {
+        "type": "p",
+        "text": "60 perc, 15 000 Ft. Foglalj aromamasszázst online, és engedd, hogy az illóolajak és a csendes szalon együtt dolgozzanak érted Dunakeszin. A testi-lelki feltöltődés illatokkal is kezdődhet."
+      },
+      {
+        "type": "h2",
+        "text": "Gyakorlati tippek a mindennapokra"
+      },
+      {
+        "type": "p",
+        "text": "A kezelés hatása tartósabb, ha a mindennapokban is figyelsz a tested jelzéseire. Állj fel óránként, ha ülőmunkát végzel; igyál elegendő folyadékot; aludj, amikor csak teheted. A masszázs Dunakeszin az Angyali Szalonban a tudatos pihenés része lehet – nem helyettesíti a mozgást és az orvosi ellátást, de kiegészíti a közérzet javítását. Ha új panasz jelenik meg, ne várd el, hogy egyetlen alkalom mindent megoldjon: a rendszeresség és a reális célok a legjobb szövetségeseid."
+      },
+      {
+        "type": "p",
+        "text": "Érdemes a foglalás előtt elolvasni a kapcsolódó blogcikkeket és a kezelésoldalt, hogy pontosan tudd, mire számíthatsz. Ha kérdésed marad, hívj bátran a +36 30 487 7883-as számon, vagy írj a kapcsolatfelvételi lehetőségeken. Szeretettel várlak a 2120 Dunakeszi, Kolonics György utca 2/B címén – a testi-lelki feltöltődés kapuja az Angyali Szalonban nyílik meg."
+      },
+      {
+        "type": "h2",
+        "text": "Összefoglaló és következő lépés"
+      },
+      {
+        "type": "p",
+        "text": "A fenti tudnivalók célja, hogy magabiztosan dönthess: melyik kezelés illik hozzád, hogyan foglalj, és mire számíts a szalonban. A masszázs Dunakeszin nem csupán egy bejegyzés a naptárban, hanem idő, amit magadra fordítasz. Foglalj online időpontot, érkezz néhány perccel korábban, és engedd, hogy a tested és az elméd is pihenjen. A blog további cikkei segítenek elmélyülni az egyes technikákban – lapozz tovább, majd találkozzunk a matracnál."
+      },
+      {
+        "type": "h2",
+        "text": "Mit mondanak a visszatérő vendégek?"
+      },
+      {
+        "type": "p",
+        "text": "A visszatérő vendégek leggyakrabban a nyugodt hangulatot, a pontosságot és azt emelik ki, hogy nem „futószalagon” kezeljük őket. Sokan a Google-értékelésekben is megírják: a masszázs Dunakeszin az Angyali Szalonban személyes élmény. A 4,9-es átlag és a több mint 28 értékelés nem marketingmondat – a mindennapi munka visszajelzése. Ha te is jártál nálunk, egy őszinte vélemény sokat segít a következő vendégnek a döntésben."
+      },
+      {
+        "type": "h2",
+        "text": "Hogyan válassz időpontot a napirendedhez?"
+      },
+      {
+        "type": "p",
+        "text": "Reggeli sáv: tiszta fejjel indul a nap, kevesebb a csúcsforgalom. Déli / kora délutáni sáv: a munka közepén ad szünetet. Délutáni / koraesti sáv: a nap lezárása, de hagyd, hogy utána ne azonnal kezdődjön a legstresszesebb program. A foglalóban látszanak a szabad helyek – ha a kedvenc sávod betelt, érdemes heti rendszerességgel előre foglalni. A heti zárolások (szabadnapok) miatt egyes napok üresek lehetnek; ez nem hiba, hanem a szalon működése."
+      },
+      {
+        "type": "h2",
+        "text": "A testi-lelki feltöltődés mint szokás"
+      },
+      {
+        "type": "p",
+        "text": "Egy alkalom is adhat megkönnyebbülést, de a tartós változás a szokáson múlik: ugyanúgy, ahogy a fogmosás vagy a mozgás. Tervezd be a naptáradba a masszázst, ne csak „ha éppen van idő”. A tested előbb-utóbb jelzi, ha túl sokáig hagytad. A blog és a kezelésoldalak segítenek tudatosan választani – a foglaló pedig egyszerűvé teszi a megvalósítást. Dunakeszin, az Auchan közelében, a Kolonics György utcában várlak: jöjj el, lassulj le, és engedd, hogy a kezek és a csend dolgozzanak érted."
+      },
+      {
+        "type": "p",
+        "text": "Ha a „Aromamasszázs: illóolajos relaxáció Dunakeszin” témája különösen érdekel, mentsd el ezt a cikket, és a foglalás előtt futtasd át még egyszer a gyakorlati listákat. A megjegyzés mezőbe írd be a legfontosabb kéréseid – így a kezelés az első perctől rólad szól. Online foglalás: a weboldal Időpontfoglalás menüpontja. Kérdés: +36 30 487 7883. Helyszín: 2120 Dunakeszi, Kolonics György utca 2/B (kapucsengő: 1/43)."
+      },
+      {
+        "type": "h2",
+        "text": "Kapcsolódó olvasnivaló a blogon"
+      },
+      {
+        "type": "p",
+        "text": "Érdemes elolvasni a teljes masszázs-útmutatót, a foglalási lépésről lépésre cikket, az első alkalomról szóló bejegyzést, valamint a masszázs vs. nyirokmasszázs összehasonlítót. Az egyes kezelések (frissítő, nepáli, aroma, indiai fej, kineziológia, arany kollagén, BEMER stb.) saját cikkekben is megtalálhatók. Így a döntésed nem érzésből, hanem tájékozottan születik – a masszázs Dunakeszin pedig tudatos, kellemes rutinná válhat."
+      },
+      {
+        "type": "p",
+        "text": "A testi-lelki feltöltődés nem verseny és nem teljesítmény. Nem kell „tökéletesen” pihenned, nem kell csendben szenvedned, ha valami nem kellemes, és nem kell magadtól elvárnod, hogy egyetlen alkalom megváltoztassa az egész életed. Elég, ha eljössz, jelen vagy, és hagyod, hogy a tested megkapja azt a figyelmet, amit a mindennapokban gyakran elmulaszt. Az Angyali Szalonban ebben támogatunk – szakmai figyelemmel és emberi hangon."
+      },
+      {
+        "type": "p",
+        "text": "Köszönjük, hogy elolvastad ezt a bejegyzést. Ha hasznosnak találtad, oszd meg valakivel, aki szintén masszázst keres Dunakeszin vagy a környéken. Találkozunk a szalonban – jó pihenést kívánunk előre is."
       }
     ]
   },
   {
     "slug": "indiai-fejmasszazs-fejfajas",
     "title": "Indiai fejmasszázs fejfájás és stressz ellen",
-    "excerpt": "Fej, nyak, váll – az indiai fejmasszázs a felsőtest feszültségének oldására. Mikor válaszd Dunakeszin?",
+    "excerpt": "Fej, nyak, váll – az indiai fejmasszázs a felsőtest feszültségének oldására. Részletes útmutató: mikor válaszd, mire számíts, foglalás Dunakeszin.",
     "date": "2026-07-10",
     "image": "/images/indiai-fejmasszazs.jpeg",
     "serviceId": "indiai",
-    "seoTitle": "Indiai fejmasszázs Dunakeszin | Fejfájás, stressz",
-    "seoDescription": "Indiai fejmasszázs Dunakeszin – fej-, nyak- és vállmasszázs stressz és fejfájás ellen. Angyali Szalon, Makra Edina.",
+    "seoTitle": "Indiai fejmasszázs Dunakeszin – fejfájás, stressz útmutató",
+    "seoDescription": "Indiai fejmasszázs Dunakeszin – fej-, nyak- és vállmasszázs stressz és fejfájás ellen. Részletes blog, Angyali Szalon.",
     "blocks": [
       {
         "type": "p",
-        "text": "Ha a feszültség a fejed tetején, a halántékon, a nyakszirtben vagy a vállakban ül, az indiai fejmasszázs célzott választ lehet. Dunakeszin, az Angyali Szalonban ez a kezelés a masszázs kínálat rövid, de nagyon intenzív pihentető formája – sokan a laptop és a stressz „utóhatásai” miatt kérik."
+        "text": "Ha a feszültség a fejed tetején, a halántékon, a nyakszirtben vagy a vállakban ül, az indiai fejmasszázs célzott válasz lehet. Dunakeszin, az Angyali Szalonban ez a kezelés a masszázs kínálat rövid, de nagyon intenzív pihentető formája – sokan a laptop és a stressz „utóhatásai” miatt kérik. Fontos: tartós, erős fejfájás esetén orvosi kivizsgálás indokolt; a masszázs a stressz eredetű feszültség oldását támogatja."
       },
       {
         "type": "h2",
@@ -437,7 +1211,20 @@
       },
       {
         "type": "p",
-        "text": "A technika a fejbőr, a nyak és a vállöv területére fókuszál. A fogások gyengédek, mégis alaposak; a cél a felhalmozódott feszültség oldása és a mentális frissesség támogatása. Nem helyettesíti a neurológiai kivizsgálást tartós, erős fejfájás esetén – de a stressz eredetű feszültségnél sok vendég érez enyhülést."
+        "text": "A technika a fejbőr, a nyak és a vállöv területére fókuszál. A fogások gyengédek, mégis alaposak; a cél a felhalmozódott feszültség oldása és a mentális frissesség támogatása. Sokan a koncentráció javulását és a „könnyebb fej” érzését említik utána."
+      },
+      {
+        "type": "h2",
+        "text": "Kinek ajánlott?"
+      },
+      {
+        "type": "ul",
+        "items": [
+          "Irodai dolgozóknak, akik sokat néznek képernyőt",
+          "Akik a nyak-váll „páncélját” cipelik",
+          "Akik rövidebb, de célzott pihenést keresnek",
+          "Akik később teljes test masszázzsal szeretnék kiegészíteni"
+        ]
       },
       {
         "type": "h2",
@@ -448,28 +1235,113 @@
         "items": [
           "Időtartam: kb. 30–40 perc (a szalon aktuális ajánlata szerint)",
           "Ár: 15 000 Ft",
-          "Jól kombinálható: később teljes test frissítő masszázzsal"
+          "Jól kombinálható: később teljes test frissítő masszázzsal",
+          "Foglalás online az Időpontfoglalás menüpontban"
         ]
       },
       {
+        "type": "h2",
+        "text": "Hogyan készülj?"
+      },
+      {
         "type": "p",
-        "text": "A testi-lelki feltöltődés néha a fejből indul. Foglalj indiai fejmasszázst online, és engedd el a válladra rakott napot – masszázs Dunakeszin, a fejednek is."
+        "text": "Ha lehet, ne érkezz frissen festett, nagyon merev frizurával, ami zavarja a fejbőr érintését. Vedd le a fülbevalót, ha zavar. Meséld el, hol fáj vagy feszül a legjobban. Utána kerüld a hirtelen, nagyon intenzív edzést a nyakon."
+      },
+      {
+        "type": "h2",
+        "text": "Foglalj indiai fejmasszázst"
+      },
+      {
+        "type": "p",
+        "text": "A testi-lelki feltöltődés néha a fejből indul. Foglalj online, és engedd el a válladra rakott napot – masszázs Dunakeszin, a fejednek is."
+      },
+      {
+        "type": "h2",
+        "text": "Gyakorlati tippek a mindennapokra"
+      },
+      {
+        "type": "p",
+        "text": "A kezelés hatása tartósabb, ha a mindennapokban is figyelsz a tested jelzéseire. Állj fel óránként, ha ülőmunkát végzel; igyál elegendő folyadékot; aludj, amikor csak teheted. A masszázs Dunakeszin az Angyali Szalonban a tudatos pihenés része lehet – nem helyettesíti a mozgást és az orvosi ellátást, de kiegészíti a közérzet javítását. Ha új panasz jelenik meg, ne várd el, hogy egyetlen alkalom mindent megoldjon: a rendszeresség és a reális célok a legjobb szövetségeseid."
+      },
+      {
+        "type": "p",
+        "text": "Érdemes a foglalás előtt elolvasni a kapcsolódó blogcikkeket és a kezelésoldalt, hogy pontosan tudd, mire számíthatsz. Ha kérdésed marad, hívj bátran a +36 30 487 7883-as számon, vagy írj a kapcsolatfelvételi lehetőségeken. Szeretettel várlak a 2120 Dunakeszi, Kolonics György utca 2/B címén – a testi-lelki feltöltődés kapuja az Angyali Szalonban nyílik meg."
+      },
+      {
+        "type": "h2",
+        "text": "Összefoglaló és következő lépés"
+      },
+      {
+        "type": "p",
+        "text": "A fenti tudnivalók célja, hogy magabiztosan dönthess: melyik kezelés illik hozzád, hogyan foglalj, és mire számíts a szalonban. A masszázs Dunakeszin nem csupán egy bejegyzés a naptárban, hanem idő, amit magadra fordítasz. Foglalj online időpontot, érkezz néhány perccel korábban, és engedd, hogy a tested és az elméd is pihenjen. A blog további cikkei segítenek elmélyülni az egyes technikákban – lapozz tovább, majd találkozzunk a matracnál."
+      },
+      {
+        "type": "h2",
+        "text": "Mit mondanak a visszatérő vendégek?"
+      },
+      {
+        "type": "p",
+        "text": "A visszatérő vendégek leggyakrabban a nyugodt hangulatot, a pontosságot és azt emelik ki, hogy nem „futószalagon” kezeljük őket. Sokan a Google-értékelésekben is megírják: a masszázs Dunakeszin az Angyali Szalonban személyes élmény. A 4,9-es átlag és a több mint 28 értékelés nem marketingmondat – a mindennapi munka visszajelzése. Ha te is jártál nálunk, egy őszinte vélemény sokat segít a következő vendégnek a döntésben."
+      },
+      {
+        "type": "h2",
+        "text": "Hogyan válassz időpontot a napirendedhez?"
+      },
+      {
+        "type": "p",
+        "text": "Reggeli sáv: tiszta fejjel indul a nap, kevesebb a csúcsforgalom. Déli / kora délutáni sáv: a munka közepén ad szünetet. Délutáni / koraesti sáv: a nap lezárása, de hagyd, hogy utána ne azonnal kezdődjön a legstresszesebb program. A foglalóban látszanak a szabad helyek – ha a kedvenc sávod betelt, érdemes heti rendszerességgel előre foglalni. A heti zárolások (szabadnapok) miatt egyes napok üresek lehetnek; ez nem hiba, hanem a szalon működése."
+      },
+      {
+        "type": "h2",
+        "text": "A testi-lelki feltöltődés mint szokás"
+      },
+      {
+        "type": "p",
+        "text": "Egy alkalom is adhat megkönnyebbülést, de a tartós változás a szokáson múlik: ugyanúgy, ahogy a fogmosás vagy a mozgás. Tervezd be a naptáradba a masszázst, ne csak „ha éppen van idő”. A tested előbb-utóbb jelzi, ha túl sokáig hagytad. A blog és a kezelésoldalak segítenek tudatosan választani – a foglaló pedig egyszerűvé teszi a megvalósítást. Dunakeszin, az Auchan közelében, a Kolonics György utcában várlak: jöjj el, lassulj le, és engedd, hogy a kezek és a csend dolgozzanak érted."
+      },
+      {
+        "type": "p",
+        "text": "Ha a „Indiai fejmasszázs fejfájás és stressz ellen” témája különösen érdekel, mentsd el ezt a cikket, és a foglalás előtt futtasd át még egyszer a gyakorlati listákat. A megjegyzés mezőbe írd be a legfontosabb kéréseid – így a kezelés az első perctől rólad szól. Online foglalás: a weboldal Időpontfoglalás menüpontja. Kérdés: +36 30 487 7883. Helyszín: 2120 Dunakeszi, Kolonics György utca 2/B (kapucsengő: 1/43)."
+      },
+      {
+        "type": "h2",
+        "text": "Kapcsolódó olvasnivaló a blogon"
+      },
+      {
+        "type": "p",
+        "text": "Érdemes elolvasni a teljes masszázs-útmutatót, a foglalási lépésről lépésre cikket, az első alkalomról szóló bejegyzést, valamint a masszázs vs. nyirokmasszázs összehasonlítót. Az egyes kezelések (frissítő, nepáli, aroma, indiai fej, kineziológia, arany kollagén, BEMER stb.) saját cikkekben is megtalálhatók. Így a döntésed nem érzésből, hanem tájékozottan születik – a masszázs Dunakeszin pedig tudatos, kellemes rutinná válhat."
+      },
+      {
+        "type": "p",
+        "text": "A testi-lelki feltöltődés nem verseny és nem teljesítmény. Nem kell „tökéletesen” pihenned, nem kell csendben szenvedned, ha valami nem kellemes, és nem kell magadtól elvárnod, hogy egyetlen alkalom megváltoztassa az egész életed. Elég, ha eljössz, jelen vagy, és hagyod, hogy a tested megkapja azt a figyelmet, amit a mindennapokban gyakran elmulaszt. Az Angyali Szalonban ebben támogatunk – szakmai figyelemmel és emberi hangon."
+      },
+      {
+        "type": "p",
+        "text": "Köszönjük, hogy elolvastad ezt a bejegyzést. Ha hasznosnak találtad, oszd meg valakivel, aki szintén masszázst keres Dunakeszin vagy a környéken. Találkozunk a szalonban – jó pihenést kívánunk előre is."
       }
     ]
   },
   {
     "slug": "nehezfem-kivezetes-meregtelenites",
-    "title": "Nehézfém-kivezetés – harmonizáló méregtelenítő kezelés",
-    "excerpt": "Gyengéd, harmonizáló megközelítés a szervezet tehermentesítésének támogatására – mit jelent a gyakorlatban az Angyali Szalonban.",
+    "title": "Nehézfém-kivezetés – harmonizáló méregtelenítő jellegű kezelés",
+    "excerpt": "Gyengéd, harmonizáló megközelítés a szervezet tehermentesítésének támogatására – reális elvárások, foglalás, mire figyelj az Angyali Szalonban.",
     "date": "2026-07-11",
     "image": "/images/szalon-2.jpeg",
     "serviceId": "nehezfem",
-    "seoTitle": "Nehézfém-kivezetés Dunakeszin | Angyali Szalon",
-    "seoDescription": "Nehézfém-kivezetés Dunakeszin – harmonizáló, méregtelenítő jellegű kezelés Makra Edinától. 60 perc, 15 000 Ft.",
+    "seoTitle": "Nehézfém-kivezetés Dunakeszin – részletes tájékoztató",
+    "seoDescription": "Nehézfém-kivezetés Dunakeszin – harmonizáló, méregtelenítő jellegű kezelés. Reális elvárások, 60 perc, 15 000 Ft. Angyali Szalon.",
     "blocks": [
       {
         "type": "p",
-        "text": "A nehézfém-kivezetés elnevezés sokakat megállít a kezeléslistán – jogosan. Az Angyali Szalonban ez gyengéd, harmonizáló jellegű szolgáltatás, amely a közérzet és a szervezet természetes folyamatai melletti támogatás jegyében zajlik. Nem orvosi laboratóriumi méregtelenítés, és nem helyettesít orvosi kezelést."
+        "text": "A nehézfém-kivezetés elnevezés sokakat megállít a kezeléslistán – jogosan. Az Angyali Szalonban ez gyengéd, harmonizáló jellegű szolgáltatás, amely a közérzet és a szervezet természetes folyamatai melletti támogatás jegyében zajlik. Nem orvosi laboratóriumi méregtelenítés, és nem helyettesít orvosi kezelést. Ez a cikk segít reális képet alkotni, mielőtt foglalsz."
+      },
+      {
+        "type": "h2",
+        "text": "Mit jelent a gyakorlatban?"
+      },
+      {
+        "type": "p",
+        "text": "A hangsúly a kíméletességen, a nyugalmon és a tehermentesítő élményen van. A masszázs Dunakeszin palettáján ez a kezelés a relaxáló, harmonizáló irányhoz áll közel. Aki a „belső tisztulás” metaforáját keresi a pihenésben, gyakran nyitott erre a formára – de az elvárásokat érdemes a közérzet javítására hangolni, nem laboreredményekre."
       },
       {
         "type": "h2",
@@ -477,7 +1349,7 @@
       },
       {
         "type": "p",
-        "text": "Akik a „belső tehermentesítés”, a könnyedség és a tudatos pihenés iránt érdeklődnek, gyakran nyitottak erre a formára. A masszázs Dunakeszin palettáján ez a kezelés a relaxáló, harmonizáló irányhoz áll közel: a hangsúly a kíméletességen és a nyugalmon van."
+        "text": "Akik a tudatos pihenést, a könnyedséget és a harmonizáló élményt keresik; akik már próbáltak más masszázsokat, és új élményre vágynak. Akik akut orvosi panasszal küzdenek, előbb forduljanak szakemberhez."
       },
       {
         "type": "h2",
@@ -488,28 +1360,105 @@
         "items": [
           "Kb. 60 perc, 15 000 Ft",
           "Ha krónikus betegséged vagy terhességed van, egyeztess szakemberrel a masszázsok előtt",
-          "Reális elvárás: kellemes, támogató élmény – nem csodaszer"
+          "Reális elvárás: kellemes, támogató élmény – nem csodaszer",
+          "Online foglalás a weboldalon"
         ]
       },
       {
+        "type": "h2",
+        "text": "Hogyan illeszkedik a többi kezeléshez?"
+      },
+      {
         "type": "p",
-        "text": "Ha kíváncsi vagy, olvasd el a kezelésoldalt, majd foglalj időpontot. A testi-lelki feltöltődés sokféleképpen indulhat – nálunk a választás a tiéd."
+        "text": "Sokan váltogatják a frissítő masszázzsal, nyirokkal vagy kineziológiával. A testi-lelki feltöltődés sokféleképpen indulhat – nálunk a választás a tiéd. Ha kérdésed van, hívj a +36 30 487 7883 számon."
+      },
+      {
+        "type": "h2",
+        "text": "Foglalás"
+      },
+      {
+        "type": "p",
+        "text": "Ha kíváncsi vagy, olvasd el a kezelésoldalt, majd foglalj időpontot az Angyali Szalonba, Dunakeszin. A nyugodt környezet és a tiszta kommunikáció a legfontosabb kiindulópont."
+      },
+      {
+        "type": "h2",
+        "text": "Gyakorlati tippek a mindennapokra"
+      },
+      {
+        "type": "p",
+        "text": "A kezelés hatása tartósabb, ha a mindennapokban is figyelsz a tested jelzéseire. Állj fel óránként, ha ülőmunkát végzel; igyál elegendő folyadékot; aludj, amikor csak teheted. A masszázs Dunakeszin az Angyali Szalonban a tudatos pihenés része lehet – nem helyettesíti a mozgást és az orvosi ellátást, de kiegészíti a közérzet javítását. Ha új panasz jelenik meg, ne várd el, hogy egyetlen alkalom mindent megoldjon: a rendszeresség és a reális célok a legjobb szövetségeseid."
+      },
+      {
+        "type": "p",
+        "text": "Érdemes a foglalás előtt elolvasni a kapcsolódó blogcikkeket és a kezelésoldalt, hogy pontosan tudd, mire számíthatsz. Ha kérdésed marad, hívj bátran a +36 30 487 7883-as számon, vagy írj a kapcsolatfelvételi lehetőségeken. Szeretettel várlak a 2120 Dunakeszi, Kolonics György utca 2/B címén – a testi-lelki feltöltődés kapuja az Angyali Szalonban nyílik meg."
+      },
+      {
+        "type": "h2",
+        "text": "Összefoglaló és következő lépés"
+      },
+      {
+        "type": "p",
+        "text": "A fenti tudnivalók célja, hogy magabiztosan dönthess: melyik kezelés illik hozzád, hogyan foglalj, és mire számíts a szalonban. A masszázs Dunakeszin nem csupán egy bejegyzés a naptárban, hanem idő, amit magadra fordítasz. Foglalj online időpontot, érkezz néhány perccel korábban, és engedd, hogy a tested és az elméd is pihenjen. A blog további cikkei segítenek elmélyülni az egyes technikákban – lapozz tovább, majd találkozzunk a matracnál."
+      },
+      {
+        "type": "h2",
+        "text": "Mit mondanak a visszatérő vendégek?"
+      },
+      {
+        "type": "p",
+        "text": "A visszatérő vendégek leggyakrabban a nyugodt hangulatot, a pontosságot és azt emelik ki, hogy nem „futószalagon” kezeljük őket. Sokan a Google-értékelésekben is megírják: a masszázs Dunakeszin az Angyali Szalonban személyes élmény. A 4,9-es átlag és a több mint 28 értékelés nem marketingmondat – a mindennapi munka visszajelzése. Ha te is jártál nálunk, egy őszinte vélemény sokat segít a következő vendégnek a döntésben."
+      },
+      {
+        "type": "h2",
+        "text": "Hogyan válassz időpontot a napirendedhez?"
+      },
+      {
+        "type": "p",
+        "text": "Reggeli sáv: tiszta fejjel indul a nap, kevesebb a csúcsforgalom. Déli / kora délutáni sáv: a munka közepén ad szünetet. Délutáni / koraesti sáv: a nap lezárása, de hagyd, hogy utána ne azonnal kezdődjön a legstresszesebb program. A foglalóban látszanak a szabad helyek – ha a kedvenc sávod betelt, érdemes heti rendszerességgel előre foglalni. A heti zárolások (szabadnapok) miatt egyes napok üresek lehetnek; ez nem hiba, hanem a szalon működése."
+      },
+      {
+        "type": "h2",
+        "text": "A testi-lelki feltöltődés mint szokás"
+      },
+      {
+        "type": "p",
+        "text": "Egy alkalom is adhat megkönnyebbülést, de a tartós változás a szokáson múlik: ugyanúgy, ahogy a fogmosás vagy a mozgás. Tervezd be a naptáradba a masszázst, ne csak „ha éppen van idő”. A tested előbb-utóbb jelzi, ha túl sokáig hagytad. A blog és a kezelésoldalak segítenek tudatosan választani – a foglaló pedig egyszerűvé teszi a megvalósítást. Dunakeszin, az Auchan közelében, a Kolonics György utcában várlak: jöjj el, lassulj le, és engedd, hogy a kezek és a csend dolgozzanak érted."
+      },
+      {
+        "type": "p",
+        "text": "Ha a „Nehézfém-kivezetés – harmonizáló méregtelenítő jellegű kezelés” témája különösen érdekel, mentsd el ezt a cikket, és a foglalás előtt futtasd át még egyszer a gyakorlati listákat. A megjegyzés mezőbe írd be a legfontosabb kéréseid – így a kezelés az első perctől rólad szól. Online foglalás: a weboldal Időpontfoglalás menüpontja. Kérdés: +36 30 487 7883. Helyszín: 2120 Dunakeszi, Kolonics György utca 2/B (kapucsengő: 1/43)."
+      },
+      {
+        "type": "h2",
+        "text": "Kapcsolódó olvasnivaló a blogon"
+      },
+      {
+        "type": "p",
+        "text": "Érdemes elolvasni a teljes masszázs-útmutatót, a foglalási lépésről lépésre cikket, az első alkalomról szóló bejegyzést, valamint a masszázs vs. nyirokmasszázs összehasonlítót. Az egyes kezelések (frissítő, nepáli, aroma, indiai fej, kineziológia, arany kollagén, BEMER stb.) saját cikkekben is megtalálhatók. Így a döntésed nem érzésből, hanem tájékozottan születik – a masszázs Dunakeszin pedig tudatos, kellemes rutinná válhat."
+      },
+      {
+        "type": "p",
+        "text": "A testi-lelki feltöltődés nem verseny és nem teljesítmény. Nem kell „tökéletesen” pihenned, nem kell csendben szenvedned, ha valami nem kellemes, és nem kell magadtól elvárnod, hogy egyetlen alkalom megváltoztassa az egész életed. Elég, ha eljössz, jelen vagy, és hagyod, hogy a tested megkapja azt a figyelmet, amit a mindennapokban gyakran elmulaszt. Az Angyali Szalonban ebben támogatunk – szakmai figyelemmel és emberi hangon."
+      },
+      {
+        "type": "p",
+        "text": "Köszönjük, hogy elolvastad ezt a bejegyzést. Ha hasznosnak találtad, oszd meg valakivel, aki szintén masszázst keres Dunakeszin vagy a környéken. Találkozunk a szalonban – jó pihenést kívánunk előre is."
       }
     ]
   },
   {
     "slug": "kineziologia-blokkok",
     "title": "Kineziológia Dunakeszin – blokkoldás és lelki egyensúly",
-    "excerpt": "Mi a kineziológia a szalonban, miben más mint a masszázs, és hogyan támogatja a stresszkezelést.",
+    "excerpt": "Mi a kineziológia a szalonban, miben más mint a masszázs, hogyan támogatja a stresszkezelést, és mire számíthatsz egy alkalomtól.",
     "date": "2026-07-12",
     "image": "/images/kineziologia-card.jpeg",
     "serviceId": "kineziologia",
-    "seoTitle": "Kineziológia Dunakeszin | Blokkoldás",
-    "seoDescription": "Kineziológia Dunakeszin – blokkoldó, lelki egyensúlyt teremtő kezelés az Angyali Szalonban. Makra Edina.",
+    "seoTitle": "Kineziológia Dunakeszin – részletes útmutató",
+    "seoDescription": "Kineziológia Dunakeszin – blokkoldó, lelki egyensúlyt teremtő kezelés az Angyali Szalonban. Részletes blog, Makra Edina.",
     "blocks": [
       {
         "type": "p",
-        "text": "A kineziológia a masszázs Dunakeszin kínálatának különleges eleme: nem klasszikus „gyúrás”, hanem gyengéd, érintésen alapuló megközelítés, amely a test-elme-érzelem összefüggéseire figyel. Az Angyali Szalonban Makra Edina a lelki egyensúly és a stressz csökkentésének támogatására is kínálja ezt az irányt."
+        "text": "A kineziológia a masszázs Dunakeszin kínálatának különleges eleme: nem klasszikus „gyúrás”, hanem gyengéd, érintésen alapuló megközelítés, amely a test-elme-érzelem összefüggéseire figyel. Az Angyali Szalonban Makra Edina a lelki egyensúly és a stressz csökkentésének támogatására is kínálja ezt az irányt. Ha úgy érzed, „elakadtál”, érdemes megismerned."
       },
       {
         "type": "h2",
@@ -517,7 +1466,7 @@
       },
       {
         "type": "p",
-        "text": "Ha úgy érzed, „elakadtál”, ha a feszültség nem csak izom, hanem hangulat és belső nyughatatlanság is, a kineziológia kiegészítheti vagy helyettesítheti a tisztán fizikai masszázst. Sok vendég a masszázzsal váltogatva jár: hol a test, hol a belső egyensúly kap több figyelmet."
+        "text": "Ha a feszültség nem csak izom, hanem hangulat és belső nyughatatlanság is; ha ismétlődő mintákat érzel a testedben; ha a masszázs mellett másfajta támogatást keresel. Sok vendég a masszázzsal váltogatva jár: hol a test, hol a belső egyensúly kap több figyelmet."
       },
       {
         "type": "h2",
@@ -533,24 +1482,108 @@
         ]
       },
       {
+        "type": "h2",
+        "text": "Miben más, mint a masszázs?"
+      },
+      {
         "type": "p",
-        "text": "A testi-lelki feltöltődés néha onnan indul, hogy megengeded magadnak a megállást. Foglalj kineziológiát online Dunakeszin, és ismerd meg ezt a gyengéd utat az Angyali Szalonban."
+        "text": "A klasszikus masszázs az izmokkal, a keringéssel, a fizikai lazítással dolgozik. A kineziológia a visszajelzésekre, az egyensúlyra és a gyengéd intervenciókra is figyel. Nem jobb vagy rosszabb – más eszköz. Sokan mindkettőt használják az évszak és a hangulat szerint."
+      },
+      {
+        "type": "h2",
+        "text": "Hogyan készülj?"
+      },
+      {
+        "type": "p",
+        "text": "Nyitott elvárásokkal gyere. Gondold át, mi a legfontosabb téma most (stressz, döntés, fáradtság). Nem kell tökéletes történetet előadni – a lényeg elég. Utána adj magadnak csendet, ne azonnal rohanj tovább."
+      },
+      {
+        "type": "h2",
+        "text": "Foglalj kineziológiát"
+      },
+      {
+        "type": "p",
+        "text": "A testi-lelki feltöltődés néha onnan indul, hogy megengeded magadnak a megállást. Foglalj online Dunakeszin, és ismerd meg ezt a gyengéd utat az Angyali Szalonban."
+      },
+      {
+        "type": "h2",
+        "text": "Gyakorlati tippek a mindennapokra"
+      },
+      {
+        "type": "p",
+        "text": "A kezelés hatása tartósabb, ha a mindennapokban is figyelsz a tested jelzéseire. Állj fel óránként, ha ülőmunkát végzel; igyál elegendő folyadékot; aludj, amikor csak teheted. A masszázs Dunakeszin az Angyali Szalonban a tudatos pihenés része lehet – nem helyettesíti a mozgást és az orvosi ellátást, de kiegészíti a közérzet javítását. Ha új panasz jelenik meg, ne várd el, hogy egyetlen alkalom mindent megoldjon: a rendszeresség és a reális célok a legjobb szövetségeseid."
+      },
+      {
+        "type": "p",
+        "text": "Érdemes a foglalás előtt elolvasni a kapcsolódó blogcikkeket és a kezelésoldalt, hogy pontosan tudd, mire számíthatsz. Ha kérdésed marad, hívj bátran a +36 30 487 7883-as számon, vagy írj a kapcsolatfelvételi lehetőségeken. Szeretettel várlak a 2120 Dunakeszi, Kolonics György utca 2/B címén – a testi-lelki feltöltődés kapuja az Angyali Szalonban nyílik meg."
+      },
+      {
+        "type": "h2",
+        "text": "Összefoglaló és következő lépés"
+      },
+      {
+        "type": "p",
+        "text": "A fenti tudnivalók célja, hogy magabiztosan dönthess: melyik kezelés illik hozzád, hogyan foglalj, és mire számíts a szalonban. A masszázs Dunakeszin nem csupán egy bejegyzés a naptárban, hanem idő, amit magadra fordítasz. Foglalj online időpontot, érkezz néhány perccel korábban, és engedd, hogy a tested és az elméd is pihenjen. A blog további cikkei segítenek elmélyülni az egyes technikákban – lapozz tovább, majd találkozzunk a matracnál."
+      },
+      {
+        "type": "h2",
+        "text": "Mit mondanak a visszatérő vendégek?"
+      },
+      {
+        "type": "p",
+        "text": "A visszatérő vendégek leggyakrabban a nyugodt hangulatot, a pontosságot és azt emelik ki, hogy nem „futószalagon” kezeljük őket. Sokan a Google-értékelésekben is megírják: a masszázs Dunakeszin az Angyali Szalonban személyes élmény. A 4,9-es átlag és a több mint 28 értékelés nem marketingmondat – a mindennapi munka visszajelzése. Ha te is jártál nálunk, egy őszinte vélemény sokat segít a következő vendégnek a döntésben."
+      },
+      {
+        "type": "h2",
+        "text": "Hogyan válassz időpontot a napirendedhez?"
+      },
+      {
+        "type": "p",
+        "text": "Reggeli sáv: tiszta fejjel indul a nap, kevesebb a csúcsforgalom. Déli / kora délutáni sáv: a munka közepén ad szünetet. Délutáni / koraesti sáv: a nap lezárása, de hagyd, hogy utána ne azonnal kezdődjön a legstresszesebb program. A foglalóban látszanak a szabad helyek – ha a kedvenc sávod betelt, érdemes heti rendszerességgel előre foglalni. A heti zárolások (szabadnapok) miatt egyes napok üresek lehetnek; ez nem hiba, hanem a szalon működése."
+      },
+      {
+        "type": "h2",
+        "text": "A testi-lelki feltöltődés mint szokás"
+      },
+      {
+        "type": "p",
+        "text": "Egy alkalom is adhat megkönnyebbülést, de a tartós változás a szokáson múlik: ugyanúgy, ahogy a fogmosás vagy a mozgás. Tervezd be a naptáradba a masszázst, ne csak „ha éppen van idő”. A tested előbb-utóbb jelzi, ha túl sokáig hagytad. A blog és a kezelésoldalak segítenek tudatosan választani – a foglaló pedig egyszerűvé teszi a megvalósítást. Dunakeszin, az Auchan közelében, a Kolonics György utcában várlak: jöjj el, lassulj le, és engedd, hogy a kezek és a csend dolgozzanak érted."
+      },
+      {
+        "type": "p",
+        "text": "Ha a „Kineziológia Dunakeszin – blokkoldás és lelki egyensúly” témája különösen érdekel, mentsd el ezt a cikket, és a foglalás előtt futtasd át még egyszer a gyakorlati listákat. A megjegyzés mezőbe írd be a legfontosabb kéréseid – így a kezelés az első perctől rólad szól. Online foglalás: a weboldal Időpontfoglalás menüpontja. Kérdés: +36 30 487 7883. Helyszín: 2120 Dunakeszi, Kolonics György utca 2/B (kapucsengő: 1/43)."
+      },
+      {
+        "type": "h2",
+        "text": "Kapcsolódó olvasnivaló a blogon"
+      },
+      {
+        "type": "p",
+        "text": "Érdemes elolvasni a teljes masszázs-útmutatót, a foglalási lépésről lépésre cikket, az első alkalomról szóló bejegyzést, valamint a masszázs vs. nyirokmasszázs összehasonlítót. Az egyes kezelések (frissítő, nepáli, aroma, indiai fej, kineziológia, arany kollagén, BEMER stb.) saját cikkekben is megtalálhatók. Így a döntésed nem érzésből, hanem tájékozottan születik – a masszázs Dunakeszin pedig tudatos, kellemes rutinná válhat."
+      },
+      {
+        "type": "p",
+        "text": "A testi-lelki feltöltődés nem verseny és nem teljesítmény. Nem kell „tökéletesen” pihenned, nem kell csendben szenvedned, ha valami nem kellemes, és nem kell magadtól elvárnod, hogy egyetlen alkalom megváltoztassa az egész életed. Elég, ha eljössz, jelen vagy, és hagyod, hogy a tested megkapja azt a figyelmet, amit a mindennapokban gyakran elmulaszt. Az Angyali Szalonban ebben támogatunk – szakmai figyelemmel és emberi hangon."
+      },
+      {
+        "type": "p",
+        "text": "Köszönjük, hogy elolvastad ezt a bejegyzést. Ha hasznosnak találtad, oszd meg valakivel, aki szintén masszázst keres Dunakeszin vagy a környéken. Találkozunk a szalonban – jó pihenést kívánunk előre is."
       }
     ]
   },
   {
     "slug": "arany-kollagen-arckezeles",
     "title": "Arany kollagén arckezelés – arcfiatalítás Dunakeszin",
-    "excerpt": "Prémium arckezelés arany kollagénnel: mire való, mennyi ideig tart, és miért kérik a vendégek az Angyali Szalonban.",
+    "excerpt": "Prémium arckezelés arany kollagénnel: mire való, mennyi ideig tart, reális elvárások, ár és foglalás az Angyali Szalonban.",
     "date": "2026-07-13",
     "image": "/images/professional-products.jpeg",
     "serviceId": "kollagen",
-    "seoTitle": "Arany kollagén arckezelés Dunakeszin | Blog",
-    "seoDescription": "Arany kollagén arckezelés Dunakeszin – prémium arcfiatalítás az Angyali Szalonban. 60–90 perc, 30 000 Ft.",
+    "seoTitle": "Arany kollagén arckezelés Dunakeszin – részletes útmutató",
+    "seoDescription": "Arany kollagén arckezelés Dunakeszin – prémium arcfiatalítás. 60–90 perc, 30 000 Ft. Reális elvárások, foglalás.",
     "blocks": [
       {
         "type": "p",
-        "text": "Az arany kollagén arckezelés a masszázs Dunakeszin és szépségkínálat prémium darabja az Angyali Szalonban. A fókusz a bőr frissebb, hidratáltabb, feszesebb érzetén van – luxus ritmusban, nyugodt környezetben. Nem helyettesíti a bőrgyógyászati beavatkozásokat, de sok vendégnek fontos „arcnapi” feltöltődés."
+        "text": "Az arany kollagén arckezelés a masszázs Dunakeszin és szépségkínálat prémium darabja az Angyali Szalonban. A fókusz a bőr frissebb, hidratáltabb, feszesebb érzetén van – luxus ritmusban, nyugodt környezetben. Nem helyettesíti a bőrgyógyászati beavatkozásokat, de sok vendégnek fontos „arcnapi” feltöltődés. Ez a cikk segít eldönteni, neked való-e."
       },
       {
         "type": "h2",
@@ -567,31 +1600,115 @@
       },
       {
         "type": "h2",
+        "text": "Reális elvárások"
+      },
+      {
+        "type": "p",
+        "text": "Egy alkalom frissességet és ápoltságot adhat; a tartós változás az otthoni bőrápoláson, az életmódon és az ismétlődő kezeléseken is múlik. A kezelésoldalon előtte/után példákat is találhatsz. Kerüld a túlzó ígéreteket bárhol a neten – nálunk a hangsúly a minőségen és a kényelmen van."
+      },
+      {
+        "type": "h2",
+        "text": "Hogyan készülj?"
+      },
+      {
+        "type": "p",
+        "text": "Érkezz smink nélkül vagy könnyű sminkkel, ha lehet. Meséld el, milyen a bőrtípusod, van-e érzékenységed. Utána kerüld a nagyon erős napozást és a hámlasztó otthoni kezelést azonnal, ha a szalon másképp nem javasolja."
+      },
+      {
+        "type": "h2",
         "text": "Ár és foglalás"
       },
       {
         "type": "p",
-        "text": "Az arany kollagén arckezelés 30 000 Ft – a kínálat magasabb árfekvésű eleme, cserébe hosszabb, prémium figyelem jár. Online foglalás a weboldalon; ha előtte/után fotók érdekelnek, a kezelésoldalon találsz példákat. A testi-lelki feltöltődés az arcápolásban is megjelenhet: engedd meg magadnak."
+        "text": "Az arany kollagén arckezelés 30 000 Ft – a kínálat magasabb árfekvésű eleme, cserébe hosszabb, prémium figyelem jár. Online foglalás a weboldalon. A testi-lelki feltöltődés az arcápolásban is megjelenhet: engedd meg magadnak."
+      },
+      {
+        "type": "h2",
+        "text": "Kinek ajánljuk?"
       },
       {
         "type": "p",
-        "text": "Foglalj időpontot az Angyali Szalonba, Dunakeszi – arany kollagén arckezelés, személyre szabott hangulatban."
+        "text": "Annak, aki prémium arcápolási élményt keres Dunakeszin; aki esküvő, esemény vagy egyszerűen „saját idő” előtt szeretne ragyogóbb arcot; aki a masszázs mellett a bőrre is fókuszálna. Foglalj időpontot az Angyali Szalonba."
+      },
+      {
+        "type": "h2",
+        "text": "Gyakorlati tippek a mindennapokra"
+      },
+      {
+        "type": "p",
+        "text": "A kezelés hatása tartósabb, ha a mindennapokban is figyelsz a tested jelzéseire. Állj fel óránként, ha ülőmunkát végzel; igyál elegendő folyadékot; aludj, amikor csak teheted. A masszázs Dunakeszin az Angyali Szalonban a tudatos pihenés része lehet – nem helyettesíti a mozgást és az orvosi ellátást, de kiegészíti a közérzet javítását. Ha új panasz jelenik meg, ne várd el, hogy egyetlen alkalom mindent megoldjon: a rendszeresség és a reális célok a legjobb szövetségeseid."
+      },
+      {
+        "type": "p",
+        "text": "Érdemes a foglalás előtt elolvasni a kapcsolódó blogcikkeket és a kezelésoldalt, hogy pontosan tudd, mire számíthatsz. Ha kérdésed marad, hívj bátran a +36 30 487 7883-as számon, vagy írj a kapcsolatfelvételi lehetőségeken. Szeretettel várlak a 2120 Dunakeszi, Kolonics György utca 2/B címén – a testi-lelki feltöltődés kapuja az Angyali Szalonban nyílik meg."
+      },
+      {
+        "type": "h2",
+        "text": "Összefoglaló és következő lépés"
+      },
+      {
+        "type": "p",
+        "text": "A fenti tudnivalók célja, hogy magabiztosan dönthess: melyik kezelés illik hozzád, hogyan foglalj, és mire számíts a szalonban. A masszázs Dunakeszin nem csupán egy bejegyzés a naptárban, hanem idő, amit magadra fordítasz. Foglalj online időpontot, érkezz néhány perccel korábban, és engedd, hogy a tested és az elméd is pihenjen. A blog további cikkei segítenek elmélyülni az egyes technikákban – lapozz tovább, majd találkozzunk a matracnál."
+      },
+      {
+        "type": "h2",
+        "text": "Mit mondanak a visszatérő vendégek?"
+      },
+      {
+        "type": "p",
+        "text": "A visszatérő vendégek leggyakrabban a nyugodt hangulatot, a pontosságot és azt emelik ki, hogy nem „futószalagon” kezeljük őket. Sokan a Google-értékelésekben is megírják: a masszázs Dunakeszin az Angyali Szalonban személyes élmény. A 4,9-es átlag és a több mint 28 értékelés nem marketingmondat – a mindennapi munka visszajelzése. Ha te is jártál nálunk, egy őszinte vélemény sokat segít a következő vendégnek a döntésben."
+      },
+      {
+        "type": "h2",
+        "text": "Hogyan válassz időpontot a napirendedhez?"
+      },
+      {
+        "type": "p",
+        "text": "Reggeli sáv: tiszta fejjel indul a nap, kevesebb a csúcsforgalom. Déli / kora délutáni sáv: a munka közepén ad szünetet. Délutáni / koraesti sáv: a nap lezárása, de hagyd, hogy utána ne azonnal kezdődjön a legstresszesebb program. A foglalóban látszanak a szabad helyek – ha a kedvenc sávod betelt, érdemes heti rendszerességgel előre foglalni. A heti zárolások (szabadnapok) miatt egyes napok üresek lehetnek; ez nem hiba, hanem a szalon működése."
+      },
+      {
+        "type": "h2",
+        "text": "A testi-lelki feltöltődés mint szokás"
+      },
+      {
+        "type": "p",
+        "text": "Egy alkalom is adhat megkönnyebbülést, de a tartós változás a szokáson múlik: ugyanúgy, ahogy a fogmosás vagy a mozgás. Tervezd be a naptáradba a masszázst, ne csak „ha éppen van idő”. A tested előbb-utóbb jelzi, ha túl sokáig hagytad. A blog és a kezelésoldalak segítenek tudatosan választani – a foglaló pedig egyszerűvé teszi a megvalósítást. Dunakeszin, az Auchan közelében, a Kolonics György utcában várlak: jöjj el, lassulj le, és engedd, hogy a kezek és a csend dolgozzanak érted."
+      },
+      {
+        "type": "p",
+        "text": "Ha a „Arany kollagén arckezelés – arcfiatalítás Dunakeszin” témája különösen érdekel, mentsd el ezt a cikket, és a foglalás előtt futtasd át még egyszer a gyakorlati listákat. A megjegyzés mezőbe írd be a legfontosabb kéréseid – így a kezelés az első perctől rólad szól. Online foglalás: a weboldal Időpontfoglalás menüpontja. Kérdés: +36 30 487 7883. Helyszín: 2120 Dunakeszi, Kolonics György utca 2/B (kapucsengő: 1/43)."
+      },
+      {
+        "type": "h2",
+        "text": "Kapcsolódó olvasnivaló a blogon"
+      },
+      {
+        "type": "p",
+        "text": "Érdemes elolvasni a teljes masszázs-útmutatót, a foglalási lépésről lépésre cikket, az első alkalomról szóló bejegyzést, valamint a masszázs vs. nyirokmasszázs összehasonlítót. Az egyes kezelések (frissítő, nepáli, aroma, indiai fej, kineziológia, arany kollagén, BEMER stb.) saját cikkekben is megtalálhatók. Így a döntésed nem érzésből, hanem tájékozottan születik – a masszázs Dunakeszin pedig tudatos, kellemes rutinná válhat."
+      },
+      {
+        "type": "p",
+        "text": "A testi-lelki feltöltődés nem verseny és nem teljesítmény. Nem kell „tökéletesen” pihenned, nem kell csendben szenvedned, ha valami nem kellemes, és nem kell magadtól elvárnod, hogy egyetlen alkalom megváltoztassa az egész életed. Elég, ha eljössz, jelen vagy, és hagyod, hogy a tested megkapja azt a figyelmet, amit a mindennapokban gyakran elmulaszt. Az Angyali Szalonban ebben támogatunk – szakmai figyelemmel és emberi hangon."
+      },
+      {
+        "type": "p",
+        "text": "Köszönjük, hogy elolvastad ezt a bejegyzést. Ha hasznosnak találtad, oszd meg valakivel, aki szintén masszázst keres Dunakeszin vagy a környéken. Találkozunk a szalonban – jó pihenést kívánunk előre is."
       }
     ]
   },
   {
     "slug": "ultrahangos-zsirbontas",
     "title": "Ultrahangos zsírbontás Dunakeszin – testkontúr",
-    "excerpt": "Egy testterület fókuszált kezelése: mire való az ultrahangos zsírbontás, és milyen elvárások reálisak.",
+    "excerpt": "Egy testterület fókuszált kezelése: mire való az ultrahangos zsírbontás, milyen elvárások reálisak, kúra és foglalás az Angyali Szalonban.",
     "date": "2026-07-14",
     "image": "/images/ultrahangos-zsirbontas.jpeg",
     "serviceId": "zsirbontas",
-    "seoTitle": "Ultrahangos zsírbontás Dunakeszin | Testkontúr",
-    "seoDescription": "Ultrahangos zsírbontás Dunakeszin – egy testterület kezelése 15 000 Ft-ért. Angyali Szalon, Makra Edina.",
+    "seoTitle": "Ultrahangos zsírbontás Dunakeszin – részletes tájékoztató",
+    "seoDescription": "Ultrahangos zsírbontás Dunakeszin – egy testterület 15 000 Ft. Reális elvárások, kúra, foglalás. Angyali Szalon.",
     "blocks": [
       {
         "type": "p",
-        "text": "Az ultrahangos zsírbontás a testkontúr iránt érdeklődőknek szól az Angyali Szalonban. A masszázs Dunakeszin kínálat mellett ez technológiás, egy testterületre fókuszáló kezelés – nem csodadiéta, hanem kiegészítő lehetőség a formálódás és a bőrérzet támogatására."
+        "text": "Az ultrahangos zsírbontás a testkontúr iránt érdeklődőknek szól az Angyali Szalonban. A masszázs Dunakeszin kínálat mellett ez technológiás, egy testterületre fókuszáló kezelés – nem csodadiéta, hanem kiegészítő lehetőség a formálódás és a bőrérzet támogatására. A reális elvárások kulcsfontosságúak."
       },
       {
         "type": "h2",
@@ -599,7 +1716,15 @@
       },
       {
         "type": "p",
-        "text": "Egy alkalom ritkán hoz drámai változást: a legtöbben kúrában, életmóddal együtt gondolkodnak. A kezelés a zsírsejtek és a cellulit megjelenése kapcsán felkeltett érdeklődésre reagál, de az eredmény egyéni. Egészséges táplálkozás és mozgás mellett értelmes kiegészítő lehet."
+        "text": "Egy alkalom ritkán hoz drámai változást: a legtöbben kúrában, életmóddal együtt gondolkodnak. A kezelés a zsírsejtek és a cellulit megjelenése kapcsán felkeltett érdeklődésre reagál, de az eredmény egyéni. Egészséges táplálkozás és mozgás mellett értelmes kiegészítő lehet – önmagában nem helyettesíti azokat."
+      },
+      {
+        "type": "h2",
+        "text": "Kinek való – és kinek nem?"
+      },
+      {
+        "type": "p",
+        "text": "Annak, aki célzott testterületen szeretne dolgozni, és elfogadja a fokozatos eredményt. Terhesség, bizonyos egészségügyi állapotok esetén egyeztetés szükséges. Ha inkább a stresszoldás a cél, válassz masszázst; a kettő különböző utak."
       },
       {
         "type": "h2",
@@ -610,28 +1735,105 @@
         "items": [
           "Kb. 45–60 perc, 15 000 Ft / testterület a szalon ajánlata szerint",
           "Online időpontfoglalás a weboldalon",
-          "Kérdés esetén hívj a +36 30 487 7883 számon"
+          "Kérdés esetén hívj a +36 30 487 7883 számon",
+          "Kúratervet egyénileg érdemes megbeszélni"
         ]
       },
       {
+        "type": "h2",
+        "text": "Hogyan illeszkedik a masszázshoz?"
+      },
+      {
         "type": "p",
-        "text": "Ha a cél a tudatos formálás és a szalonbeli odafigyelés, nézd meg a kezelésoldalt, majd foglalj. A testi-lelki feltöltődés és a testkép támogatása nálunk kéz a kézben járhat."
+        "text": "Sokan a masszázst a regenerációra és a stresszre, az ultrahangos zsírbontást a kontúrra használják. A testi-lelki feltöltődés és a testkép támogatása nálunk kéz a kézben járhat – a sorrend és a gyakoriság egyéni."
+      },
+      {
+        "type": "h2",
+        "text": "Foglalás"
+      },
+      {
+        "type": "p",
+        "text": "Nézd meg a kezelésoldalt, majd foglalj az Angyali Szalonba, Dunakeszin. A tiszta kommunikáció és a reális célok a sikeres együttműködés alapja."
+      },
+      {
+        "type": "h2",
+        "text": "Gyakorlati tippek a mindennapokra"
+      },
+      {
+        "type": "p",
+        "text": "A kezelés hatása tartósabb, ha a mindennapokban is figyelsz a tested jelzéseire. Állj fel óránként, ha ülőmunkát végzel; igyál elegendő folyadékot; aludj, amikor csak teheted. A masszázs Dunakeszin az Angyali Szalonban a tudatos pihenés része lehet – nem helyettesíti a mozgást és az orvosi ellátást, de kiegészíti a közérzet javítását. Ha új panasz jelenik meg, ne várd el, hogy egyetlen alkalom mindent megoldjon: a rendszeresség és a reális célok a legjobb szövetségeseid."
+      },
+      {
+        "type": "p",
+        "text": "Érdemes a foglalás előtt elolvasni a kapcsolódó blogcikkeket és a kezelésoldalt, hogy pontosan tudd, mire számíthatsz. Ha kérdésed marad, hívj bátran a +36 30 487 7883-as számon, vagy írj a kapcsolatfelvételi lehetőségeken. Szeretettel várlak a 2120 Dunakeszi, Kolonics György utca 2/B címén – a testi-lelki feltöltődés kapuja az Angyali Szalonban nyílik meg."
+      },
+      {
+        "type": "h2",
+        "text": "Összefoglaló és következő lépés"
+      },
+      {
+        "type": "p",
+        "text": "A fenti tudnivalók célja, hogy magabiztosan dönthess: melyik kezelés illik hozzád, hogyan foglalj, és mire számíts a szalonban. A masszázs Dunakeszin nem csupán egy bejegyzés a naptárban, hanem idő, amit magadra fordítasz. Foglalj online időpontot, érkezz néhány perccel korábban, és engedd, hogy a tested és az elméd is pihenjen. A blog további cikkei segítenek elmélyülni az egyes technikákban – lapozz tovább, majd találkozzunk a matracnál."
+      },
+      {
+        "type": "h2",
+        "text": "Mit mondanak a visszatérő vendégek?"
+      },
+      {
+        "type": "p",
+        "text": "A visszatérő vendégek leggyakrabban a nyugodt hangulatot, a pontosságot és azt emelik ki, hogy nem „futószalagon” kezeljük őket. Sokan a Google-értékelésekben is megírják: a masszázs Dunakeszin az Angyali Szalonban személyes élmény. A 4,9-es átlag és a több mint 28 értékelés nem marketingmondat – a mindennapi munka visszajelzése. Ha te is jártál nálunk, egy őszinte vélemény sokat segít a következő vendégnek a döntésben."
+      },
+      {
+        "type": "h2",
+        "text": "Hogyan válassz időpontot a napirendedhez?"
+      },
+      {
+        "type": "p",
+        "text": "Reggeli sáv: tiszta fejjel indul a nap, kevesebb a csúcsforgalom. Déli / kora délutáni sáv: a munka közepén ad szünetet. Délutáni / koraesti sáv: a nap lezárása, de hagyd, hogy utána ne azonnal kezdődjön a legstresszesebb program. A foglalóban látszanak a szabad helyek – ha a kedvenc sávod betelt, érdemes heti rendszerességgel előre foglalni. A heti zárolások (szabadnapok) miatt egyes napok üresek lehetnek; ez nem hiba, hanem a szalon működése."
+      },
+      {
+        "type": "h2",
+        "text": "A testi-lelki feltöltődés mint szokás"
+      },
+      {
+        "type": "p",
+        "text": "Egy alkalom is adhat megkönnyebbülést, de a tartós változás a szokáson múlik: ugyanúgy, ahogy a fogmosás vagy a mozgás. Tervezd be a naptáradba a masszázst, ne csak „ha éppen van idő”. A tested előbb-utóbb jelzi, ha túl sokáig hagytad. A blog és a kezelésoldalak segítenek tudatosan választani – a foglaló pedig egyszerűvé teszi a megvalósítást. Dunakeszin, az Auchan közelében, a Kolonics György utcában várlak: jöjj el, lassulj le, és engedd, hogy a kezek és a csend dolgozzanak érted."
+      },
+      {
+        "type": "p",
+        "text": "Ha a „Ultrahangos zsírbontás Dunakeszin – testkontúr” témája különösen érdekel, mentsd el ezt a cikket, és a foglalás előtt futtasd át még egyszer a gyakorlati listákat. A megjegyzés mezőbe írd be a legfontosabb kéréseid – így a kezelés az első perctől rólad szól. Online foglalás: a weboldal Időpontfoglalás menüpontja. Kérdés: +36 30 487 7883. Helyszín: 2120 Dunakeszi, Kolonics György utca 2/B (kapucsengő: 1/43)."
+      },
+      {
+        "type": "h2",
+        "text": "Kapcsolódó olvasnivaló a blogon"
+      },
+      {
+        "type": "p",
+        "text": "Érdemes elolvasni a teljes masszázs-útmutatót, a foglalási lépésről lépésre cikket, az első alkalomról szóló bejegyzést, valamint a masszázs vs. nyirokmasszázs összehasonlítót. Az egyes kezelések (frissítő, nepáli, aroma, indiai fej, kineziológia, arany kollagén, BEMER stb.) saját cikkekben is megtalálhatók. Így a döntésed nem érzésből, hanem tájékozottan születik – a masszázs Dunakeszin pedig tudatos, kellemes rutinná válhat."
+      },
+      {
+        "type": "p",
+        "text": "A testi-lelki feltöltődés nem verseny és nem teljesítmény. Nem kell „tökéletesen” pihenned, nem kell csendben szenvedned, ha valami nem kellemes, és nem kell magadtól elvárnod, hogy egyetlen alkalom megváltoztassa az egész életed. Elég, ha eljössz, jelen vagy, és hagyod, hogy a tested megkapja azt a figyelmet, amit a mindennapokban gyakran elmulaszt. Az Angyali Szalonban ebben támogatunk – szakmai figyelemmel és emberi hangon."
+      },
+      {
+        "type": "p",
+        "text": "Köszönjük, hogy elolvastad ezt a bejegyzést. Ha hasznosnak találtad, oszd meg valakivel, aki szintén masszázst keres Dunakeszin vagy a környéken. Találkozunk a szalonban – jó pihenést kívánunk előre is."
       }
     ]
   },
   {
     "slug": "metamorf-masszazs",
     "title": "Metamorf masszázs – gyengéd testi-lelki oldás",
-    "excerpt": "Finom érintések, mély hatás: a metamorf masszázs a belső feszültségek és elakadások oldásának támogatására.",
+    "excerpt": "Finom érintések, mély hatás: a metamorf masszázs a belső feszültségek oldásának támogatására – részletes útmutató az Angyali Szalonból.",
     "date": "2026-07-15",
     "image": "/images/szalon-3.jpeg",
     "serviceId": "metamorf",
-    "seoTitle": "Metamorf masszázs Dunakeszin | Blog",
-    "seoDescription": "Metamorf masszázs Dunakeszin – gyengéd, mély hatású testi-lelki kezelés az Angyali Szalonban. 60 perc, 15 000 Ft.",
+    "seoTitle": "Metamorf masszázs Dunakeszin – részletes útmutató",
+    "seoDescription": "Metamorf masszázs Dunakeszin – gyengéd, mély hatású testi-lelki kezelés. 60 perc, 15 000 Ft. Angyali Szalon blog.",
     "blocks": [
       {
         "type": "p",
-        "text": "A metamorf masszázs a masszázs Dunakeszin paletta egyik legfinomabb, mégis mélyen ható formája. Az Angyali Szalonban a gerinc energetikai pontjain keresztül közelít a testi-lelki oldódáshoz – ideális, ha nem „erős masszázst”, hanem gyengéd, belső megérkezést keresel."
+        "text": "A metamorf masszázs a masszázs Dunakeszin paletta egyik legfinomabb, mégis mélyen ható formája. Az Angyali Szalonban a gerinc energetikai pontjain keresztül közelít a testi-lelki oldódáshoz – ideális, ha nem „erős masszázst”, hanem gyengéd, belső megérkezést keresel. Ez a cikk segít eldönteni, neked való-e."
       },
       {
         "type": "h2",
@@ -643,6 +1845,14 @@
       },
       {
         "type": "h2",
+        "text": "Miben más az élmény?"
+      },
+      {
+        "type": "p",
+        "text": "Finomabb érintések, mélyebb belső fókusz. Sokan meglepődnek, mennyire erős lehet a „kevés” érintés. A csend és a lassú tempó része a hatásának. Nem kell „megérteni” a technikát – elég átadni magad a folyamatnak."
+      },
+      {
+        "type": "h2",
         "text": "Részletek"
       },
       {
@@ -650,28 +1860,105 @@
         "items": [
           "Kb. 60 perc, 15 000 Ft",
           "Helyszín: Angyali Szalon, Dunakeszi",
-          "Foglalás online, kényelmes időponttal"
+          "Foglalás online, kényelmes időponttal",
+          "Jól párosítható kineziológiával vagy frissítő masszázzsal más alkalmakon"
         ]
       },
       {
+        "type": "h2",
+        "text": "Hogyan készülj?"
+      },
+      {
         "type": "p",
-        "text": "A testi-lelki feltöltődés néha a leghalkabb érintésekkel indul. Foglalj metamorf masszázst, és engedd meg magadnak a lassulást."
+        "text": "Nyitott elvárások, csendes utazás haza, ha lehet. Kerüld az azonnali, nagyon zajos programot utána. A testi-lelki feltöltődés néha a leghalkabb érintésekkel indul."
+      },
+      {
+        "type": "h2",
+        "text": "Foglalj metamorf masszázst"
+      },
+      {
+        "type": "p",
+        "text": "Foglalj online, és engedd meg magadnak a lassulást az Angyali Szalonban. Masszázs Dunakeszin – gyengéden, mélyen."
+      },
+      {
+        "type": "h2",
+        "text": "Gyakorlati tippek a mindennapokra"
+      },
+      {
+        "type": "p",
+        "text": "A kezelés hatása tartósabb, ha a mindennapokban is figyelsz a tested jelzéseire. Állj fel óránként, ha ülőmunkát végzel; igyál elegendő folyadékot; aludj, amikor csak teheted. A masszázs Dunakeszin az Angyali Szalonban a tudatos pihenés része lehet – nem helyettesíti a mozgást és az orvosi ellátást, de kiegészíti a közérzet javítását. Ha új panasz jelenik meg, ne várd el, hogy egyetlen alkalom mindent megoldjon: a rendszeresség és a reális célok a legjobb szövetségeseid."
+      },
+      {
+        "type": "p",
+        "text": "Érdemes a foglalás előtt elolvasni a kapcsolódó blogcikkeket és a kezelésoldalt, hogy pontosan tudd, mire számíthatsz. Ha kérdésed marad, hívj bátran a +36 30 487 7883-as számon, vagy írj a kapcsolatfelvételi lehetőségeken. Szeretettel várlak a 2120 Dunakeszi, Kolonics György utca 2/B címén – a testi-lelki feltöltődés kapuja az Angyali Szalonban nyílik meg."
+      },
+      {
+        "type": "h2",
+        "text": "Összefoglaló és következő lépés"
+      },
+      {
+        "type": "p",
+        "text": "A fenti tudnivalók célja, hogy magabiztosan dönthess: melyik kezelés illik hozzád, hogyan foglalj, és mire számíts a szalonban. A masszázs Dunakeszin nem csupán egy bejegyzés a naptárban, hanem idő, amit magadra fordítasz. Foglalj online időpontot, érkezz néhány perccel korábban, és engedd, hogy a tested és az elméd is pihenjen. A blog további cikkei segítenek elmélyülni az egyes technikákban – lapozz tovább, majd találkozzunk a matracnál."
+      },
+      {
+        "type": "h2",
+        "text": "Mit mondanak a visszatérő vendégek?"
+      },
+      {
+        "type": "p",
+        "text": "A visszatérő vendégek leggyakrabban a nyugodt hangulatot, a pontosságot és azt emelik ki, hogy nem „futószalagon” kezeljük őket. Sokan a Google-értékelésekben is megírják: a masszázs Dunakeszin az Angyali Szalonban személyes élmény. A 4,9-es átlag és a több mint 28 értékelés nem marketingmondat – a mindennapi munka visszajelzése. Ha te is jártál nálunk, egy őszinte vélemény sokat segít a következő vendégnek a döntésben."
+      },
+      {
+        "type": "h2",
+        "text": "Hogyan válassz időpontot a napirendedhez?"
+      },
+      {
+        "type": "p",
+        "text": "Reggeli sáv: tiszta fejjel indul a nap, kevesebb a csúcsforgalom. Déli / kora délutáni sáv: a munka közepén ad szünetet. Délutáni / koraesti sáv: a nap lezárása, de hagyd, hogy utána ne azonnal kezdődjön a legstresszesebb program. A foglalóban látszanak a szabad helyek – ha a kedvenc sávod betelt, érdemes heti rendszerességgel előre foglalni. A heti zárolások (szabadnapok) miatt egyes napok üresek lehetnek; ez nem hiba, hanem a szalon működése."
+      },
+      {
+        "type": "h2",
+        "text": "A testi-lelki feltöltődés mint szokás"
+      },
+      {
+        "type": "p",
+        "text": "Egy alkalom is adhat megkönnyebbülést, de a tartós változás a szokáson múlik: ugyanúgy, ahogy a fogmosás vagy a mozgás. Tervezd be a naptáradba a masszázst, ne csak „ha éppen van idő”. A tested előbb-utóbb jelzi, ha túl sokáig hagytad. A blog és a kezelésoldalak segítenek tudatosan választani – a foglaló pedig egyszerűvé teszi a megvalósítást. Dunakeszin, az Auchan közelében, a Kolonics György utcában várlak: jöjj el, lassulj le, és engedd, hogy a kezek és a csend dolgozzanak érted."
+      },
+      {
+        "type": "p",
+        "text": "Ha a „Metamorf masszázs – gyengéd testi-lelki oldás” témája különösen érdekel, mentsd el ezt a cikket, és a foglalás előtt futtasd át még egyszer a gyakorlati listákat. A megjegyzés mezőbe írd be a legfontosabb kéréseid – így a kezelés az első perctől rólad szól. Online foglalás: a weboldal Időpontfoglalás menüpontja. Kérdés: +36 30 487 7883. Helyszín: 2120 Dunakeszi, Kolonics György utca 2/B (kapucsengő: 1/43)."
+      },
+      {
+        "type": "h2",
+        "text": "Kapcsolódó olvasnivaló a blogon"
+      },
+      {
+        "type": "p",
+        "text": "Érdemes elolvasni a teljes masszázs-útmutatót, a foglalási lépésről lépésre cikket, az első alkalomról szóló bejegyzést, valamint a masszázs vs. nyirokmasszázs összehasonlítót. Az egyes kezelések (frissítő, nepáli, aroma, indiai fej, kineziológia, arany kollagén, BEMER stb.) saját cikkekben is megtalálhatók. Így a döntésed nem érzésből, hanem tájékozottan születik – a masszázs Dunakeszin pedig tudatos, kellemes rutinná válhat."
+      },
+      {
+        "type": "p",
+        "text": "A testi-lelki feltöltődés nem verseny és nem teljesítmény. Nem kell „tökéletesen” pihenned, nem kell csendben szenvedned, ha valami nem kellemes, és nem kell magadtól elvárnod, hogy egyetlen alkalom megváltoztassa az egész életed. Elég, ha eljössz, jelen vagy, és hagyod, hogy a tested megkapja azt a figyelmet, amit a mindennapokban gyakran elmulaszt. Az Angyali Szalonban ebben támogatunk – szakmai figyelemmel és emberi hangon."
+      },
+      {
+        "type": "p",
+        "text": "Köszönjük, hogy elolvastad ezt a bejegyzést. Ha hasznosnak találtad, oszd meg valakivel, aki szintén masszázst keres Dunakeszin vagy a környéken. Találkozunk a szalonban – jó pihenést kívánunk előre is."
       }
     ]
   },
   {
     "slug": "bemer-kezeles-mikrokeringes",
     "title": "BEMER kezelés Dunakeszin – mikrokeringés támogatása",
-    "excerpt": "20 vagy 40 perces matrackezelés a mikrokeringés támogatására – önállóan vagy masszázs mellé.",
+    "excerpt": "20 vagy 40 perces matrackezelés a mikrokeringés támogatására – önállóan vagy masszázs mellé. Részletes útmutató, árak, foglalás.",
     "date": "2026-07-16",
     "image": "/images/bemer-1.jpeg",
     "serviceId": "bemer",
-    "seoTitle": "BEMER kezelés Dunakeszin | Mikrokeringés",
-    "seoDescription": "BEMER kezelés Dunakeszin az Angyali Szalonban. 20 perc 7 500 Ft, 40 perc 15 000 Ft. Masszázs mellé is.",
+    "seoTitle": "BEMER kezelés Dunakeszin – mikrokeringés útmutató",
+    "seoDescription": "BEMER kezelés Dunakeszin: 20 perc 7 500 Ft, 40 perc 15 000 Ft. Masszázs mellé is. Részletes blog, Angyali Szalon.",
     "blocks": [
       {
         "type": "p",
-        "text": "A BEMER kezelés a masszázs Dunakeszin kínálat modern kiegészítője: matracos forma, a mikrokeringés támogatásának jegyében. Az Angyali Szalonban választható önállóan 20 vagy 40 percben, illetve sokan masszázs mellé kérik a regeneráció és a közérzet támogatására."
+        "text": "A BEMER kezelés a masszázs Dunakeszin kínálat modern kiegészítője: matracos forma, a mikrokeringés támogatásának jegyében. Az Angyali Szalonban választható önállóan 20 vagy 40 percben, illetve sokan masszázs mellé kérik a regeneráció és a közérzet támogatására. Nem helyettesíti az orvosi ellátást; a vendégek a kényelmes, passzív jelleget emelik ki."
       },
       {
         "type": "h2",
@@ -679,23 +1966,108 @@
       },
       {
         "type": "p",
-        "text": "Míg a frissítő masszázs az izmokkal dolgozik, a BEMER a pihenés és a keringés-támogatás irányából közelít. Nem helyettesíti az orvosi ellátást; a vendégek a kényelmes, passzív jelleget és a „teszek a regenerációmért” érzést emelik ki. A testi-lelki feltöltődés így több csatornán is erősíthető."
+        "text": "Míg a frissítő masszázs az izmokkal dolgozik, a BEMER a pihenés és a keringés-támogatás irányából közelít. A testi-lelki feltöltődés így több csatornán is erősíthető: aktív lazítás a kezekkel, passzív támogatás a matraccal. Sokan a masszázs után vagy külön napokon kérik."
       },
       {
         "type": "h2",
-        "text": "Árak"
+        "text": "Árak és időtartam"
       },
       {
         "type": "ul",
         "items": [
           "BEMER 20 perc: 7 500 Ft",
           "BEMER 40 perc: 15 000 Ft",
-          "Foglalás: online az Időpontfoglalás menüpontban"
+          "Foglalás: online az Időpontfoglalás menüpontban",
+          "Kérdés: telefon +36 30 487 7883"
         ]
       },
       {
+        "type": "h2",
+        "text": "Mire számíthatsz?"
+      },
+      {
         "type": "p",
-        "text": "Érdekel a mikrokeringés támogatása masszázzsal vagy önállóan? Foglalj BEMER kezelést az Angyali Szalonba – Dunakeszin, nyugodt környezetben."
+        "text": "Kényelmes fekvés, passzív kezelés. Nincs „gyúrás”. Ideális, ha fáradt vagy, de nem akarsz intenzív masszázst; vagy ha a masszázst szeretnéd kiegészíteni. A megjegyzésben jelezd, ha masszázzsal egy napon szeretnéd."
+      },
+      {
+        "type": "h2",
+        "text": "Kinek ajánlott?"
+      },
+      {
+        "type": "p",
+        "text": "Annak, aki a regenerációt és a mikrokeringés támogatását keresi; aki a masszázs mellé passzív kiegészítőt szeretne; aki rövidebb (20 perces) sávot is elfogad. Egészségügyi kérdésekben mindig egyéni mérlegelés kell."
+      },
+      {
+        "type": "h2",
+        "text": "Foglalj BEMER kezelést"
+      },
+      {
+        "type": "p",
+        "text": "Érdekel a mikrokeringés támogatása masszázzsal vagy önállóan? Foglalj az Angyali Szalonba – Dunakeszin, nyugodt környezetben. A masszázs és a BEMER együtt is a testi-lelki feltöltődést szolgálhatja."
+      },
+      {
+        "type": "h2",
+        "text": "Gyakorlati tippek a mindennapokra"
+      },
+      {
+        "type": "p",
+        "text": "A kezelés hatása tartósabb, ha a mindennapokban is figyelsz a tested jelzéseire. Állj fel óránként, ha ülőmunkát végzel; igyál elegendő folyadékot; aludj, amikor csak teheted. A masszázs Dunakeszin az Angyali Szalonban a tudatos pihenés része lehet – nem helyettesíti a mozgást és az orvosi ellátást, de kiegészíti a közérzet javítását. Ha új panasz jelenik meg, ne várd el, hogy egyetlen alkalom mindent megoldjon: a rendszeresség és a reális célok a legjobb szövetségeseid."
+      },
+      {
+        "type": "p",
+        "text": "Érdemes a foglalás előtt elolvasni a kapcsolódó blogcikkeket és a kezelésoldalt, hogy pontosan tudd, mire számíthatsz. Ha kérdésed marad, hívj bátran a +36 30 487 7883-as számon, vagy írj a kapcsolatfelvételi lehetőségeken. Szeretettel várlak a 2120 Dunakeszi, Kolonics György utca 2/B címén – a testi-lelki feltöltődés kapuja az Angyali Szalonban nyílik meg."
+      },
+      {
+        "type": "h2",
+        "text": "Összefoglaló és következő lépés"
+      },
+      {
+        "type": "p",
+        "text": "A fenti tudnivalók célja, hogy magabiztosan dönthess: melyik kezelés illik hozzád, hogyan foglalj, és mire számíts a szalonban. A masszázs Dunakeszin nem csupán egy bejegyzés a naptárban, hanem idő, amit magadra fordítasz. Foglalj online időpontot, érkezz néhány perccel korábban, és engedd, hogy a tested és az elméd is pihenjen. A blog további cikkei segítenek elmélyülni az egyes technikákban – lapozz tovább, majd találkozzunk a matracnál."
+      },
+      {
+        "type": "h2",
+        "text": "Mit mondanak a visszatérő vendégek?"
+      },
+      {
+        "type": "p",
+        "text": "A visszatérő vendégek leggyakrabban a nyugodt hangulatot, a pontosságot és azt emelik ki, hogy nem „futószalagon” kezeljük őket. Sokan a Google-értékelésekben is megírják: a masszázs Dunakeszin az Angyali Szalonban személyes élmény. A 4,9-es átlag és a több mint 28 értékelés nem marketingmondat – a mindennapi munka visszajelzése. Ha te is jártál nálunk, egy őszinte vélemény sokat segít a következő vendégnek a döntésben."
+      },
+      {
+        "type": "h2",
+        "text": "Hogyan válassz időpontot a napirendedhez?"
+      },
+      {
+        "type": "p",
+        "text": "Reggeli sáv: tiszta fejjel indul a nap, kevesebb a csúcsforgalom. Déli / kora délutáni sáv: a munka közepén ad szünetet. Délutáni / koraesti sáv: a nap lezárása, de hagyd, hogy utána ne azonnal kezdődjön a legstresszesebb program. A foglalóban látszanak a szabad helyek – ha a kedvenc sávod betelt, érdemes heti rendszerességgel előre foglalni. A heti zárolások (szabadnapok) miatt egyes napok üresek lehetnek; ez nem hiba, hanem a szalon működése."
+      },
+      {
+        "type": "h2",
+        "text": "A testi-lelki feltöltődés mint szokás"
+      },
+      {
+        "type": "p",
+        "text": "Egy alkalom is adhat megkönnyebbülést, de a tartós változás a szokáson múlik: ugyanúgy, ahogy a fogmosás vagy a mozgás. Tervezd be a naptáradba a masszázst, ne csak „ha éppen van idő”. A tested előbb-utóbb jelzi, ha túl sokáig hagytad. A blog és a kezelésoldalak segítenek tudatosan választani – a foglaló pedig egyszerűvé teszi a megvalósítást. Dunakeszin, az Auchan közelében, a Kolonics György utcában várlak: jöjj el, lassulj le, és engedd, hogy a kezek és a csend dolgozzanak érted."
+      },
+      {
+        "type": "p",
+        "text": "Ha a „BEMER kezelés Dunakeszin – mikrokeringés támogatása” témája különösen érdekel, mentsd el ezt a cikket, és a foglalás előtt futtasd át még egyszer a gyakorlati listákat. A megjegyzés mezőbe írd be a legfontosabb kéréseid – így a kezelés az első perctől rólad szól. Online foglalás: a weboldal Időpontfoglalás menüpontja. Kérdés: +36 30 487 7883. Helyszín: 2120 Dunakeszi, Kolonics György utca 2/B (kapucsengő: 1/43)."
+      },
+      {
+        "type": "h2",
+        "text": "Kapcsolódó olvasnivaló a blogon"
+      },
+      {
+        "type": "p",
+        "text": "Érdemes elolvasni a teljes masszázs-útmutatót, a foglalási lépésről lépésre cikket, az első alkalomról szóló bejegyzést, valamint a masszázs vs. nyirokmasszázs összehasonlítót. Az egyes kezelések (frissítő, nepáli, aroma, indiai fej, kineziológia, arany kollagén, BEMER stb.) saját cikkekben is megtalálhatók. Így a döntésed nem érzésből, hanem tájékozottan születik – a masszázs Dunakeszin pedig tudatos, kellemes rutinná válhat."
+      },
+      {
+        "type": "p",
+        "text": "A testi-lelki feltöltődés nem verseny és nem teljesítmény. Nem kell „tökéletesen” pihenned, nem kell csendben szenvedned, ha valami nem kellemes, és nem kell magadtól elvárnod, hogy egyetlen alkalom megváltoztassa az egész életed. Elég, ha eljössz, jelen vagy, és hagyod, hogy a tested megkapja azt a figyelmet, amit a mindennapokban gyakran elmulaszt. Az Angyali Szalonban ebben támogatunk – szakmai figyelemmel és emberi hangon."
+      },
+      {
+        "type": "p",
+        "text": "Köszönjük, hogy elolvastad ezt a bejegyzést. Ha hasznosnak találtad, oszd meg valakivel, aki szintén masszázst keres Dunakeszin vagy a környéken. Találkozunk a szalonban – jó pihenést kívánunk előre is."
       }
     ]
   }
