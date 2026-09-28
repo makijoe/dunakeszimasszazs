@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useLayoutEffect, useState, useRef } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import {
   Menu,
   X,
@@ -2699,73 +2700,109 @@ function App() {
 
   if (route === 'admin') {
     return (
-      <Suspense fallback={<RouteFallback />}>
-        <AdminPage />
-      </Suspense>
+      <>
+        <Suspense fallback={<RouteFallback />}>
+          <AdminPage />
+        </Suspense>
+        <Analytics />
+      </>
     );
   }
 
   if (route === 'manage') {
     return (
-      <Suspense fallback={<RouteFallback />}>
-        <ManageBookingsPage />
-      </Suspense>
+      <>
+        <Suspense fallback={<RouteFallback />}>
+          <ManageBookingsPage />
+        </Suspense>
+        <Analytics />
+      </>
     );
   }
 
   if (route === 'privacy') {
-    return <PrivacyPage Navigation={Navigation} Footer={FooterSection} />;
+    return (
+      <>
+        <PrivacyPage Navigation={Navigation} Footer={FooterSection} />
+        <Analytics />
+      </>
+    );
   }
 
   if (route === 'blog') {
-    return <BlogIndexPage Navigation={Navigation} Footer={FooterSection} />;
+    return (
+      <>
+        <BlogIndexPage Navigation={Navigation} Footer={FooterSection} />
+        <Analytics />
+      </>
+    );
   }
 
   if (route.startsWith('blog:')) {
     return (
-      <BlogPostPage
-        slug={route.slice('blog:'.length)}
-        Navigation={Navigation}
-        Footer={FooterSection}
-      />
+      <>
+        <BlogPostPage
+          slug={route.slice('blog:'.length)}
+          Navigation={Navigation}
+          Footer={FooterSection}
+        />
+        <Analytics />
+      </>
     );
   }
 
   if (route.startsWith('service:')) {
     return (
-      <ServiceLandingPage
-        slug={route.slice('service:'.length)}
-        Navigation={Navigation}
-        Footer={FooterSection}
-      />
+      <>
+        <ServiceLandingPage
+          slug={route.slice('service:'.length)}
+          Navigation={Navigation}
+          Footer={FooterSection}
+        />
+        <Analytics />
+      </>
     );
   }
 
   if (route === 'booking-bank-pending') {
     return (
-      <Suspense fallback={<RouteFallback />}>
-        <BookingBankPendingPage />
-      </Suspense>
+      <>
+        <Suspense fallback={<RouteFallback />}>
+          <BookingBankPendingPage />
+        </Suspense>
+        <Analytics />
+      </>
     );
   }
 
   if (route === 'booking-success') {
     return (
-      <Suspense fallback={<RouteFallback />}>
-        <BookingSuccessPage />
-      </Suspense>
+      <>
+        <Suspense fallback={<RouteFallback />}>
+          <BookingSuccessPage />
+        </Suspense>
+        <Analytics />
+      </>
     );
   }
 
   if (route === 'booking-cancel') {
     return (
-      <Suspense fallback={<RouteFallback />}>
-        <BookingCancelPage />
-      </Suspense>
+      <>
+        <Suspense fallback={<RouteFallback />}>
+          <BookingCancelPage />
+        </Suspense>
+        <Analytics />
+      </>
     );
   }
 
-  return <HomeSite />;
+  return (
+    <>
+      <HomeSite />
+      <Analytics />
+    </>
+  );
 }
 
 export default App;
