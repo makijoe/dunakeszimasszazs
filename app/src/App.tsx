@@ -192,13 +192,13 @@ function Navigation() {
             }}
             className="flex items-center gap-2 group"
           >
-            <LogoImage size={64} className="w-16 h-16 rounded-full object-cover" />
-            <div className="hidden sm:block">
-              <span className="block font-semibold text-lg leading-tight text-[#4A3F35]">
-                Dunakeszi Masszázs
+            <LogoImage size={64} className="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover shrink-0" />
+            <div>
+              <span className="block font-bold text-base sm:text-lg leading-tight text-[#4A3F35]">
+                Angyali Szalon
               </span>
-              <span className="block text-xs text-[#635241]">
-                Angyali Szalon - Makra Edina
+              <span className="block text-[11px] sm:text-xs text-[#635241] leading-tight">
+                Makra Edina masszőr · Dunakeszi
               </span>
             </div>
           </a>
