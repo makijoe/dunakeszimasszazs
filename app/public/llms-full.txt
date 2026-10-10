@@ -1,79 +1,108 @@
-# Dunakeszi Masszázs - Angyali Szalon — teljes tartalom
+# Dunakeszi Masszázs - Angyali Szalon – Teljes összefoglaló LLM-eknek
 
-> Makra Edina masszőr és kineziológus az Angyali Szalonban, Dunakeszin. Relaxáló, terápiás és prémium wellness kezelések, RTL és TV2 médiaszereplésekkel.
+## Vállalkozás alapadatai
 
-## Bemutatkozás
-
-Makra Edina okleveles masszőr és kineziológus. Az Angyali Szalon egy békés, biztonságos környezet Dunakeszin, az Auchan Dunakeszi közelében. Minden kezelés személyre szabott: a vendég panaszaihoz és igényeihez igazítjuk a fogásokat és az érintés erősségét. Kezelések után vendégeinket Organo prémium kávéval és ganodermás zöld teával kínáljuk.
+- **Név**: Dunakeszi Masszázs – Angyali Szalon
+- **Terapeuta**: Makra Edina (okleveles masszőr és kineziológus)
+- **Cím**: 2120 Dunakeszi, Kolonics György utca 2/B (kapucsengő: 1/43)
+- **Telefon**: +36 30 487 7883
+- **Email**: dunakeszimasszor@gmail.com
+- **Weboldal**: https://www.dunakeszimasszazs.hu
+- **Nyitvatartás**: Hétfő–Vasárnap 8:30–18:30
+- **Értékelés**: 4,9 / 5 (28+ Google-értékelés)
+- **Médiaszereplés**: RTL Klub, TV2
+- **Megközelíthetőség**: Az Auchan Dunakeszi közelében, parkolás lehetséges a közelben
 
 ## Kezelések részletesen
 
 ### Frissítő masszázs
-Könnyed, lazító testmasszázs a mindennapi feszültségek oldására. 60 perc, 15 000 Ft.
-URL: https://www.dunakeszimasszazs.hu/kezelesek/frissito
+- **Időtartam**: kb. 60 perc
+- **Ár**: 15 000 Ft
+- **Leírás**: Könnyed, ritmikus egésztest-masszázs. Hát, vállak és végtagok átmozgatása. Mindennapi feszültség oldása, vérkeringés javítása.
+- **Előnyök**: Ellazult izmok, csökkent feszültség, jobb közérzet, könnyedség a hátban
+- **URL**: https://www.dunakeszimasszazs.hu/kezelesek/frissito
 
 ### Nepáli masszázs
-Mély stresszoldó kezelés, testi-lelki egyensúlyt támogat. 60 perc, 15 000 Ft.
-URL: https://www.dunakeszimasszazs.hu/kezelesek/nepali
+- **Időtartam**: kb. 60 perc
+- **Ár**: 15 000 Ft
+- **Leírás**: Gyengéd, mégis hatékony stresszoldó kezelés. Lecsendesíti az elmét, ellazítja a testet, helyreállítja a belső egyensúlyt. Különösen ajánlott stressz, szorongás, kimerültség esetén.
+- **Előnyök**: Mély izomlazítás, energiarendszer harmonizálása, testi-lelki egyensúly, belső nyugalom
+- **URL**: https://www.dunakeszimasszazs.hu/kezelesek/nepali
 
-### Nyirokmasszázs
-Gépi nyirokmasszázs a keringés és méregtelenítés támogatására. 60 perc, 15 000 Ft.
-URL: https://www.dunakeszimasszazs.hu/kezelesek/nyirok
+### Nyirokmasszázs (gépi)
+- **Időtartam**: 60 perc
+- **Ár**: 15 000 Ft
+- **Leírás**: Gyengéd, lassú ritmusú gépi kezelés. Támogatja a nyirokkeringést, segíti a szervezet természetes tisztulási folyamatait, csökkenti a pangó folyadékot.
+- **Előnyök**: Könnyedebb lábak, csökkent ödéma, jobb keringés, méregtelenítés
+- **URL**: https://www.dunakeszimasszazs.hu/kezelesek/nyirok
 
 ### Aromamasszázs
-Illóolajos relaxáló kezelés. 60 perc, 15 000 Ft.
-URL: https://www.dunakeszimasszazs.hu/kezelesek/aroma
+- **Időtartam**: 60 perc
+- **Ár**: 15 000 Ft
+- **Leírás**: Illóolajos, relaxáló kezelés. Válogatott illóolajok mély relaxációt és stresszoldást biztosítanak.
+- **Előnyök**: Mély relaxáció, stresszoldás, aromaterápiás hatás, érzelmi egyensúly
+- **URL**: https://www.dunakeszimasszazs.hu/kezelesek/aroma
 
 ### Indiai fejmasszázs
-Fej-, nyak- és vállmasszázs stressz és fejfájás ellen. 60 perc, 15 000 Ft.
-URL: https://www.dunakeszimasszazs.hu/kezelesek/indiai
+- **Időtartam**: kb. 30–40 perc
+- **Ár**: 15 000 Ft
+- **Leírás**: Ősi, gyengéd technika. Fej, nyak és vállak feszültségének oldása. Tökéletes stressz, túlterheltség és fejfájás esetén.
+- **Előnyök**: Fejfájás csökkentése, mentális frissesség, stresszoldás, jobb koncentráció
+- **URL**: https://www.dunakeszimasszazs.hu/kezelesek/indiai
 
 ### Nehézfém-kivezetés
-Harmonizáló, méregtelenítő kezelés. 60 perc, 15 000 Ft.
-URL: https://www.dunakeszimasszazs.hu/kezelesek/nehezfem
+- **Időtartam**: kb. 60 perc
+- **Ár**: 15 000 Ft
+- **Leírás**: Gyengéd, harmonizáló módszer. A szervezet természetes méregtelenítő folyamatainak támogatása.
+- **Előnyök**: Méregtelenítés, nyirokkeringés támogatása, belső tehermentesítés, energia növekedés
+- **URL**: https://www.dunakeszimasszazs.hu/kezelesek/nehezfem
 
 ### Kineziológia
-Blokkoldó, lelki egyensúlyt teremtő kezelés. 60 perc, 15 000 Ft.
-URL: https://www.dunakeszimasszazs.hu/kezelesek/kineziologia
+- **Időtartam**: 60–75 perc
+- **Ár**: 15 000 Ft
+- **Leírás**: Gyengéd, érintésen alapuló módszer. Feltárja és oldja a testben, elmében és érzelmekben megbújó blokkokat. Belső harmónia helyreállítása.
+- **Előnyök**: Lelki egyensúly, blokkoldás, stresszkezelés, belső erő
+- **URL**: https://www.dunakeszimasszazs.hu/kezelesek/kineziologia
 
 ### Arany kollagén arckezelés
-Prémium arcfiatalítás arany kollagén terápiával. 60–90 perc, 30 000 Ft.
-URL: https://www.dunakeszimasszazs.hu/kezelesek/kollagen
+- **Időtartam**: kb. 60–90 perc
+- **Ár**: 30 000 Ft
+- **Leírás**: Prémium arcfiatalítás. Bőrbe olvadó arany kollagén terápia két változatban (intenzív feszesítés, mély hidratálás). Nyirokmasszázzsal kombinálva tartósabb eredményért.
+- **Előnyök**: Bőrfiatalítás, ragyogó bőr, ránccsökkentés, feszesebb bőr, kollagéntermelés
+- **URL**: https://www.dunakeszimasszazs.hu/kezelesek/kollagen
 
 ### Ultrahangos zsírbontás
-Egy testterület kezelése ultrahanggal. 60 perc, 15 000 Ft.
-URL: https://www.dunakeszimasszazs.hu/kezelesek/zsirbontas
+- **Időtartam**: kb. 45–60 perc
+- **Ár**: 15 000 Ft (egy testterület)
+- **Leírás**: Egy testterület ultrahangos technológiával a zsírsejtek csökkentésére. Testkontúr javítása, cellulit csökkentése.
+- **Előnyök**: Zsírsejt csökkentés, testkontúr javítás, cellulit kezelés, bőrfeszesítés
+- **URL**: https://www.dunakeszimasszazs.hu/kezelesek/zsirbontas
 
 ### Metamorf masszázs
-Gyengéd, mély hatású testi-lelki kezelés. 60 perc, 15 000 Ft.
-URL: https://www.dunakeszimasszazs.hu/kezelesek/metamorf
+- **Időtartam**: kb. 60 perc
+- **Ár**: 15 000 Ft
+- **Leírás**: Finom, mégis mély hatású kezelés. A gerinc energetikai pontjain keresztül segíti a testi-lelki oldódást. Ajánlott stressz, belső feszültség és lelki elakadások esetén.
+- **Előnyök**: Belső átalakulás, régi feszültségek oldása, lelki elakadások feloldása, teljes ellazulás
+- **URL**: https://www.dunakeszimasszazs.hu/kezelesek/metamorf
 
 ### BEMER kezelés
-Mikrokeringés-javító matrackezelés. 20 perc: 7 500 Ft, 40 perc: 15 000 Ft.
-URL: https://www.dunakeszimasszazs.hu/kezelesek/bemer
+- **Időtartam**: 20 perc (7 500 Ft) vagy 40 perc (15 000 Ft)
+- **Leírás**: BEMER matrac, a mikroerek pacemakere. A szervezet legapróbb hajszálereire hat, ott támogatja a keringést. Választható önállóan vagy masszázs mellé.
+- **Előnyök**: Jobb oxigénellátás, regeneráció gyorsítása, mikrokeringés támogatása, megelőzés
+- **URL**: https://www.dunakeszimasszazs.hu/kezelesek/bemer
 
-## Árak és foglalás
+## Foglalás és fizetés
 
-- Legtöbb 60 perces kezelés: 15 000 Ft
-- Arany kollagén arckezelés: 30 000 Ft
-- Online foglalási díj: 3 000 Ft (bankkártya Stripe-on vagy banki átutalás)
-- Lemondás: legalább 24 órával előre e-mailben vagy telefonon
-- Foglalás: https://www.dunakeszimasszazs.hu/#idopont
+- Online foglalás a weboldalon: https://www.dunakeszimasszazs.hu/#idopont
+- Foglalási díj: 3 000 Ft (bankkártyával, Stripe-on keresztül)
+- Fennmaradó összeg: a kezelés napján, a szalonban
+- Fizetési módok: bankkártya (Stripe) vagy banki átutalás
+- Lemondás: legalább 24 órával előre kérjük
 
-## Elérhetőség
+## Blog összefoglaló
 
-- Név: Dunakeszi Masszázs – Angyali Szalon
-- Tulajdonos: Makra Edina
-- Cím: 2120 Dunakeszi, Kolonics György utca 2/B, kapucsengő 1/43
-- Telefon: +36 30 487 7883
-- Email: dunakeszimasszor@gmail.com
-- Nyitvatartás: Hétfő–Vasárnap 8:30–18:30
-- Google értékelések: 4,9 / 5 (28 vélemény)
+A blog 15+ cikket tartalmaz masszázs típusokról, foglalásról, Makra Edina médiaszerepléseiről, és specifikus kezelések bemutatóiról. Minden cikk magyar nyelvű, SEO-optimalizált, a helyi Dunakeszi célközönségnek szól.
 
-## Linkek
+Témák: masszázs Dunakeszin, foglalási útmutató, első alkalom, nyirokmasszázs vs. masszázs, RTL/TV2 szereplések, frissítő masszázs, nepáli masszázs, nyirokmasszázs, aromamasszázs, indiai fejmasszázs, nehézfém-kivezetés, kineziológia, arany kollagén arckezelés, ultrahangos zsírbontás, metamorf masszázs, BEMER kezelés.
 
-- Weboldal: https://www.dunakeszimasszazs.hu/
-- Adatvédelem: https://www.dunakeszimasszazs.hu/adatvedelem
-- Facebook: https://www.facebook.com/61577273747405
-- Google Térkép: https://www.google.com/maps/search/?api=1&query=Dunakeszi+Masszázs+Angyali+Szalon&query=47.637494,19.124045
-- Google értékelés: https://share.google/Wm7nkRpmnz966J4Qh
+Blog index: https://www.dunakeszimasszazs.hu/blog
