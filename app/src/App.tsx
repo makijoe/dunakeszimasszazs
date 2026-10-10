@@ -192,7 +192,7 @@ function Navigation() {
             }}
             className="flex items-center gap-2 group"
           >
-            <LogoImage size={56} className="w-14 h-14 rounded-full object-cover" />
+            <LogoImage size={64} className="w-16 h-16 rounded-full object-cover" />
             <div className="hidden sm:block">
               <span className="block font-semibold text-lg leading-tight text-[#4A3F35]">
                 Dunakeszi Masszázs
@@ -306,8 +306,8 @@ function HeroSection() {
       <div className="absolute top-20 right-10 w-72 h-72 bg-[#D4854A]/10 rounded-full blur-3xl" />
       <div className="absolute bottom-20 left-10 w-96 h-96 bg-[#E8D4C0]/30 rounded-full blur-3xl" />
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-20">
-        <div className="grid lg:grid-cols-2 gap-12 items-center min-h-[calc(100vh-200px)]">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 lg:pt-32 pb-20">
+        <div className="grid lg:grid-cols-2 gap-12 items-start lg:items-center">
           {/* Left Content */}
           <div className={`space-y-8 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
             style={{ paddingTop: '2rem', paddingBottom: '2rem' }}>
