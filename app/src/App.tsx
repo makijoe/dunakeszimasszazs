@@ -115,17 +115,6 @@ function MobileCtaBar() {
       </a>
       <div className="w-px bg-[#E8D4C0]" />
       <a
-        href={WHATSAPP_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5 text-[#4A3F35] active:bg-[#F5E6D8] transition-colors"
-        aria-label="WhatsApp üzenet"
-      >
-        <WhatsAppIcon className="w-5 h-5 text-[#25D366]" />
-        <span className="text-[11px] font-semibold">WhatsApp</span>
-      </a>
-      <div className="w-px bg-[#E8D4C0]" />
-      <a
         href="/#idopont"
         onClick={(e) => {
           e.preventDefault();
