@@ -11,7 +11,6 @@ import {
   Heart,
   Sparkles,
   CheckCircle2,
-  Play,
   Facebook,
   ArrowRight,
   ChevronDown,
