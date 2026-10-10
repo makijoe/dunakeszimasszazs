@@ -13,6 +13,8 @@ export type BlogPost = {
   image: string;
   /** Related treatment slug from services.ts */
   serviceId?: string;
+  /** Category tag for blog filter */
+  tag?: 'relaxacio' | 'fajdalom' | 'szepseg' | 'utmutato';
   seoTitle: string;
   seoDescription: string;
   blocks: BlogBlock[];

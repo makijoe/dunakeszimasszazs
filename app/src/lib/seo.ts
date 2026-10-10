@@ -150,6 +150,16 @@ export const FAQ_ITEMS = [
     answer:
       'A weboldalon a Google Vélemények szekcióban kattints az „Írj Google értékelést” gombra, vagy keresd meg a Google Térképen: Dunakeszi Masszázs – Angyali Szalon. Google-fiókkal tudsz csillagos értékelést és szöveges véleményt írni.',
   },
+  {
+    question: 'Segít-e a masszázs derékfájdalom és hátfájás ellen?',
+    answer:
+      'A frissítő masszázs, a nepáli masszázs és az indiai fejmasszázs rendszeresen alkalmazva oldhatja a hátban, derékban és vállakban felhalmozódott izomfeszültséget. A masszázs nem orvosi kezelés – tartós, erős vagy sugárzó fájdalom esetén kérj orvosi vizsgálatot. Ülőmunkából eredő, visszatérő izomfeszültség esetén havi 1-2 alkalom sokat segíthet.',
+  },
+  {
+    question: 'Mire jó a nyirokmasszázs ödéma és nehéz lábak esetén?',
+    answer:
+      'A gépi nyirokmasszázs a nyirokkeringés támogatásával segíthet csökkenteni a pangó folyadékot, könnyedebb lábérzetet adva. Különösen ajánlott ülő vagy álló foglalkozásnál, terhesség utáni visszatérő nehézlábérzetre. Trombózis, akut gyulladás vagy súlyos keringési betegség esetén nem alkalmazható – kétes esetben kérj orvosi tanácsot.',
+  },
 ];
 
 export function buildLocalBusinessSchema() {

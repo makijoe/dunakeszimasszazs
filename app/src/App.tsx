@@ -93,6 +93,36 @@ function RouteFallback() {
   );
 }
 
+function MobileCtaBar() {
+  return (
+    <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-[#E8D4C0] shadow-[0_-4px_16px_rgba(0,0,0,0.08)] flex">
+      <a
+        href="tel:+36304877883"
+        className="flex-1 flex items-center justify-center gap-2 py-3.5 text-[#4A3F35] font-semibold text-sm active:bg-[#F5E6D8] transition-colors"
+        aria-label="Hívás"
+      >
+        <Phone className="w-4 h-4 text-[#D4854A] shrink-0" />
+        Hívj most
+      </a>
+      <div className="w-px bg-[#E8D4C0]" />
+      <a
+        href="/#idopont"
+        onClick={(e) => {
+          e.preventDefault();
+          const el = document.querySelector('#idopont');
+          if (el) el.scrollIntoView({ behavior: 'smooth' });
+          else window.location.href = '/#idopont';
+        }}
+        className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-[#D4854A] text-white font-semibold text-sm active:bg-[#B87333] transition-colors"
+        aria-label="Időpontfoglalás"
+      >
+        <Calendar className="w-4 h-4 shrink-0" />
+        Foglalás
+      </a>
+    </div>
+  );
+}
+
 // Navigation Component
 function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -273,9 +303,11 @@ function HeroSection() {
           <div className={`space-y-8 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
             style={{ paddingTop: '2rem', paddingBottom: '2rem' }}>
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full shadow-sm">
-              <Sparkles className="w-4 h-4 text-[#D4854A]" />
-              <span className="text-sm font-medium text-[#635241]">RTL & TV2 szereplések</span>
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full shadow-sm flex-wrap">
+              <Sparkles className="w-4 h-4 text-[#D4854A] shrink-0" />
+              <span className="text-sm font-medium text-[#635241]">Szerepeltem:</span>
+              <span className="px-2 py-0.5 rounded text-xs font-black text-white bg-[#E2001A] tracking-wide">RTL</span>
+              <span className="px-2 py-0.5 rounded text-xs font-black text-white bg-[#0F4C96] tracking-wide">TV2</span>
             </div>
 
             <div className="space-y-4">
@@ -722,11 +754,14 @@ function ServicesSection() {
                 <h3 className="text-xl font-semibold text-[#4A3F35] mb-2 group-hover:text-[#D4854A] transition-colors">
                   {service.name}
                 </h3>
-                <p className="text-[#635241] text-sm line-clamp-2 mb-4">
+                <p className="text-[#635241] text-sm line-clamp-2 mb-3">
                   {service.shortDescription}
                 </p>
+                <p className="text-lg font-bold text-[#D4854A] mb-3">
+                  {service.price.toLocaleString('hu-HU')} Ft
+                </p>
                 <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center text-[#D4854A] text-sm font-medium">
+                  <div className="flex items-center text-[#D4854A] text-sm font-medium underline-offset-2 group-hover:underline">
                     <span>Részletek</span>
                     <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
                   </div>
@@ -947,12 +982,12 @@ function TVSection() {
             </div>
             <div className="p-6">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-[#D4854A] to-[#B87333] rounded-xl flex items-center justify-center">
-                  <Play className="w-6 h-6 text-white" />
+                <div className="w-14 h-10 bg-[#0F4C96] rounded-lg flex items-center justify-center shadow-sm">
+                  <span className="text-white font-black text-lg tracking-wide">TV2</span>
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-[#4A3F35]">TV2</h3>
-                  <p className="text-[#635241]">Mokka műsor · 2024</p>
+                  <h3 className="text-xl font-bold text-[#4A3F35]">TV2 – Mokka</h3>
+                  <p className="text-[#635241]">Reggeli magazinműsor · 2024</p>
                 </div>
               </div>
               <p className="text-[#4A3F35] leading-relaxed">
@@ -972,12 +1007,12 @@ function TVSection() {
             </div>
             <div className="p-6">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-[#D4854A] to-[#B87333] rounded-xl flex items-center justify-center">
-                  <Play className="w-6 h-6 text-white" />
+                <div className="w-14 h-10 bg-[#E2001A] rounded-lg flex items-center justify-center shadow-sm">
+                  <span className="text-white font-black text-lg tracking-widest">RTL</span>
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-[#4A3F35]">RTL Klub</h3>
-                  <p className="text-[#635241]">Reggeli műsor · 2024</p>
+                  <h3 className="text-xl font-bold text-[#4A3F35]">RTL – Reggeli</h3>
+                  <p className="text-[#635241]">Reggeli magazinműsor · 2024</p>
                 </div>
               </div>
               <p className="text-[#4A3F35] leading-relaxed">
@@ -2396,7 +2431,7 @@ function FooterSection() {
   };
 
   return (
-    <footer id="kapcsolat" className="bg-[#4A3F35] text-white py-16">
+    <footer id="kapcsolat" className="bg-[#4A3F35] text-white py-16 pb-32 lg:pb-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-3 gap-12 mb-12">
           {/* Brand */}
@@ -2655,6 +2690,7 @@ function HomeSite() {
         <FAQSection />
       </main>
       <FooterSection />
+      <MobileCtaBar />
     </div>
   );
 }
