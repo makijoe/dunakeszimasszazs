@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://www.dunakeszimasszazs.hu/</loc>
-    <lastmod>2026-07-10</lastmod>
+    <lastmod>2026-10-10</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
@@ -14,7 +14,7 @@
   </url>
   <url>
     <loc>https://www.dunakeszimasszazs.hu/blog</loc>
-    <lastmod>2026-07-10</lastmod>
+    <lastmod>2026-10-10</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
   </url>
@@ -115,68 +115,92 @@
     <priority>0.75</priority>
   </url>
   <url>
+    <loc>https://www.dunakeszimasszazs.hu/blog/vallfaradalom-nyakfajdalom-masszazs</loc>
+    <lastmod>2026-10-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://www.dunakeszimasszazs.hu/blog/masszazs-pest-megye-dunakeszi-kornyeke</loc>
+    <lastmod>2026-10-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://www.dunakeszimasszazs.hu/blog/relaxacio-stresszoldas-dunakeszin</loc>
+    <lastmod>2026-10-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://www.dunakeszimasszazs.hu/blog/masszazs-terhesseg-utan-szules-utan</loc>
+    <lastmod>2026-10-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://www.dunakeszimasszazs.hu/kezelesek/frissito</loc>
-    <lastmod>2026-07-10</lastmod>
+    <lastmod>2026-10-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.dunakeszimasszazs.hu/kezelesek/nepali</loc>
-    <lastmod>2026-07-10</lastmod>
+    <lastmod>2026-10-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.dunakeszimasszazs.hu/kezelesek/nyirok</loc>
-    <lastmod>2026-07-10</lastmod>
+    <lastmod>2026-10-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.dunakeszimasszazs.hu/kezelesek/aroma</loc>
-    <lastmod>2026-07-10</lastmod>
+    <lastmod>2026-10-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.dunakeszimasszazs.hu/kezelesek/indiai</loc>
-    <lastmod>2026-07-10</lastmod>
+    <lastmod>2026-10-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.dunakeszimasszazs.hu/kezelesek/nehezfem</loc>
-    <lastmod>2026-07-10</lastmod>
+    <lastmod>2026-10-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.dunakeszimasszazs.hu/kezelesek/kineziologia</loc>
-    <lastmod>2026-07-10</lastmod>
+    <lastmod>2026-10-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.dunakeszimasszazs.hu/kezelesek/kollagen</loc>
-    <lastmod>2026-07-10</lastmod>
+    <lastmod>2026-10-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.dunakeszimasszazs.hu/kezelesek/zsirbontas</loc>
-    <lastmod>2026-07-10</lastmod>
+    <lastmod>2026-10-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.dunakeszimasszazs.hu/kezelesek/metamorf</loc>
-    <lastmod>2026-07-10</lastmod>
+    <lastmod>2026-10-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.dunakeszimasszazs.hu/kezelesek/bemer</loc>
-    <lastmod>2026-07-10</lastmod>
+    <lastmod>2026-10-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
