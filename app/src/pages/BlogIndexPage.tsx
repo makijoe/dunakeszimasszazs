@@ -1,9 +1,10 @@
-import { useLayoutEffect, type ComponentType } from 'react';
+import { useLayoutEffect, useState, type ComponentType } from 'react';
 import { ArrowRight, Calendar } from 'lucide-react';
 import {
   BLOG_INDEX_PATH,
   getBlogPath,
   getBlogPostsSorted,
+  type BlogPost,
 } from '@/lib/blog-posts';
 import { navigateTo, scrollToTop } from '@/lib/navigation';
 import { ResponsiveImage } from '@/components/ResponsiveImage';
@@ -16,6 +17,16 @@ import {
 
 /** Fixed crop for all blog cards so the grid stays even */
 const CARD_IMAGE_ASPECT = '16 / 10';
+
+type TagFilter = 'osszes' | 'relaxacio' | 'fajdalom' | 'szepseg' | 'utmutato';
+
+const TAG_LABELS: Record<TagFilter, string> = {
+  osszes: 'Összes',
+  relaxacio: 'Relaxáció & Stressz',
+  fajdalom: 'Fájdalom & Mozgás',
+  szepseg: 'Szépség & Bőrápolás',
+  utmutato: 'Tippek & Útmutatók',
+};
 
 type BlogIndexPageProps = {
   Navigation: ComponentType;
@@ -35,7 +46,10 @@ function formatHuDate(iso: string): string {
 }
 
 export function BlogIndexPage({ Navigation, Footer }: BlogIndexPageProps) {
-  const posts = getBlogPostsSorted();
+  const allPosts = getBlogPostsSorted();
+  const [activeTag, setActiveTag] = useState<TagFilter>('osszes');
+  const posts: BlogPost[] =
+    activeTag === 'osszes' ? allPosts : allPosts.filter((p) => p.tag === activeTag);
   const canonical = `${SITE_URL}${BLOG_INDEX_PATH}`;
 
   useLayoutEffect(() => {
@@ -104,6 +118,31 @@ export function BlogIndexPage({ Navigation, Footer }: BlogIndexPageProps) {
 
         <section className="py-16">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            {/* Category filter chips */}
+            <div className="flex flex-wrap gap-2 mb-10" role="group" aria-label="Kategória szűrő">
+              {(Object.keys(TAG_LABELS) as TagFilter[]).map((tag) => (
+                <button
+                  key={tag}
+                  onClick={() => setActiveTag(tag)}
+                  className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 border ${
+                    activeTag === tag
+                      ? 'bg-[#D4854A] text-white border-[#D4854A] shadow-sm'
+                      : 'bg-white text-[#635241] border-[#E8D4C0] hover:border-[#D4854A] hover:text-[#D4854A]'
+                  }`}
+                >
+                  {TAG_LABELS[tag]}
+                  {tag !== 'osszes' && (
+                    <span className="ml-1.5 opacity-70 text-xs">
+                      ({allPosts.filter((p) => p.tag === tag).length})
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+
+            {posts.length === 0 && (
+              <p className="text-center text-[#635241] py-12">Nincs cikk ebben a kategóriában.</p>
+            )}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr">
               {posts.map((post) => (
                 <article
