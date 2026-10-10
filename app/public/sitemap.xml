@@ -151,6 +151,24 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://www.dunakeszimasszazs.hu/blog/masszazs-arak-dunakeszin</loc>
+    <lastmod>2026-10-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.dunakeszimasszazs.hu/blog/ajandek-masszazs-dunakeszin</loc>
+    <lastmod>2026-10-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://www.dunakeszimasszazs.hu/blog/hogyan-valasszunk-masszoert-dunakeszin</loc>
+    <lastmod>2026-10-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
     <loc>https://www.dunakeszimasszazs.hu/kezelesek/frissito</loc>
     <lastmod>2026-10-10</lastmod>
     <changefreq>monthly</changefreq>
