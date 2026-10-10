@@ -1,11 +1,12 @@
 type LogoImageProps = {
-  size: 40 | 56;
+  size: 40 | 56 | 64;
   className?: string;
 };
 
 const SIZES: Record<LogoImageProps['size'], { src: string; width: number; height: number }> = {
   40: { src: '/images/logo-96w.webp', width: 40, height: 40 },
   56: { src: '/images/logo-128w.webp', width: 56, height: 56 },
+  64: { src: '/images/logo-128w.webp', width: 64, height: 64 },
 };
 
 export function LogoImage({ size, className = '' }: LogoImageProps) {
