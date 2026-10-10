@@ -139,6 +139,18 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://www.dunakeszimasszazs.hu/blog/masszazs-alvaszavar-kimerultseg-ellen</loc>
+    <lastmod>2026-10-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://www.dunakeszimasszazs.hu/blog/derekfajdalom-hatfajas-masszazs-dunakeszin</loc>
+    <lastmod>2026-10-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://www.dunakeszimasszazs.hu/kezelesek/frissito</loc>
     <lastmod>2026-10-10</lastmod>
     <changefreq>monthly</changefreq>
