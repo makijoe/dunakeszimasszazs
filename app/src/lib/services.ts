@@ -122,8 +122,8 @@ export const services: ServiceItem[] = [
     benefits: ['Bőrfiatalítás', 'Ragyogó bőr', 'Ránccsökkentés', 'Feszesebb bőr', 'Kollagéntermelés'],
     image: '/images/professional-products.jpeg',
     beforeAfter: [
-      { before: '/images/arany-before-1.jpeg', after: '/images/arany-after-1.jpeg' },
-      { before: '/images/arany-before-2.jpeg', after: '/images/arany-after-2.jpeg' },
+      { before: '/images/arany-after-1.jpeg', after: '/images/arany-before-1.jpeg' },
+      { before: '/images/arany-after-2.jpeg', after: '/images/arany-before-2.jpeg' },
     ],
     seoTitle: 'Arany kollagén arckezelés Dunakeszin | Arcfiatalítás',
     seoDescription:
