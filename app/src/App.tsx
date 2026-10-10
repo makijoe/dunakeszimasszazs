@@ -590,7 +590,7 @@ function ServiceModal({ service, isOpen, onClose }: { service: typeof services[0
                           width={320}
                           height={128}
                         />
-                        <span className="absolute bottom-2 left-2 bg-[#8B9A7C]/80 text-white text-xs px-2 py-1 rounded">Utána</span>
+                        <span className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded">Előtte</span>
                       </div>
                       <div className="relative">
                         <img
@@ -601,7 +601,7 @@ function ServiceModal({ service, isOpen, onClose }: { service: typeof services[0
                           width={320}
                           height={128}
                         />
-                        <span className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded">Előtte</span>
+                        <span className="absolute bottom-2 left-2 bg-[#8B9A7C]/80 text-white text-xs px-2 py-1 rounded">Utána</span>
                       </div>
                     </div>
                   </div>
@@ -1636,7 +1636,6 @@ function BookingSection() {
     { name: 'Arany kollagén arckezelés', price: 30000 },
     { name: 'Ultrahangos zsírbontás', price: 15000 },
     { name: 'Metamorf masszázs', price: 15000 },
-    { name: 'BEMER Kezelés', price: 15000 },
     { name: 'BEMER Kezelés (20 perc)', price: 7500 },
     { name: 'BEMER Kezelés (40 perc)', price: 15000 }
   ];
