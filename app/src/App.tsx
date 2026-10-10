@@ -2431,7 +2431,7 @@ function FooterSection() {
   };
 
   return (
-    <footer id="kapcsolat" className="bg-[#4A3F35] text-white py-16 pb-32 lg:pb-16">
+    <footer className="bg-[#4A3F35] text-white py-16 pb-32 lg:pb-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-3 gap-12 mb-12">
           {/* Brand */}
@@ -2485,7 +2485,7 @@ function FooterSection() {
           </div>
 
           {/* Contact & Social */}
-          <div>
+          <div id="kapcsolat">
             <h3 className="font-semibold text-lg mb-4">Kapcsolat</h3>
             <ul className="space-y-4">
               <li>
