@@ -2709,6 +2709,20 @@ function BlogTeaserSection() {
   );
 }
 
+function WhatsAppFloatingButton() {
+  return (
+    <a
+      href={WHATSAPP_URL}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="WhatsApp üzenet küldése"
+      className="fixed bottom-24 right-4 lg:bottom-6 lg:right-6 z-50 w-14 h-14 bg-[#25D366] rounded-full shadow-lg hover:shadow-xl hover:scale-110 active:scale-95 transition-all duration-200 flex items-center justify-center"
+    >
+      <WhatsAppIcon className="w-7 h-7 text-white" />
+    </a>
+  );
+}
+
 function HomeSite() {
   useSeo(HOME_SEO);
 
@@ -2732,6 +2746,7 @@ function HomeSite() {
       </main>
       <FooterSection />
       <MobileCtaBar />
+      <WhatsAppFloatingButton />
     </div>
   );
 }
