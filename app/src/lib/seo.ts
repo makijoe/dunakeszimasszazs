@@ -39,7 +39,7 @@ export type SeoConfig = {
 };
 
 export const META_DESCRIPTION =
-  'Makra Edina masszőr az Angyali Szalonban, Dunakeszin. Relaxáló és terápiás masszázs, nyirokmasszázs, kineziológia és BEMER kezelés. RTL & TV2 szereplések. Foglalj időpontot online!';
+  'Makra Edina masszőr, Dunakeszi. Relaxáló masszázs, nyirokmasszázs, kineziológia, BEMER kezelés. RTL & TV2. Foglalj időpontot online!';
 
 export const HOME_SEO: SeoConfig = {
   title: `${SITE_NAME} | ${SITE_TAGLINE}`,

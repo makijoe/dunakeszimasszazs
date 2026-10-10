@@ -136,6 +136,21 @@ export function buildHomeStaticHtml() {
           <a href="https://share.google/Wm7nkRpmnz966J4Qh" rel="noopener noreferrer">Google értékelés írása</a>
         </p>
 
+        <h2>Miért érdemes masszázsra jönni Dunakeszire?</h2>
+        <p>
+          A rendszeres masszázs csökkenti a stresszt, javítja a keringést, oldja az izomfeszültséget
+          és segít a regenerálódásban. Az Angyali Szalonban minden kezelés személyre van szabva:
+          Makra Edina előzetesen megkérdezi a panaszokat, az érzékeny területeket és az elvárásokat,
+          hogy a masszázs valóban hasznos legyen – nem csak kellemes.
+        </p>
+        <p>
+          A stresszoldó frissítő masszázs ideális irodai munkavégzés után, a nyirokmasszázs különösen
+          ajánlott ülő vagy álló foglalkozásoknál, ödéma és nehéz lábak esetén. A kineziológia
+          az érzelmi blokkok feloldásában segít, a BEMER kezelés pedig a sejtek szintjén javítja
+          a mikrokeringést. Az arany kollagén arckezelés prémium bőrápolást nyújt, az ultrahangos
+          zsírbontás egy testterület célzott kezeléséhez ad megoldást.
+        </p>
+
         <h2>Időpontfoglalás</h2>
         <p>
           A legtöbb 60 perces kezelés 15 000 Ft, az arany kollagén arckezelés 30 000 Ft.
