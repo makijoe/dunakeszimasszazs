@@ -95,7 +95,7 @@
             "name": "Hogyan írhatok Google értékelést az Angyali Szalonról?",
             "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "A weboldalon a Google Vélemények szekcióban kattints az Írj Google értékelést gombra, vagy keresd meg a Google Térképen: Dunakeszi Masszázs – Angyali Szalon. Google-fiókkal tudsz csillagos értékelést és szöveges véleményt írni."
+                "text": "A weboldalon a Google Vélemények szekcióban kattints az „Írj Google értékelést” gombra, vagy keresd meg a Google Térképen: Dunakeszi Masszázs – Angyali Szalon. Google-fiókkal tudsz csillagos értékelést és szöveges véleményt írni."
             }
         },
         {
@@ -116,6 +116,91 @@
         }
     ]
 }
+    </script>
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "HealthAndBeautyBusiness",
+      "@id": "https://www.dunakeszimasszazs.hu/#business",
+      "name": "Dunakeszi Masszázs - Angyali Szalon",
+      "alternateName": ["Angyali Szalon", "Makra Edina Masszőr"],
+      "description": "Makra Edina masszőr, Dunakeszi. Relaxáló masszázs, nyirokmasszázs, kineziológia, BEMER kezelés. RTL & TV2. Foglalj időpontot online!",
+      "url": "https://www.dunakeszimasszazs.hu",
+      "telephone": "+36304877883",
+      "image": "https://www.dunakeszimasszazs.hu/images/szalon-1.jpeg",
+      "priceRange": "7500-30000 HUF",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Kolonics György utca 2/B",
+        "addressLocality": "Dunakeszi",
+        "postalCode": "2120",
+        "addressCountry": "HU"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 47.637494,
+        "longitude": 19.124045
+      },
+      "hasMap": "https://www.google.com/maps/search/?api=1&query=Dunakeszi+Massz%C3%A1zs+Angyali+Szalon&query=47.637494,19.124045",
+      "openingHoursSpecification": [
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+          "opens": "08:30",
+          "closes": "18:30"
+        }
+      ],
+      "sameAs": [
+        "https://www.facebook.com/61577273747405",
+        "https://www.google.com/maps/search/?api=1&query=Dunakeszi+Massz%C3%A1zs+Angyali+Szalon&query=47.637494,19.124045",
+        "https://share.google/Wm7nkRpmnz966J4Qh"
+      ],
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.9",
+        "reviewCount": "28",
+        "bestRating": "5",
+        "worstRating": "1"
+      }
+    }
+    </script>
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "@id": "https://www.dunakeszimasszazs.hu/#website",
+      "url": "https://www.dunakeszimasszazs.hu",
+      "name": "Dunakeszi Masszázs - Angyali Szalon",
+      "description": "Makra Edina masszőr, Dunakeszi. Relaxáló masszázs, nyirokmasszázs, kineziológia, BEMER kezelés.",
+      "inLanguage": "hu-HU",
+      "publisher": { "@id": "https://www.dunakeszimasszazs.hu/#business" },
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://www.dunakeszimasszazs.hu/?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "@id": "https://www.dunakeszimasszazs.hu/#person",
+      "name": "Makra Edina",
+      "jobTitle": "Masszőr, Kineziológus",
+      "worksFor": { "@id": "https://www.dunakeszimasszazs.hu/#business" },
+      "url": "https://www.dunakeszimasszazs.hu",
+      "image": "https://www.dunakeszimasszazs.hu/images/szalon-1.jpeg",
+      "sameAs": [
+        "https://www.facebook.com/61577273747405"
+      ]
+    }
     </script>
   </head>
   <body>

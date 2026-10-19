@@ -46,6 +46,7 @@ import {
   GOOGLE_WRITE_REVIEW_URL,
   formatGoogleRating,
   HOME_SEO,
+  PHONE_TEL,
   useSeo,
 } from '@/lib/seo';
 import {
@@ -92,7 +93,7 @@ function RouteFallback() {
   );
 }
 
-const WHATSAPP_URL = 'https://wa.me/36304877883';
+const WHATSAPP_URL = `https://wa.me/${PHONE_TEL.replace('+', '')}`;
 
 function WhatsAppIcon({ className }: { className?: string }) {
   return (
@@ -106,7 +107,7 @@ function MobileCtaBar() {
   return (
     <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-[#E8D4C0] shadow-[0_-4px_16px_rgba(0,0,0,0.08)] flex">
       <a
-        href="tel:+36304877883"
+        href={`tel:${PHONE_TEL}`}
         className="flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5 text-[#4A3F35] active:bg-[#F5E6D8] transition-colors"
         aria-label="Hívás"
       >
@@ -373,7 +374,7 @@ function HeroSection() {
             {/* Contact Quick Info */}
             <div className="flex flex-wrap items-center gap-6 pt-4">
               <a
-                href="tel:+36304877883"
+                href={`tel:${PHONE_TEL}`}
                 className="flex items-center gap-2 text-[#635241] hover:text-[#D4854A] transition-colors"
               >
                 <Phone className="w-4 h-4" />
@@ -2380,7 +2381,7 @@ function BookingSection() {
               <div>
                 <p className="text-sm text-[#635241]">Telefonon</p>
                 <a
-                  href="tel:+36304877883"
+                  href={`tel:${PHONE_TEL}`}
                   className="text-lg font-semibold text-[#4A3F35] hover:text-[#D4854A] transition-colors"
                 >
                   +36 30 487 7883
@@ -2449,7 +2450,7 @@ function FooterSection() {
   };
 
   return (
-    <footer className="bg-[#4A3F35] text-white py-16 pb-32 lg:pb-16">
+    <footer id="kapcsolat" className="bg-[#4A3F35] text-white py-16 pb-32 lg:pb-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-3 gap-12 mb-12">
           {/* Brand */}
@@ -2503,12 +2504,12 @@ function FooterSection() {
           </div>
 
           {/* Contact & Social */}
-          <div id="kapcsolat">
+          <div>
             <h3 className="font-semibold text-lg mb-4">Kapcsolat</h3>
             <ul className="space-y-4">
               <li>
                 <a
-                  href="tel:+36304877883"
+                  href={`tel:${PHONE_TEL}`}
                   className="flex items-center gap-3 min-h-11 py-1 text-white/95 hover:text-[#F5D4A8] transition-colors"
                 >
                   <Phone className="w-5 h-5 shrink-0" />
