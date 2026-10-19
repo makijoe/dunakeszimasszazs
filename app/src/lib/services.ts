@@ -122,8 +122,8 @@ export const services: ServiceItem[] = [
     benefits: ['Bőrfiatalítás', 'Ragyogó bőr', 'Ránccsökkentés', 'Feszesebb bőr', 'Kollagéntermelés'],
     image: '/images/professional-products.jpeg',
     beforeAfter: [
-      { before: '/images/arany-after-1.jpeg', after: '/images/arany-before-1.jpeg' },
-      { before: '/images/arany-after-2.jpeg', after: '/images/arany-before-2.jpeg' },
+      { before: '/images/arany-before-1.jpeg', after: '/images/arany-after-1.jpeg' },
+      { before: '/images/arany-before-2.jpeg', after: '/images/arany-after-2.jpeg' },
     ],
     seoTitle: 'Arany kollagén arckezelés Dunakeszin | Arcfiatalítás, ránccsökkentés',
     seoDescription:
@@ -161,7 +161,7 @@ export const services: ServiceItem[] = [
     id: 'bemer',
     name: 'BEMER Kezelés',
     duration: '20 vagy 40 perc',
-    price: 15000,
+    price: 7500,
     shortDescription: 'A mikroerek pacemakere. Sejtszintű támogatás a mikrokeringés javításával.',
     description:
       'A BEMER matrac a mikroerek pacemakere. A szervezet legapróbb hajszálereire hat, ott támogatja a keringést. Külön választható kezelésként (20 perc: 7 500 Ft, 40 perc: 15 000 Ft), illetve bármely masszázs mellé ajánlott.',
