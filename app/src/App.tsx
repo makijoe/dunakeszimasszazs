@@ -1310,42 +1310,40 @@ function OrganoCoffeeSection() {
             </div>
 
             {/* Right side - Images */}
-            <div className="space-y-6">
+            <div className="grid grid-cols-2 gap-4">
               {/* Coffee Image */}
               <div
-                className="relative rounded-2xl overflow-hidden shadow-warm w-full"
-                style={{ aspectRatio: getImageAspectRatio('/images/organo-kave.jpeg') }}
+                className="relative rounded-2xl overflow-hidden shadow-warm w-full aspect-[3/4]"
               >
                 <ResponsiveImage
                   loading="lazy"
                   src="/images/organo-kave.jpeg"
                   alt="Organo kávé választék - Fekete kávé, Gourmet Latte, Mocha Cappuccino, Forró csokoládé"
                   className="w-full h-full object-cover"
-                  sizes="(max-width: 768px) 100vw, 40vw"
+                  sizes="(max-width: 768px) 50vw, 25vw"
                   width={1152}
                   height={2048}
                 />
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
-                  <p className="text-white font-semibold">Organo Kávé Választék</p>
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3">
+                  <p className="text-white text-sm font-semibold">Organo Kávé Választék</p>
                 </div>
               </div>
 
               {/* Green Tea Image */}
               <div
-                className="relative rounded-2xl overflow-hidden shadow-warm w-full"
-                style={{ aspectRatio: getImageAspectRatio('/images/organo-zoldtea.jpeg') }}
+                className="relative rounded-2xl overflow-hidden shadow-warm w-full aspect-[3/4]"
               >
                 <ResponsiveImage
                   loading="lazy"
                   src="/images/organo-zoldtea.jpeg"
                   alt="Organo Reishi Ganoderma zöld tea"
                   className="w-full h-full object-cover"
-                  sizes="(max-width: 768px) 100vw, 40vw"
+                  sizes="(max-width: 768px) 50vw, 25vw"
                   width={1152}
                   height={2048}
                 />
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
-                  <p className="text-white font-semibold">Organo Reishi Ganoderma Zöld Tea</p>
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3">
+                  <p className="text-white text-sm font-semibold">Organo Reishi Ganoderma Zöld Tea</p>
                 </div>
               </div>
             </div>
