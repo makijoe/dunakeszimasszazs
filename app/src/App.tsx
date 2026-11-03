@@ -1510,8 +1510,7 @@ function GallerySection() {
               style={{ transitionDelay: `${index * 100}ms` }}
             >
               <div
-                className="overflow-hidden w-full"
-                style={{ aspectRatio: getImageAspectRatio(image.src) }}
+                className="overflow-hidden w-full aspect-[4/3]"
               >
                 <ResponsiveImage
                   src={image.src}
